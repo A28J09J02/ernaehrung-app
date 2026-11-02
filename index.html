@@ -217,7 +217,10 @@ function local(path,op){
  else{const m=path.slice(-12,-5);C.months[m]=apply(C.months[m]||{},op)}}
 function setFile(path,v){if(path===P_PROF)C.profil=v;else if(path===P_LM)C.lm=v||{items:[]};else C.months[path.slice(-12,-5)]=v||{};
  for(const x of Q)if(x.path===path)local(path,x.op)}
-function change(path,op,noRender){local(path,op);Q.push({path,op});saveC();saveQ();if(!noRender)render();flush()}
+function change(path,op,noRender){
+ /* Schutz: nie unter ungültigem Datum speichern (sonst landet der Eintrag in data/ernaehrung/.json und ist unsichtbar) */
+ if("d" in op&&!/^\d{4}-\d\d-\d\d$/.test(op.d||"")){console.warn("Ungültiges Datum beim Speichern",op.d);const d=/^\d{4}-\d\d-\d\d$/.test(cur)?cur:TODAY();op={...op,d};path=pMonth(d)}
+ local(path,op);Q.push({path,op});saveC();saveQ();if(!noRender)render();flush()}
 async function flush(){
  if(busy||!Q.length||!CFG.token)return;busy=true;setStatus();
  try{for(const path of [...new Set(Q.map(x=>x.path))]){const ops=Q.filter(x=>x.path===path);let ok=false;
@@ -889,12 +892,12 @@ function closeSheet(){stopScan();const sh=$("sheet");sh.classList.remove("on");s
 
 /* ===== Wischen zum Löschen ===== */
 let SW=null;const OPEN=-92;
-function resetSwipes(except){document.querySelectorAll(".swc").forEach(x=>{if(x!==except){x.style.transform="";x.dataset.open=""}})}
+function resetSwipes(except){document.querySelectorAll(".swc").forEach(x=>{if(x!==except){x.style.transform="";x.dataset.swopen=""}})}
 let SD=null;
 document.addEventListener("touchstart",ev=>{SD=null;const c=ev.target.closest(".swc");
  if(!c){resetSwipes();if(view==="tag"&&!$("sheet").classList.contains("on")&&!$("drawer").classList.contains("on")&&!ev.target.closest("input,select,textarea,.bar,details"))
    SD={x:ev.touches[0].clientX,y:ev.touches[0].clientY,t:Date.now()};return}resetSwipes(c);
- SW={c,x:ev.touches[0].clientX,y:ev.touches[0].clientY,base:c.dataset.open?OPEN:0,dx:0,lock:null}},{passive:true});
+ SW={c,x:ev.touches[0].clientX,y:ev.touches[0].clientY,base:c.dataset.swopen?OPEN:0,dx:0,lock:null}},{passive:true});
 document.addEventListener("touchmove",ev=>{if(!SW)return;const dx=ev.touches[0].clientX-SW.x,dy=ev.touches[0].clientY-SW.y;
  if(SW.lock==null&&(Math.abs(dx)>8||Math.abs(dy)>8))SW.lock=Math.abs(dx)>Math.abs(dy)?"x":"y";
  if(SW.lock!=="x")return;SW.dx=dx;SW.c.classList.add("drag");SW.c.style.transform=`translateX(${Math.min(0,SW.base+dx)}px)`},{passive:true});
@@ -902,7 +905,7 @@ document.addEventListener("touchend",ev=>{if(SD){const t=ev.changedTouches&&ev.c
   if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.8&&Date.now()-SD.t<700)shiftDay(dx<0?1:-1)}SD=null}
  if(!SW)return;const c=SW.c,pos=Math.min(0,SW.base+SW.dx);c.classList.remove("drag");
  if(SW.lock==="x"){SW.moved=true;if(pos<-c.offsetWidth*.55){c.style.transform=`translateX(-100%)`;const b=c.parentNode.querySelector(".bg button");setTimeout(()=>b&&b.click(),180)}
-  else if(pos<OPEN/2){c.style.transform=`translateX(${OPEN}px)`;c.dataset.open="1"}else{c.style.transform="";c.dataset.open=""}
+  else if(pos<OPEN/2){c.style.transform=`translateX(${OPEN}px)`;c.dataset.swopen="1"}else{c.style.transform="";c.dataset.swopen=""}
   c.dataset.swiped=Date.now()}
  SW=null});
 
@@ -935,7 +938,7 @@ async function setup(f){const repo=f.elements.repo.value.trim(),token=f.elements
 
 /* ===== Ereignisse ===== */
 document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x;
- const sw=b(".swc");if(sw&&(sw.dataset.open||Date.now()-(+sw.dataset.swiped||0)<350)){if(sw.dataset.open&&Date.now()-(+sw.dataset.swiped||0)>350){sw.style.transform="";sw.dataset.open=""}return}
+ const sw=b(".swc");if(sw&&(sw.dataset.swopen||Date.now()-(+sw.dataset.swiped||0)<350)){if(sw.dataset.swopen&&Date.now()-(+sw.dataset.swiped||0)>350){sw.style.transform="";sw.dataset.swopen=""}return}
  if(b("[data-menu]"))openDrawer();
  else if(t===$("scrim"))closeDrawer();
  else if(x=b("[data-go]")){if(x.dataset.go!=="dash")hideDash();go(x.dataset.go)}
