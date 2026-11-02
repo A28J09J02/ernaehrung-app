@@ -2,9 +2,9 @@
 <html lang="de"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Ernährung</title>
+<title>KingFuel</title>
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Ernährung"><meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="KingFuel"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#eef2f4" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0c1418" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
@@ -282,7 +282,7 @@ const NAV=[["Ernährung",[["tag","book","Tagebuch"],["kal","cal","Kalender"],["v
  ["Training & Gesundheit",[["meintag","heart","Mein Tag"],["plan","run","Trainingsplan"],["dash","grid","Komplettes Dashboard"]]]];
 const TITLE={tag:"",kal:"Kalender",verlauf:"Verlauf",rezepte:"Gerichte",plan:"Trainingsplan",lm:"Meine Lebensmittel",profil:"Profil & Ziele",meintag:"Mein Tag",dash:"Dashboard"};
 function go(v){view=v;LS.set("view",v);closeDrawer();render();scrollTo(0,0)}
-function openDrawer(){const d=$("drawer");d.innerHTML=`<div class="ttl">Menü</div>`+NAV.map(([g,L])=>`<div class="hd">${g}</div>`+L.map(([k,i,l])=>`<button class="it ${view===k?"on":""}" data-go="${k}">${svg(i)}${l}</button>`).join("")).join("")+
+function openDrawer(){const d=$("drawer");d.innerHTML=`<div class="ttl">👑 KingFuel</div>`+NAV.map(([g,L])=>`<div class="hd">${g}</div>`+L.map(([k,i,l])=>`<button class="it ${view===k?"on":""}" data-go="${k}">${svg(i)}${l}</button>`).join("")).join("")+
  `<div class="hd">Garmin</div><button class="it" data-sync="1">${svg("sync")}Jetzt synchronisieren</button><p class="foot" style="margin:6px 10px">${C.store&&C.store.synced?"Letzter Stand: "+new Date(C.store.synced*1000).toLocaleString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):""}</p>`;
  d.classList.add("on");$("scrim").classList.add("on")}
 function closeDrawer(){$("drawer").classList.remove("on");$("scrim").classList.remove("on")}
@@ -303,7 +303,7 @@ function ringSvg(f,c,big,small){const r=50,C2=2*Math.PI*r,q=Math.max(0,Math.min(
 /* ===== Tagebuch ===== */
 const ddm=d=>wd(d)+" "+dm(d);
 function vTag(){
- const i=info(cur),t=i.t,left=t.kcal-i.s.kcal,ka=i.has?liveAmp("kcal",i.s.kcal,t.kcal,i.done):null,T=TODAY(),sk=streaks();
+ const i=info(cur),t=i.t,left=t.kcal-i.s.kcal,ka=i.has?(i.done?i.kg:(i.s.kcal<=t.kcal?"g":"r")):null,T=TODAY(),sk=streaks();
  const src={formel:"Formel",yazio:"Yazio",garmin:"Garmin"}[t.src];
  let o=`<div class="dnav"><button class="ib" data-day="-1" aria-label="Vortag">‹</button><b data-day="0">${new Date(cur+"T12:00:00").toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long"})}</b><button class="ib" data-day="1" aria-label="Folgetag" ${cur>=MAXD()?"disabled":""}>›</button></div>${cur>T?`<div class="fr">Vorausplanen – Einträge zählen erst an diesem Tag</div>`:""}`;
  o+=cheatHint(i);
@@ -312,7 +312,7 @@ function vTag(){
   return`<div><small>${l}</small><b>${n0(v)} <small>/ ${n0(g)} g</small></b><div class="bar"><i style="width:${Math.min(100,g?v/g*100:0)}%;background:${a==="r"||a==="y"?COL[a]:c}"></i></div></div>`}).join("");
  const more=[["fib","Ballaststoffe"],["sug","Zucker"],["salt","Salz"]].map(([k,l])=>{const v=i.s[k],g=i.m[k],a=i.has?liveAmp(k,v,g,i.done):null,lim=k!=="fib";
   return`<div class="mrow"><div class="t"><span>${l}</span><span><b>${n1(v)}</b> ${lim?"/ max. ":"/ "}${n1(g)} g</span></div><div class="bar"><i style="width:${Math.min(100,g?v/g*100:0)}%;background:${a?COL[a]:"var(--grid)"}"></i></div></div>`}).join("");
- const zl=[t.train?`${t.planned?"geplantes ":""}Training +${n0(t.train)}`:"",t.aus?`Ausgleich −${n0(t.aus)}`:""].filter(Boolean).join(" · ");
+ const zl=[t.train?`🔥 Bonus aktiv +${n0(t.train)}`:"",t.aus?`Ausgleich −${n0(t.aus)}`:""].filter(Boolean).join(" · ");
  o+=`<div class="card"><div class="hero">${ringSvg(t.kcal?i.s.kcal/t.kcal:0,ka?COL[ka]:"var(--grid)",n0(Math.abs(left)),left>=0?"kcal übrig":"kcal zu viel")}
   <div class="kv"><div><span class="mute">Ziel</span><b>${n0(t.kcal)}</b></div><div><span class="mute">Gegessen</span><b>${n0(i.s.kcal)}</b></div>
   ${zl?`<div class="s mute" style="display:block">${zl}</div>`:""}
@@ -454,10 +454,10 @@ function vProfil(){
  <label class="f">Eigene Zielanpassung in kcal (optional, ersetzt das Ziel)</label><input class="inp" name="adj" type="number" inputmode="numeric" value="${pr.adj??""}" placeholder="z. B. −300">
  <h2 style="margin-top:18px">Verbrauch & Quelle</h2>
  <label class="f">Yazio-Kalorienwert (kcal pro Tag, ohne Aktivitäten)</label><input class="inp" name="yazio" type="number" inputmode="numeric" value="${pr.yazio??""}" placeholder="aus Yazio übernehmen">
- <div class="cmp"><span>Formel</span><b>${n0(b.formel)} kcal${dev(b.formel)}</b></div><div class="cmp"><span>Yazio</span><b>${b.yazio?n0(b.yazio)+" kcal"+dev(b.yazio):"–"}</b></div>
- <div class="cmp"><span>Garmin (gemessen)</span><b>${b.garmin?n0(b.garmin)+" kcal":"noch zu wenig Daten"}</b></div>
+ <div class="cmp"><span>Formel (inkl. Alltag)</span><b>${n0(b.formel)} kcal</b></div><div class="cmp"><span>Yazio</span><b>${b.yazio?n0(b.yazio)+" kcal":"–"}</b></div>
+ <div class="cmp"><span>Garmin Ruheverbrauch<br><small class="mute">+ Aktivkalorien jeden Tag als Bonus</small></span><b>${b.garmin?n0(b.garmin)+" kcal"+(b.aktiv!=null?`<br><small class="mute">Ø aktiv ${n0(b.aktiv)}</small>`:""):"noch zu wenig Daten"}</b></div>
  <label class="f">Tagesziel berechnen aus</label><select class="inp" name="src">${opt(EK.SRC,p.src)}</select>
- <div class="tg"><span>Trainingskalorien dazurechnen</span><input type="checkbox" name="train" ${p.train?"checked":""}></div>
+ <div class="tg"><span>Aktivkalorien als Bonus dazurechnen</span><input type="checkbox" name="train" ${p.train?"checked":""}></div>
  <h2 style="margin-top:18px">Nährwertziele</h2>
  <div class="tg"><span>Feste Makroziele (z. B. aus Yazio)</span><input type="checkbox" name="fixon" ${fx?"checked":""}></div>
  ${fx?`<div class="row"><div><label class="f">Protein g</label><input class="inp" name="fp" type="number" inputmode="numeric" value="${p.fix.p}"></div><div><label class="f">KH g</label><input class="inp" name="fc" type="number" inputmode="numeric" value="${p.fix.c}"></div><div><label class="f">Fett g</label><input class="inp" name="ff" type="number" inputmode="numeric" value="${p.fix.f}"></div></div>`:
@@ -559,27 +559,27 @@ let W=null;
 function openWizard(){const p=prof();W={rate:rateOf(p)||-0.5,ziel:p.zielGewicht||"",job:p.job};renderWizard()}
 function wizCalc(){const p={...prof(),job:W.job,rate:W.rate,adj:null},g=G(),b=EK.bases(p,g),base=b.garmin!=null?b.garmin:b.formel,src=b.garmin!=null?"garmin":"formel";
  let adj=Math.round(W.rate*1100),floored=false;if(base+adj<b.bmr){adj=Math.round(b.bmr-base);floored=true}
- let tr=0;for(let k=0;k<7;k++)tr+=EK.planKcal(planDay(EK.add(TODAY(),k)),p.weight);tr/=7;
+ let tr=0;if(b.garmin!=null&&b.aktiv!=null)tr=b.aktiv;else{for(let k=0;k<7;k++)tr+=EK.planKcal(planDay(EK.add(TODAY(),k)),p.weight);tr/=7}
  const w=p.weight,ziel=+String(W.ziel).replace(",",".")||null,weeks=ziel&&W.rate?Math.abs((w-ziel)/W.rate):null;
  return{b,base,src,adj,floored,tr,day:base+adj,avg:base+adj+tr,w,ziel,weeks,dirOk:!ziel||!W.rate||Math.sign(ziel-w)===Math.sign(W.rate)}}
 function renderWizard(){const sh=$("sheet");sh.classList.add("on");const r=wizCalc(),p=prof();
  sh.innerHTML=`<div class="top"><button class="ib" data-close="1" data-rclose="1" aria-label="Schließen">✕</button><h1>Kalorienbedarf</h1><span style="min-width:42px"></span></div><main>
  <div class="card"><h2>Das weiß die App schon</h2><div class="cmp"><span>Alter · Größe</span><b>${p.age} J. · ${p.height} cm</b></div><div class="cmp"><span>Gewicht ${GW()?"(Garmin)":""}</span><b>${n1(p.weight)} kg</b></div>
- <div class="cmp"><span>Alltagsverbrauch ohne Training</span><b>${n0(r.base)} kcal <small class="mute">${r.src==="garmin"?"gemessen":"geschätzt"}</small></b></div>
- <div class="cmp"><span>Training (Plan, Ø nächste 7 Tage)</span><b>+${n0(r.tr)} kcal/Tag</b></div></div>
+ <div class="cmp"><span>${r.src==="garmin"?"Ruheverbrauch (ohne Bewegung)":"Alltagsverbrauch ohne Training"}</span><b>${n0(r.base)} kcal <small class="mute">${r.src==="garmin"?"gemessen":"geschätzt"}</small></b></div>
+ <div class="cmp"><span>${r.src==="garmin"?"Aktivkalorien (Ø 14 Tage)":"Training (Plan, Ø nächste 7 Tage)"}</span><b>+${n0(r.tr)} kcal/Tag</b></div></div>
  <div class="card"><h2>Wie viel möchtest du pro Woche?</h2><div class="qs">${EK.RATES.map(([v,l])=>`<button data-wrate="${v}" style="${v===W.rate?"background:var(--acc);color:#fff;border-color:var(--acc)":""}">${v>0?"+":v<0?"−":""}${String(Math.abs(v)).replace(".",",")} kg</button>`).join("")}</div>
  <p class="s mute" style="margin:0">${(EK.RATES.find(x=>x[0]===W.rate)||[0,""])[1]}</p>
  <label class="f">Zielgewicht (kg)</label><input class="inp" id="wziel" type="text" inputmode="decimal" value="${W.ziel!==""&&W.ziel!=null?String(W.ziel).replace(".",","):""}" placeholder="z. B. 75">
  ${r.src==="formel"?`<label class="f">Alltag (noch keine Garmin-Messung)</label><select class="inp" id="wjob">${EK.JOBS.map(j=>`<option value="${j[0]}" ${j[0]===W.job?"selected":""}>${j[2]}</option>`).join("")}</select>`:""}</div>
  <div class="card" style="border:2px solid var(--acc)"><h2>Ergebnis</h2>
- <div class="cmp"><span>Alltagsverbrauch</span><b>${n0(r.base)} kcal</b></div><div class="cmp"><span>${r.adj<0?"Defizit":"Überschuss"}</span><b>${r.adj>0?"+":"−"}${n0(Math.abs(r.adj))} kcal</b></div>
- <div class="cmp"><span><b>Ziel an Ruhetagen</b></span><b style="font-size:19px">${n0(r.day)} kcal</b></div>
- <div class="cmp"><span>Ø Ziel inkl. Training<br><small class="mute">Trainingskalorien kommen automatisch von der Uhr dazu</small></span><b>${n0(r.avg)} kcal</b></div>
+ <div class="cmp"><span>${r.src==="garmin"?"Ruheverbrauch":"Alltagsverbrauch"}</span><b>${n0(r.base)} kcal</b></div><div class="cmp"><span>${r.adj<0?"Defizit":"Überschuss"}</span><b>${r.adj>0?"+":"−"}${n0(Math.abs(r.adj))} kcal</b></div>
+ <div class="cmp"><span><b>Ziel ohne Bewegung</b></span><b style="font-size:19px">${n0(r.day)} kcal</b></div>
+ <div class="cmp"><span>Ø Ziel inkl. Bonus<br><small class="mute">deine Aktivkalorien kommen jeden Tag automatisch von der Uhr dazu</small></span><b>${n0(r.avg)} kcal</b></div>
  ${r.weeks&&r.dirOk?`<p class="s" style="margin:8px 0 0">⏱ Ziel ${n1(r.ziel)} kg in ca. <b>${Math.ceil(r.weeks)} Wochen</b> (bis ${new Date(Date.now()+r.weeks*7*864e5).toLocaleDateString("de-DE",{day:"numeric",month:"long"})}).</p>`:r.ziel&&!r.dirOk?`<p class="s warn" style="margin:8px 0 0">Zielgewicht und Richtung passen nicht zusammen.</p>`:""}
  ${r.floored?`<p class="s warn" style="margin:6px 0 0">Das Ziel an Ruhetagen bleibt bei deinem Grundumsatz (${n0(r.b.bmr)} kcal) – darunter solltest du nicht gehen. Das Defizit beträgt deshalb ${n0(Math.abs(r.adj))} statt ${n0(Math.abs(W.rate*1100))} kcal.</p>`:""}
  ${Math.abs(W.rate)>0.5?`<p class="s warn" style="margin:6px 0 0">Mit Marathontraining ist mehr als 0,5 kg pro Woche hart: Regeneration und Leistung leiden schnell.</p>`:""}
  <button class="btn p w" style="margin-top:12px" data-wapply="1">Übernehmen</button></div>
- <p class="foot">Grundlage: Garmin misst deinen echten Alltagsverbrauch (Median der letzten 14 Tage ohne Training). Trainingskalorien kommen täglich von der Uhr dazu, für künftige Tage geschätzt aus dem Plan. 1 kg ≈ 7.700 kcal.</p></main>`}
+ <p class="foot">Grundlage: Garmin-Ruheverbrauch (Median der letzten 14 Tage, ohne Aktivkalorien). Deine Aktivkalorien – Schritte, Training, alles was die Uhr misst – kommen jeden Tag als Bonus dazu, sobald du sie verbrannt hast. Für künftige Tage wird nichts vorab dazugerechnet. 1 kg ≈ 7.700 kcal.</p></main>`}
 function applyWizard(){const r=wizCalc(),p={...(C.profil||{}),rate:W.rate,adj:null,src:r.src,train:true,job:W.job};if(r.ziel)p.zielGewicht=r.ziel;delete p.goal;
  change(P_PROF,{t:"profil",v:p});closeSheet();toast(`Neues Ziel: ${n0(r.day)} kcal + Training`,3500)}
 

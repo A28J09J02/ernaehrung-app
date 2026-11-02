@@ -11,9 +11,11 @@
    Verbrauch / Tagesziel:
      Grundumsatz  Mifflin-St Jeor: 10·kg + 6,25·cm − 5·Jahre + 5 (Mann) bzw. − 161 (Frau)
      Alltag       Grundumsatz · Alltagsfaktor (PAL ohne Sport, DGE): sitzend 1,4 · gemischt 1,6 · stehend/gehend 1,8 · körperlich schwer 2,0
-     Garmin-Basis Median der letzten 14 vollständigen Tage: Garmin-Tagesverbrauch − aktive Trainingskalorien (mind. 5 Tage)
+     Garmin-Basis Median der letzten 14 vollständigen Tage: Garmin-Ruheverbrauch = Tagesverbrauch − Aktivkalorien (mind. 5 Tage)
      Yazio        dein eingetragener Yazio-Kalorienwert (dort ist das Ziel schon eingerechnet, ohne Aktivitäten)
-     Tagesziel    Basis (gewählte Quelle) + Zielanpassung (nicht bei Yazio) + aktive Trainingskalorien des Tages (wenn eingeschaltet)
+     Tagesziel    Basis (gewählte Quelle) + Zielanpassung (nicht bei Yazio) + Bonus des Tages (wenn eingeschaltet):
+                  bei Garmin-Basis alle Aktivkalorien der Uhr (Alltag + Training), sonst nur die Trainingskalorien –
+                  so wird nichts doppelt gezählt. Künftige Tage: kein Bonus (kommt erst, wenn du dich bewegt hast).
    Makros: Protein g/kg Körpergewicht, Fett % der Kalorien, Kohlenhydrate = Rest – oder feste Grammwerte (z. B. aus Yazio).
    Ampel: Kalorien ±10 % grün, ±20 % orange, sonst rot. Protein/Ballaststoffe ab 90 % grün, ab 75 % orange.
    Kohlenhydrate/Fett ±15 % grün, ±30 % orange. Zucker/Salz bis zur Grenze grün, bis +20 % orange.
@@ -53,11 +55,14 @@ const EK=(()=>{
  function planKcal(pd,w){if(!pd||pd.type==="rest")return 0;if((pd.type==="run"||pd.type==="race")&&pd.km)return 0.8*w*pd.km;
   if(pd.type==="gym")return 4.5*(pd.dur||60);if(pd.dur)return 5*pd.dur;return 0}
  function garminBase(days,acts,today){
-  const v=[];for(let i=1;i<=14;i++){const d=add(today,-i),x=days&&days[d];if(x&&x.kcal>1200)v.push(x.kcal-trainKcal(acts,d))}
-  if(v.length<5)return null;v.sort((a,b)=>a-b);const m=v.length>>1;return v.length%2?v[m]:(v[m-1]+v[m])/2}
+  const v=[];for(let i=1;i<=14;i++){const d=add(today,-i),x=days&&days[d];if(x&&x.kcal>1200)v.push(x.kcal-(x.kcal_active!=null?x.kcal_active:trainKcal(acts,d)))}
+  return med(v)}
+ const med=v=>{if(v.length<5)return null;v=v.slice().sort((a,b)=>a-b);const m=v.length>>1;return v.length%2?v[m]:(v[m-1]+v[m])/2};
+ /* typische Aktivkalorien pro Tag (Median 14 Tage) – nur zur Einordnung */
+ function activeMed(days,today){const v=[];for(let i=1;i<=14;i++){const x=days&&days[add(today,-i)];if(x&&x.kcal>1200&&x.kcal_active!=null)v.push(x.kcal_active)}return med(v)}
  /* alle drei Basiswerte (ohne Training) */
  function bases(p,g){p=prof(p);return{formel:bmr(p)*pal(p),yazio:p.yazio?+p.yazio:null,
-  garmin:g?garminBase(g.days,g.acts,g.today):null,bmr:bmr(p),pal:pal(p)}}
+  garmin:g?garminBase(g.days,g.acts,g.today):null,aktiv:g?activeMed(g.days,g.today):null,bmr:bmr(p),pal:pal(p)}}
  /* Tagesziel; g = {days, acts, today, plan?} aus den Garmin-Daten (darf fehlen).
     Künftige Tage: Trainingskalorien aus dem Plan geschätzt. Untergrenze: nie unter dem Grundumsatz. */
  function target(p,g,date){
@@ -65,9 +70,9 @@ const EK=(()=>{
   if(base==null){src="formel";base=b.formel}
   let adj=src==="yazio"?0:goalAdj(p),floored=false;
   if(base+adj<b.bmr){adj=Math.round(b.bmr-base);floored=true}
-  let tr=0,planned=false;
-  if(p.train&&g){if(date>g.today&&g.plan){tr=planKcal(g.plan[date],p.weight);planned=tr>0}else tr=trainKcal(g.acts,date)}
-  return{kcal:Math.round(base+adj+tr),base:Math.round(base),adj,train:Math.round(tr),planned,floored,src,wanted:p.src,bases:b}}
+  let tr=0;const all=src==="garmin";
+  if(p.train&&g&&date<=g.today){const x=g.days&&g.days[date];tr=all?(x&&x.kcal_active!=null?x.kcal_active:trainKcal(g.acts,date)):trainKcal(g.acts,date)}
+  return{kcal:Math.round(base+adj+tr),base:Math.round(base),adj,train:Math.round(tr),bonusAll:all,floored,src,wanted:p.src,bases:b}}
  function macros(p,kcal){
   p=prof(p);
   if(p.fix&&p.fix.p)return{p:+p.fix.p,c:+p.fix.c||0,f:+p.fix.f||0,fib:p.fib,sug:p.sugMax,salt:p.saltMax,fixed:true};

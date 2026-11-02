@@ -1,6 +1,6 @@
 {
- "name": "Ernährung",
- "short_name": "Ernährung",
+ "name": "KingFuel – Ernährung & Training",
+ "short_name": "KingFuel",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
