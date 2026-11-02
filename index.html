@@ -31,6 +31,7 @@ main{padding:0 14px;max-width:640px;margin:auto}
 .mute{color:var(--mute)}.s{font-size:13px}.warn{color:var(--y)}
 .dnav{display:flex;align-items:center;justify-content:space-between;margin:0 0 10px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:2px}
 .dnav b{font-size:15px}
+.today{display:block;margin:-4px auto 10px;border:0;background:var(--acc);color:#fff;font-weight:600;font-size:14px;border-radius:99px;padding:7px 16px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
 /* Tagesübersicht */
 .hero{display:flex;align-items:center;gap:14px}.hero svg{width:132px;flex:none}
 .hero .kv{flex:1;display:grid;gap:6px;font-size:14px}.hero .kv div{display:flex;justify-content:space-between}.hero .kv b{font-weight:600}
@@ -164,6 +165,8 @@ let Q=LS.get("queue",[]);
 let BLS=null;
 const saveC=()=>{if(!LS.set("cache",C))console.warn("Cache voll")},saveQ=()=>LS.set("queue",Q);
 const $=id=>document.getElementById(id),h=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+/* Absicherung: ein ungültiges Datum zeigt „–“ statt „Invalid Date“ und wird gemeldet */
+for(const m of ["toLocaleDateString","toLocaleString","toLocaleTimeString"]){const o=Date.prototype[m];Date.prototype[m]=function(...a){if(isNaN(this)){console.warn("Ungültiges Datum",new Error().stack);return"–"}return o.apply(this,a)}}
 const TODAY=()=>EK.day(new Date()),MAXD=()=>EK.add(TODAY(),14); /* bis zu 14 Tage im Voraus eintragen */
 let cur=TODAY(),view=LS.get("view","tag"),range=7,calM=TODAY().slice(0,7),lmTab="eigen",status="",busy=false;
 if(!["tag","kal","verlauf","rezepte","lm","profil","meintag","plan","dash"].includes(view))view="tag";
@@ -295,7 +298,7 @@ function openDrawer(){const d=$("drawer");d.innerHTML=`<div class="ttl">👑 Kin
  d.classList.add("on");$("scrim").classList.add("on")}
 function closeDrawer(){$("drawer").classList.remove("on");$("scrim").classList.remove("on")}
 function render(){
- if(!CFG.token)return;calcAus();
+ if(!CFG.token)return;if(!/^\d{4}-\d\d-\d\d$/.test(cur)||isNaN(new Date(cur+"T12:00:00")))cur=TODAY();calcAus();
  const a=$("app"),T=TODAY(),food=["tag","kal","verlauf","rezepte","lm","profil"].includes(view),sk=streaks();
  document.body.classList.toggle("full",!food);
  const title=view==="tag"?(cur===T?"Heute":cur===EK.add(T,-1)?"Gestern":cur===EK.add(T,1)?"Morgen":new Date(cur+"T12:00:00").toLocaleDateString("de-DE",{weekday:"short",day:"numeric",month:"short"})):TITLE[view];
@@ -313,19 +316,19 @@ const ddm=d=>wd(d)+" "+dm(d);
 function vTag(){
  const i=info(cur),t=i.t,left=t.kcal-i.s.kcal,ka=i.has?(i.done?i.kg:(i.s.kcal<=t.kcal?"g":"r")):null,T=TODAY(),sk=streaks();
  const src={formel:"Formel",yazio:"Yazio",garmin:"Garmin"}[t.src];
- let o=`<div class="dnav"><button class="ib" data-day="-1" aria-label="Vortag">‹</button><b data-day="0">${new Date(cur+"T12:00:00").toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long"})}</b><button class="ib" data-day="1" aria-label="Folgetag" ${cur>=MAXD()?"disabled":""}>›</button></div>${cur>T?`<div class="fr">Vorausplanen – Einträge zählen erst an diesem Tag</div>`:""}`;
+ let o=`<div class="dnav"><button class="ib" data-day="-1" aria-label="Vortag">‹</button><b data-day="0">${new Date(cur+"T12:00:00").toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long"})}</b><button class="ib" data-day="1" aria-label="Folgetag" ${cur>=MAXD()?"disabled":""}>›</button></div>${cur!==T?`<button class="today" data-day="0">↩ Zurück zu heute</button>`:""}${cur>T?`<div class="fr">Vorausplanen – Einträge zählen erst an diesem Tag</div>`:""}`;
  o+=cheatHint(i);
  if(cur===T&&!sk.today&&sk.n>0)o+=`<div class="hint">🔥<span>Trag heute etwas ein, damit deine <b>${sk.n}-Tage-Streak</b> weiterläuft.</span></div>`;
  const mac=[["p","Protein","var(--p)"],["c","Kohlenhydrate","var(--c)"],["f","Fett","var(--f)"]].map(([k,l,c])=>{const v=i.s[k],g=i.m[k],a=i.has?liveAmp(k,v,g,i.done):null;
   return`<div><small>${l}</small><b>${n0(v)} <small>/ ${n0(g)} g</small></b><div class="bar"><i style="width:${Math.min(100,g?v/g*100:0)}%;background:${a==="r"||a==="y"?COL[a]:c}"></i></div></div>`}).join("");
  const more=[["fib","Ballaststoffe"],["sug","Zucker"],["salt","Salz"]].map(([k,l])=>{const v=i.s[k],g=i.m[k],a=i.has?liveAmp(k,v,g,i.done):null,lim=k!=="fib";
   return`<div class="mrow"><div class="t"><span>${l}</span><span><b>${n1(v)}</b> ${lim?"/ max. ":"/ "}${n1(g)} g</span></div><div class="bar"><i style="width:${Math.min(100,g?v/g*100:0)}%;background:${a?COL[a]:"var(--grid)"}"></i></div></div>`}).join("");
- const zl=[t.train?`🔥 Bonus aktiv +${n0(t.train)}`:"",t.aus?`Ausgleich −${n0(t.aus)}`:""].filter(Boolean).join(" · ");
+ const zl=i.d>T&&t.aus?`Ausgleich −${n0(t.aus)}`:"";
  o+=`<div class="card"><div class="hero">${ringSvg(t.kcal?i.s.kcal/t.kcal:0,ka?COL[ka]:"var(--grid)",n0(Math.abs(left)),left>=0?"kcal übrig":"kcal zu viel")}
   <div class="kv"><div><span class="mute">Ziel</span><b>${n0(t.kcal)}</b></div><div><span class="mute">Gegessen</span><b>${n0(i.s.kcal)}</b></div>
   ${zl?`<div class="s mute" style="display:block">${zl}</div>`:""}
   ${i.done&&i.kg?`<div><span class="chip" style="--c0:${COL[i.kg]}">${i.ch&&i.ch.state==="full"?"Ausgeglichen ↺":AMPT[i.kg]}</span></div>`:`<div class="s mute">Basis: ${src}</div>`}</div></div>
-  <p class="s mute" style="margin:6px 0 0;text-align:center">Im Ring: Ziel − gegessen</p>
+  <p class="s mute" style="margin:6px 0 0;text-align:center">Im Ring: Ziel − gegessen${i.d>T?" · Aktivkalorien kommen am Tag selbst dazu":""}</p>
   ${burnRow(i)}
   <div class="mac">${mac}</div><details class="more"><summary>Weitere Nährwerte ›</summary>${more}<button class="btn w" style="margin-top:10px" data-micro="1">Vitamine & Mineralstoffe ›</button></details></div>`;
  o+=carrierNote(i)+weekCard();
@@ -359,10 +362,12 @@ function weekCard(){const T=TODAY(),mon=EK.add(T,-((new Date(T+"T12:00:00").getD
  <div><span>Plan bisher</span><b>${plan>0?"+":plan<0?"−":""}${n0(Math.abs(plan))}</b> <small class="mute">kcal</small></div></div>
  <p class="s ${okc?"mute":"warn"}" style="margin:8px 0 0;text-align:center">${okc?"Du liegst im Plan.":"Noch über dem Plan – der Ausgleich der nächsten Tage holt das auf."} Bilanz = gegessen − Garmin-Verbrauch.</p></div>`}
 /* Verbrannt laut Garmin – Aktivkalorien hervorgehoben */
-function burnRow(i){if(i.d>TODAY()||i.gk==null)return"";const bal=i.s.kcal-i.gk,
- syn=i.d===TODAY()&&C.store.synced?"bis "+new Date(C.store.synced*1000).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}):"ganzer Tag";
- return`<div class="burn"><div class="fire"><b>🔥 ${n0(i.ga)}</b><span>aktiv verbrannt</span></div><div><b>${n0(i.gk)}</b><span>Gesamtverbrauch ${syn}</span></div>
- <div><b class="${i.done&&bal>0?"warn":""}">${bal>0?"+":"−"}${n0(Math.abs(bal))}</b><span>gegessen − verbraucht</span></div></div>`}
+/* So entsteht das Tagesziel: Grundziel (inkl. Ausgleich) + Aktivkalorien = Ziel heute */
+function burnRow(i){const t=i.t;if(i.d>TODAY())return"";const grund=t.kcal-t.train,bonusL=t.bonusAll?"aktiv verbrannt":"Training";
+ const syn=i.d===TODAY()&&C.store&&C.store.synced?"Stand "+new Date(C.store.synced*1000).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}):"";
+ return`<div class="burn"><div><b>${n0(grund)}</b><span>Grundziel${t.aus?`<br>inkl. −${n0(t.aus)} Ausgleich`:""}</span></div>
+ <div class="fire"><b>+ 🔥 ${n0(t.train)}</b><span>${bonusL}${syn?`<br>${syn}`:""}</span></div>
+ <div><b>= ${n0(t.kcal)}</b><span>dein Ziel ${i.d===TODAY()?"heute":""}</span></div></div>`}
 /* Gewicht: Wochen bis zum Ziel – nach Plan-Tempo und nach deinem echten Schnitt der letzten 14 Tage */
 function weightCard(){const p=prof(),w=GW(),goal=C.profil&&C.profil.zielGewicht;if(!w&&!goal)return"";
  let est="";if(goal&&w&&Math.abs(w-goal)>=0.2){const need=w-goal,dir=need>0?-1:1,fmtW=x=>x>52?"über ein Jahr":`ca. ${Math.ceil(x)} Woche${Math.ceil(x)>1?"n":""} (bis ${new Date(Date.now()+x*7*864e5).toLocaleDateString("de-DE",{day:"numeric",month:"short"})})`;
@@ -664,7 +669,7 @@ let S={meal:"fr",q:"",off:null,offq:""};
 function recent(){const seen=new Map();for(let k=0;k<21;k++){const d=EK.add(TODAY(),-k);for(const e of entries(d).slice().reverse()){const key=e.src+"|"+e.name;if(!seen.has(key))seen.set(key,e)}}return[...seen.values()].slice(0,25)}
 const per100=e=>{const o={};for(const k of Object.keys(e.n||{}))o[k]=e.n[k]!=null&&e.g?e.n[k]*100/e.g:null;return o};
 function fromEntry(e){const f=foods().find(x=>x.src===e.src&&(x.name===e.name||e.name.startsWith(x.name+" (")));if(f)return f;
- return e.g?{id:e.src,name:e.name,src:e.src,n:per100(e),portion:{g:e.g,label:"wie zuletzt"}}:{id:e.src,name:e.name,src:e.src,n:{...e.n},portion:{g:100,label:"1 Portion"}}}
+ return e.g?{id:e.src,name:e.name,src:e.src,n:per100(e),portion:e.g!==100?{g:e.g,label:"Portion"}:null}:{id:e.src,name:e.name,src:e.src,n:{...e.n},portion:{g:100,label:"1 Portion"}}}
 /* BLS-Zeile → Nährwerte je 100 g, Einheiten auf die der App umgerechnet (z. B. Vitamin B6 µg → mg) */
 const UF={"µg>mg":1e-3,"mg>µg":1e3,"mg>g":1e-3,"g>mg":1e3};
 function fromBls(r){const o={};BLSM.felder.forEach((k,i)=>{if(k==="water")return;let v=r[2+i];const mu=(EK.MICRO.find(m=>m[0]===k)||[])[2],bu=BLSM.einheiten[k];
