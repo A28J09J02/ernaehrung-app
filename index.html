@@ -669,6 +669,9 @@ let S={meal:"fr",q:"",off:null,offq:""};
 function recent(){const seen=new Map();for(let k=0;k<21;k++){const d=EK.add(TODAY(),-k);for(const e of entries(d).slice().reverse()){const key=e.src+"|"+e.name;if(!seen.has(key))seen.set(key,e)}}return[...seen.values()].slice(0,25)}
 const per100=e=>{const o={};for(const k of Object.keys(e.n||{}))o[k]=e.n[k]!=null&&e.g?e.n[k]*100/e.g:null;return o};
 function fromEntry(e){const f=foods().find(x=>x.src===e.src&&(x.name===e.name||e.name.startsWith(x.name+" (")));if(f)return f;
+ /* Grundnahrungsmittel: aus der Datenbank neu aufbauen, damit Einheiten (z. B. Scheibe) gleich bleiben */
+ if(BLS&&String(e.src).startsWith("bls:")){const r=BLS.find(x=>"bls:"+x[0]===e.src);if(r)return fromBls(r)}
+ if(e.unit&&e.g)return{id:e.src,name:e.name,src:e.src,n:per100(e)};
  return e.g?{id:e.src,name:e.name,src:e.src,n:per100(e),portion:e.g!==100?{g:e.g,label:"Portion"}:null}:{id:e.src,name:e.name,src:e.src,n:{...e.n},portion:{g:100,label:"1 Portion"}}}
 /* BLS-Zeile → Nährwerte je 100 g, Einheiten auf die der App umgerechnet (z. B. Vitamin B6 µg → mg) */
 const UF={"µg>mg":1e-3,"mg>µg":1e3,"mg>g":1e-3,"g>mg":1e3};
@@ -759,9 +762,33 @@ function stopScan(){if(!SCAN)return;SCAN.on=false;try{SCAN.st&&SCAN.st.getTracks
 let A=null;
 /* Einheiten für ein Lebensmittel: Stück/Portion, Packung, Gramm, Löffel … (g = Gramm je Einheit) */
 const portName=f=>{const l=String(f.portion&&f.portion.label||"");const m=l.match(/^\s*[\d.,]*\s*([A-Za-zÄÖÜäöüß]{3,})/);return m&&!/^(g|ml|gramm|portion)$/i.test(m[1])?m[1]:"Portion"};
+/* Typische Portion nach Produktname (Schätzwerte) – greift, wenn das Produkt selbst keine Portion/Stückzahl mitbringt.
+   Reihenfolge zählt: speziellere Begriffe zuerst. [Muster (normalisiert, ä→ae …), Einheit, g/ml je Einheit] */
+const SMART=[
+ [/kuchen|torte|muffin/,"Stück",120],[/keks|cookie|plaetzchen/,"Stück",12],[/suppe|eintopf/,"Teller",300],[/pueree|\bbrei\b/,"Portion",200],
+ [/reis.*gekocht|gekocht.*reis/,"Portion",200],[/(nudeln|spaghetti|pasta|teigwaren).*gekocht/,"Portion",250],[/beeren/,"Portion",150],[/salat/,"Portion",150],
+ [/knaeckebrot/,"Scheibe",10],[/toast/,"Scheibe",25],[/broetchen|semmel|croissant/,"Stück",60],[/brezel|laugen/,"Stück",80],
+ [/aufstrich/,"Portion",20],[/brot\b/,"Scheibe",45],
+ [/ketchup|mayo|mayonnaise|senf|remoulade|dressing|sosse|sauce|grillsauce|bbq/,"Portion",15],
+ [/olivenoel|rapsoel|sonnenblumenoel|\boel\b/,"Esslöffel",10],[/butter|margarine/,"Portion",10],
+ [/honig/,"Teelöffel",10],[/marmelade|konfituere|nutella|nuss nougat|schokoaufstrich/,"Portion",20],[/zucker\b/,"Teelöffel",4],
+ [/kaffee|espresso|cappuccino|latte/,"Tasse",150],[/\btee\b/,"Tasse",200],
+ [/milch\b|kakao|haferdrink|sojadrink|mandeldrink/,"Tasse",200],[/saft|nektar|schorle|smoothie/,"Glas",200],
+ [/cola|limonade|\blimo|eistee|energy/,"Dose",330],[/\bbier|pils|radler/,"Flasche",500],[/\bwein\b|sekt/,"Glas",150],
+ [/joghurt|skyr|quark|pudding/,"Portion",150],[/mozzarella/,"Kugel",125],[/kaese|gouda|emmentaler|cheddar/,"Scheibe",25],
+ [/salami/,"Scheibe",8],[/schinken|aufschnitt|lyoner|mortadella|bierschinken/,"Scheibe",15],[/wuerstchen|bockwurst|wiener|bratwurst/,"Stück",100],
+ [/huehnerei|\bei\b|\beier\b/,"Stück",60],[/haferflocken|hafer flocken|muesli|granola/,"Portion",50],[/cornflakes|cerealien/,"Portion",30],
+ [/nudeln|spaghetti|pasta|penne|fusilli/,"Portion",125],[/\breis\b/,"Portion",75],[/kartoffel/,"Stück",80],
+ [/\bapfel\b/,"Stück",180],[/\bbanane\b/,"Stück",120],[/orange|apfelsine/,"Stück",180],[/mandarine|clementine/,"Stück",70],[/\bkiwi/,"Stück",75],
+ [/\bbirne\b/,"Stück",170],[/pfirsich|nektarine/,"Stück",130],[/\btomate\b/,"Stück",70],[/paprika/,"Stück",150],[/avocado/,"Stück",150],
+ [/nuss|nuesse|mandeln|cashew|walnuss|studentenfutter/,"Handvoll",30],[/chips|flips/,"Handvoll",25],
+ [/schokolade/,"Reihe",25],[/riegel/,"Stück",25],[/keks|cookie/,"Stück",12],[/pizza/,"Stück",350],[/doener/,"Stück",400],
+ [/haehnchenbrust|putenbrust|steak|schnitzel|lachs|filet/,"Stück",150],[/frikadelle|bulette/,"Stück",80]];
+function smartUnit(f){const n=" "+EK.norm(f.name)+" ";for(const[re,l,g]of SMART)if(re.test(n))return{k:"smart",label:l,g,sub:`≈ ${g} ${/Glas|Tasse|Dose|Flasche|Teller/.test(l)&&!/Teller/.test(l)?"ml":"g"}`};return null}
 function unitsFor(f){const U=[],gl=f.liquid?"ml":"g";
  if(f.stk&&f.stk.g)U.push({k:"stk",label:portName(f)==="Portion"?"Stück":portName(f),g:f.stk.g,max:f.stk.max});
  else if(f.portion&&f.portion.g&&!(f.portion.g===100&&/100/.test(f.portion.label||""))){const pk=f.pack&&f.pack.g?Math.round(f.pack.g/f.portion.g):null;U.push({k:"por",label:portName(f),g:f.portion.g,max:pk&&pk>1&&pk<=60?pk:null})}
+ if(!U.length){const sm=smartUnit(f);if(sm)U.push(sm)}
  if(f.pack&&f.pack.g)U.push({k:"pack",label:"Packung",sub:f.pack.label,g:f.pack.g});
  U.push({k:"g",label:gl==="ml"?"Milliliter":"Gramm",g:1});
  U.push({k:"el",label:"Esslöffel",g:15},{k:"tl",label:"Teelöffel",g:5});
@@ -771,8 +798,8 @@ const fq=q=>{const F={0.25:"¼",0.5:"½",0.75:"¾",0.33:"⅓",0.67:"⅔"},w=Math
 const unitText=e=>e.unit&&e.unit.k!=="g"?`${fq(e.unit.q)} ${e.unit.label}`:(e.g!=null?n0(e.g)+" g":"1 Portion");
 function openAmount({food,entry}){
  const f=food||fromEntry(entry),U=unitsFor(f),last=LS.get("unit_last",{})[f.id];
- let u=entry&&entry.unit?U.find(x=>x.k===entry.unit.k)||U.find(x=>x.k==="g"):U.find(x=>x.k===last)||U.find(x=>x.k==="stk"||x.k==="por")||U.find(x=>x.k==="g");
- let q=entry?(entry.unit&&entry.unit.q!=null?entry.unit.q:(entry.g??100)/(u.g||1)):(u.k==="g"?100:1);
+ let u=entry&&entry.unit?U.find(x=>x.k===entry.unit.k&&x.label===entry.unit.label)||U.find(x=>x.label===entry.unit.label)||U.find(x=>x.k==="g"):U.find(x=>x.k===last)||U.find(x=>x.k==="stk"||x.k==="por"||x.k==="smart")||U.find(x=>x.k==="g");
+ let q=entry?(entry.unit&&entry.unit.q!=null&&u.label===entry.unit.label?entry.unit.q:Math.round((entry.g??100)/(u.g||1)*100)/100):(u.k==="g"?100:1);
  A={food:f,entry,meal:entry?entry.meal:S.meal,U,u,q,more:!!u.more};renderAmount();
  if(String(f.src).startsWith("off:")&&!f.pack&&!f._enr)enrichOff(f)}
 /* ältere gescannte Produkte um Packung/Stück ergänzen */
@@ -782,7 +809,7 @@ async function enrichOff(f){f._enr=1;try{const r=await fetch(`https://world.open
  if(A&&A.food===f&&!A.entry){A.U=unitsFor(f);const nu=A.U.find(y=>y.k==="stk"||y.k==="por");if(nu&&A.u.k==="g"&&A.q===100){A.u=nu;A.q=1}renderAmount()}}catch(e){}}
 function renderAmount(){const f=A.food,entry=A.entry,u=A.u,sh=$("sheet");sh.classList.add("on");const isFav=foods().some(x=>x.id===f.id&&x.fav);
  const srcL=isOwn(f)?"von dir angelegt":String(f.src).startsWith("bls")?"Grundnahrungsmittel":String(f.src).startsWith("off")?"Open Food Facts":"";
- const quick=u.k==="pack"?[[.25,"¼"],[.5,"½"],[.75,"¾"],[1,"1"]]:u.k==="g"?[[50],[100],[150],[200],[250]]:u.k==="stk"||u.k==="por"?[1,2,3,4,5].filter(x=>!u.max||x<=u.max).map(x=>[x]).concat(u.max&&u.max>5?[[u.max,"alle "+u.max]]:[]):[[1],[2],[3]];
+ const quick=u.k==="pack"?[[.25,"¼"],[.5,"½"],[.75,"¾"],[1,"1"]]:u.k==="g"?[[50],[100],[150],[200],[250]]:u.k==="stk"||u.k==="por"?[1,2,3,4,5].filter(x=>!u.max||x<=u.max).map(x=>[x]).concat(u.max&&u.max>5?[[u.max,"alle "+u.max]]:[]):u.k==="smart"?[[.5,"½"],[1],[2],[3],[4]]:[[1],[2],[3]];
  const chip=x=>`<button data-unit="${x.k}" class="${x.k===u.k?"on":""}">${h(x.label)}${x.sub?`<small>${h(x.sub)}</small>`:""}</button>`;
  sh.innerHTML=`<div class="top"><button class="ib" data-back="${entry?"close":"1"}" aria-label="Zurück">‹</button><h1>${entry?"Eintrag ändern":"Wie viel?"}</h1><button class="ib" data-fav="1" aria-label="Favorit">${isFav?"★":"☆"}</button></div><main>
  <div class="card" style="padding:12px 16px"><b style="font-size:18px">${h(f.name)}</b><div class="mute s">${f.marke?h(f.marke)+" · ":""}${n0(f.n.kcal)} kcal je 100 ${f.liquid?"ml":"g"}${srcL?" · "+srcL:""}</div></div>
@@ -802,7 +829,7 @@ function nut(){A.g=Math.round(A.q*A.u.g*10)/10;const n=EK.scale(A.food.n,A.g);
 function setQ(v){A.q=Math.max(0,Math.round(v*100)/100);const el=$("qv");if(el)el.value=String(A.q).replace(".",",");
  document.querySelectorAll("[data-qset]").forEach(b=>b.classList.toggle("on",Math.abs(+b.dataset.qset-A.q)<1e-6));nut()}
 function setUnit(k){readQ();const nu=A.U.find(x=>x.k===k);if(!nu)return;const g=A.q*A.u.g;A.u=nu;
- A.q=k==="g"?Math.round(g):k==="pack"?Math.round(g/nu.g*4)/4||1:k==="stk"||k==="por"?Math.max(1,Math.round(g/nu.g)):Math.max(1,Math.round(g/nu.g));renderAmount()}
+ A.q=k==="g"?Math.round(g):k==="pack"?Math.round(g/nu.g*4)/4||1:k==="stk"||k==="por"||k==="smart"?Math.max(1,Math.round(g/nu.g)):Math.max(1,Math.round(g/nu.g));renderAmount()}
 function saveAmount(){readQ();nut();
  if(!(A.g>0))return toast("Bitte eine Menge eingeben");
  const lu=LS.get("unit_last",{});lu[A.food.id]=A.u.k;LS.set("unit_last",lu);
@@ -951,7 +978,7 @@ document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x
  else if(b("[data-manual]"))openManual();
  else if(x=b("[data-unit]"))setUnit(x.dataset.unit);
  else if(b("[data-umore]")){readQ();A.more=true;renderAmount()}
- else if(x=b("[data-qd]")){readQ();const st=A.u.k==="g"?10:A.u.k==="pack"?.25:1;setQ(Math.max(st===1?1:0,A.q+(+x.dataset.qd)*st))}
+ else if(x=b("[data-qd]")){readQ();const st=A.u.k==="g"?10:A.u.k==="pack"?.25:A.u.k==="smart"&&A.q<=1&&+x.dataset.qd<0?.5:1;setQ(Math.max(st>=1?1:st,A.q+(+x.dataset.qd)*st))}
  else if(x=b("[data-qset]"))setQ(+x.dataset.qset);
  else if(x=b("[data-meal]")){A.meal=x.dataset.meal;document.querySelectorAll("[data-meal]").forEach(y=>y.classList.toggle("on",y===x))}
  else if(b("[data-save]"))saveAmount();
