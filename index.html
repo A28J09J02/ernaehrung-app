@@ -89,7 +89,7 @@ body.full .toast{bottom:calc(16px + env(safe-area-inset-bottom))}
 /* Kalender */
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
 .cal .h{font-size:11px;color:var(--mute);text-align:center;padding-bottom:2px}
-.cal button{aspect-ratio:1;border:0;border-radius:11px;background:var(--grid);font-size:14px;font-weight:600;color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:0}
+.cal button{position:relative;aspect-ratio:1;border:0;border-radius:11px;background:var(--grid);font-size:14px;font-weight:600;color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:0}
 .cal button small{font-size:9px;font-weight:500;opacity:.85}
 .cal button.g{background:var(--g);color:#fff}.cal button.y{background:var(--y);color:#fff}.cal button.r{background:var(--r);color:#fff}
 .cal button.o{background:var(--acc-bg);color:var(--acc)}.cal button.fut{opacity:.35}.cal button.fut.o{opacity:.8}.cal button.t{outline:2px solid var(--acc);outline-offset:1px}
@@ -255,8 +255,15 @@ const GW=()=>{const d=C.store&&C.store.days;if(!d)return null;const k=Object.key
 const prof=()=>{const w=GW();return EK.prof({...(w?{weight:Math.round(w*10)/10}:{}),...(C.profil||{})})};
 const G=()=>C.store?{days:C.store.days,acts:C.store.acts,today:TODAY()}:null;
 const entries=d=>(C.months[d.slice(0,7)]||{})[d]||[];
-function info(d){const e=entries(d),s=EK.sum(e),p=prof(),t=EK.target(p,G(),d),m=EK.macros(p,t.kcal),gd=C.store&&C.store.days[d];
- return{d,e,s,t,m,p,has:e.length>0,done:d<TODAY(),gk:gd?gd.kcal:null,grade:e.length&&d<TODAY()?EK.dayGrade(s,t,m):null,kg:e.length&&d<TODAY()?EK.ampel("kcal",s.kcal,t.kcal):null}}
+/* Ausgleich der letzten 45 Tage – einmal je Darstellung berechnet */
+let AUSR={days:{},open:[]},AUSKEY="";
+function calcAus(){const key=C.ts+"|"+Q.length+"|"+JSON.stringify(Object.keys(C.months).map(m=>Object.keys(C.months[m]).length))+"|"+TODAY()+"|"+JSON.stringify(C.profil||{});
+ const p=prof(),g=G(),L=[];for(let k=1;k<=45;k++){const d=EK.add(TODAY(),-k),e=entries(d);L.push({d,has:e.length>0,eaten:EK.sum(e).kcal,target:EK.target(p,g,d).kcal})}
+ AUSR=EK.ausgleich(L,TODAY());AUSKEY=key}
+function info(d){const e=entries(d),s=EK.sum(e),p=prof(),t=EK.target(p,G(),d),m=EK.macros(p,t.kcal),gd=C.store&&C.store.days[d],done=d<TODAY(),au=AUSR.days[d]||null;
+ let kg=e.length&&done?EK.ampel("kcal",s.kcal,t.kcal):null,grade=e.length&&done?EK.dayGrade(s,t,m):null;
+ if(au&&au.state==="full"){kg="g";if(grade!=="g")grade=EK.ampel("p",s.p,m.p)==="r"?"y":"g"}
+ return{d,e,s,t,m,p,has:e.length>0,done,gk:gd?gd.kcal:null,grade,kg,au}}
 const liveAmp=(k,v,goal,done)=>{const a=EK.ampel(k,v,goal);if(done||!a)return a;if(k==="p"||k==="fib")return a==="g"?"g":"acc";return v>goal?a:"acc"};
 const AMPT={g:"Ziel erreicht",y:"Knapp daneben",r:"Deutlich daneben"};
 /* Streak: Tage in Folge mit mindestens einem Eintrag; heute zählt, sobald etwas eingetragen ist */
@@ -275,7 +282,7 @@ function openDrawer(){const d=$("drawer");d.innerHTML=`<div class="ttl">Menü</d
  d.classList.add("on");$("scrim").classList.add("on")}
 function closeDrawer(){$("drawer").classList.remove("on");$("scrim").classList.remove("on")}
 function render(){
- if(!CFG.token)return;
+ if(!CFG.token)return;calcAus();
  const a=$("app"),T=TODAY(),food=["tag","kal","verlauf","lm","profil"].includes(view),sk=streaks();
  document.body.classList.toggle("full",!food);
  const title=view==="tag"?(cur===T?"Heute":cur===EK.add(T,-1)?"Gestern":cur===EK.add(T,1)?"Morgen":new Date(cur+"T12:00:00").toLocaleDateString("de-DE",{weekday:"short",day:"numeric",month:"short"})):TITLE[view];
@@ -293,6 +300,7 @@ function vTag(){
  const i=info(cur),t=i.t,left=t.kcal-i.s.kcal,ka=i.has?liveAmp("kcal",i.s.kcal,t.kcal,i.done):null,T=TODAY(),sk=streaks();
  const src={formel:"Formel",yazio:"Yazio",garmin:"Garmin"}[t.src];
  let o=`<div class="dnav"><button class="ib" data-day="-1" aria-label="Vortag">‹</button><b data-day="0">${new Date(cur+"T12:00:00").toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long"})}</b><button class="ib" data-day="1" aria-label="Folgetag" ${cur>=MAXD()?"disabled":""}>›</button></div>${cur>T?`<div class="fr">Vorausplanen – Einträge zählen erst an diesem Tag</div>`:""}`;
+ o+=ausHint(i);
  if(cur===T&&!sk.today&&sk.n>0)o+=`<div class="hint">🔥<span>Trag heute etwas ein, damit deine <b>${sk.n}-Tage-Streak</b> weiterläuft.</span></div>`;
  const mac=[["p","Protein","var(--p)"],["c","Kohlenhydrate","var(--c)"],["f","Fett","var(--f)"]].map(([k,l,c])=>{const v=i.s[k],g=i.m[k],a=i.has?liveAmp(k,v,g,i.done):null;
   return`<div><small>${l}</small><b>${n0(v)} <small>/ ${n0(g)} g</small></b><div class="bar"><i style="width:${Math.min(100,g?v/g*100:0)}%;background:${a==="r"||a==="y"?COL[a]:c}"></i></div></div>`}).join("");
@@ -301,15 +309,31 @@ function vTag(){
  o+=`<div class="card"><div class="hero">${ringSvg(t.kcal?i.s.kcal/t.kcal:0,ka?COL[ka]:"var(--grid)",n0(Math.abs(left)),left>=0?"kcal übrig":"kcal zu viel")}
   <div class="kv"><div><span class="mute">Ziel</span><b>${n0(t.kcal)}</b></div><div><span class="mute">Gegessen</span><b>${n0(i.s.kcal)}</b></div>
   ${t.train?`<div><span class="mute">+ Training</span><b>${n0(t.train)}</b></div>`:""}
-  ${i.done&&i.kg?`<div><span class="chip" style="--c0:${COL[i.kg]}">${AMPT[i.kg]}</span></div>`:`<div class="s mute">Ziel aus: ${src}</div>`}</div></div>
+  ${i.done&&i.kg?`<div><span class="chip" style="--c0:${COL[i.kg]}">${i.au&&i.au.state==="full"?"Ausgeglichen ↺":AMPT[i.kg]}</span></div>`:`<div class="s mute">Ziel aus: ${src}</div>`}</div></div>
   ${burnRow(i)}
-  <div class="mac">${mac}</div><details class="more"><summary>Weitere Nährwerte ›</summary>${more}</details></div>`;
+  <div class="mac">${mac}</div><details class="more"><summary>Weitere Nährwerte ›</summary>${more}</details></div>`+ausOpen(i);
  o+=`<button class="btn w" style="margin:0 0 12px" data-recipe="1">🍲 Gericht kochen & auf Tage verteilen</button>`;
  for(const[k,l]of EK.MEALS){const e=i.e.filter(x=>x.meal===k),s=EK.sum(e);
   o+=`<div class="card meal"><h2><span>${l} <small>${e.length?n0(s.kcal)+" kcal · P "+n0(s.p)+" g":""}</small></span><button class="add" data-add="${k}" aria-label="${l} hinzufügen">+</button></h2>
   ${e.length?e.map(x=>swRow(`data-ent="${h(x.id)}"`,`<span>${h(x.name)} <small>${x.g!=null?n0(x.g)+" g":"1 Portion"}</small></span><span>${n0(x.n&&x.n.kcal)} <small>kcal</small></span>`,`data-delent="${h(x.id)}"`)).join(""):`<div class="empty">Noch nichts eingetragen</div>`}</div>`}
  o+=weightCard()+actsRow(cur);
  o+=`<p class="foot">Tipp: Nach links/rechts wischen wechselt den Tag. Einträge nach links wischen zum Löschen, antippen zum Ändern.</p>`;
+ return o}
+/* Ausgleich-Hinweise: am Überschuss-Tag (Stand), heute/künftig (was offen ist, wie es geht), am Ausgleichstag (was er beigetragen hat) */
+function ausHint(i){const T=TODAY(),cap=EK.AUS.CAP,au=i.au;let o="";
+ if(au&&au.need){const pct=Math.round(au.got/au.need*100);
+  o+=`<div class="hint" style="--x:1">↺<span>${au.state==="full"?`<b>Ausgeglichen!</b> Die ${n0(au.need)} kcal über dem Ziel hast du bis ${au.by.length?wd(au.by[au.by.length-1])+" "+dm(au.by[au.by.length-1]):""} wieder ausgeglichen.`:
+   `<b>${n0(au.need)} kcal über dem Ziel</b> – ${au.got?`schon ${n0(au.got)} kcal (${pct} %) ausgeglichen, `:""}noch ${n0(au.need-au.got)} kcal bis ${wd(au.until)} ${dm(au.until)} möglich.`}</span></div>`}
+ if(au&&au.gave)o+=`<p class="fr">↺ Dieser Tag hat ${au.gave.map(([d,k])=>n0(k)+" kcal von "+wd(d)+" "+dm(d)).join(" und ")} ausgeglichen.</p>`;
+ return o}
+function ausOpen(i){const T=TODAY(),cap=EK.AUS.CAP;let o="";
+ if(i.d>=T){const open=AUSR.open.filter(x=>x.until>=i.d);if(open.length){const rest=open.reduce((a,x)=>a+x.rest,0),pl=planDay(i.d),rest_day=pl&&pl.type==="rest";
+  o+=`<div class="card" style="border-color:color-mix(in srgb,var(--acc) 40%,var(--line))"><h2>↺ Ausgleich offen <small>${n0(rest)} kcal</small></h2>
+  <p class="s" style="margin:0 0 8px">Von ${open.map(x=>wd(x.d)+" "+dm(x.d)).join(" und ")} – ${i.d===T?"heute":"an diesem Tag"} zählen bis zu <b>${cap} kcal</b>:</p>
+  <div class="s" style="display:grid;gap:6px"><div>🍽️ Etwas weniger essen: höchstens <b>${n0(i.t.kcal-cap)} kcal</b> statt ${n0(i.t.kcal)}</div>
+  <div>🚶 oder mehr bewegen: ~45 Min Spaziergang ≈ 150 kcal${rest_day?"":" · ~30 Min lockeres Radfahren ≈ 200 kcal"}</div></div>
+  <p class="s mute" style="margin:8px 0 0">Mehr als ${cap} kcal unter dem Ziel zählt nicht – hungern bringt nichts. Bewegung zählt, wenn du sie auf der Uhr als Aktivität aufzeichnest.${rest_day?" Heute ist Ruhetag: nur locker spazieren.":""}</p></div>`}
+  else if(i.d===T&&i.has&&i.s.kcal>i.t.kcal*1.1)o+=`<p class="fr">Über dem Ziel? Kein Problem – du kannst es in den nächsten 7 Tagen ausgleichen.</p>`}
  return o}
 /* Verbrannt laut Garmin – nur für heute und vergangene Tage */
 function burnRow(i){if(i.d>TODAY()||i.gk==null)return"";const gd=C.store.days[i.d]||{},bal=i.s.kcal-i.gk,
@@ -336,13 +360,14 @@ function vKal(){
  const cnt={g:0,y:0,r:0,o:0};
  for(let k=1;k<=nd;k++){const d=`${calM}-${String(k).padStart(2,"0")}`,i=info(d),fut=d>T,off=d>MAXD();let c="";
   if(i.has){c=i.done?i.kg:"o";cnt[c]=(cnt[c]||0)+1}
-  cells+=`<button class="${c} ${fut?"fut":""} ${d===T?"t":""}" data-open="${d}" ${off?"disabled":""}>${k}${i.has?`<small>${n0(i.s.kcal)}</small>`:""}</button>`}
+  const au=i.au&&i.au.need?"↺":"";if(i.au&&i.au.state==="full")cnt.a=(cnt.a||0)+1;
+  cells+=`<button class="${c} ${fut?"fut":""} ${d===T?"t":""}" data-open="${d}" ${off?"disabled":""}>${k}${au?`<sup style="position:absolute;top:3px;right:5px;font-size:11px">${au}</sup>`:""}${i.has?`<small>${n0(i.s.kcal)}</small>`:""}</button>`}
  const pm=EK.add(calM+"-01",-1).slice(0,7),nm=EK.add(calM+"-28",5).slice(0,7);
  return`<div class="card"><div class="kp"><div><b>🔥 ${sk.n}</b><span>Streak aktuell</span></div><div><b>${sk.best}</b><span>Rekord (Tage)</span></div><div><b>${cnt.g}</b><span>Tage im Ziel</span></div></div></div>
  <div class="card"><div class="dnav" style="border:0;margin-bottom:8px"><button class="ib" data-cal="${pm}" aria-label="Vormonat">‹</button><b>${MON[m-1]} ${y}</b><button class="ib" data-cal="${nm}" aria-label="Folgemonat" ${nm>MAXD().slice(0,7)?"disabled":""}>›</button></div>
  <div class="cal">${cells}</div>
  <div class="leg"><span><i style="background:var(--g)"></i>Ziel ±10 % (${cnt.g})</span><span><i style="background:var(--y)"></i>±20 % (${cnt.y})</span><span><i style="background:var(--r)"></i>darüber (${cnt.r})</span><span><i style="background:var(--acc-bg)"></i>heute/geplant</span><span><i style="background:var(--grid)"></i>nicht erfasst</span></div></div>
- <p class="foot">Farbe = Kalorienziel des Tages erreicht? Grün bei höchstens 10 % Abweichung, orange bis 20 %, rot darüber. Die kleine Zahl sind die gegessenen kcal. Tag antippen öffnet das Tagebuch – auch die nächsten 14 Tage, zum Vorausplanen.</p>`}
+ <p class="foot">Farbe = Kalorienziel des Tages erreicht? Grün bei höchstens 10 % Abweichung, orange bis 20 %, rot darüber. Die kleine Zahl sind die gegessenen kcal. Tag antippen öffnet das Tagebuch – auch die nächsten 14 Tage, zum Vorausplanen.<br>↺ = Ausgleich: Ein Tag über dem Ziel wird grün, wenn du den Überschuss innerhalb von 7 Tagen wieder ausgleichst (max. 300 kcal pro Tag – durch etwas weniger essen oder mehr Bewegung). Ein ↺ an einem roten oder orangen Tag heißt: Ausgleich läuft noch – Tag antippen zeigt den Stand.${cnt.a?` Ausgeglichen in diesem Monat: ${cnt.a}.`:""}</p>`}
 
 /* ===== Verlauf ===== */
 function vVerlauf(){

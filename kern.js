@@ -16,7 +16,10 @@
      Tagesziel    Basis (gewählte Quelle) + Zielanpassung (nicht bei Yazio) + aktive Trainingskalorien des Tages (wenn eingeschaltet)
    Makros: Protein g/kg Körpergewicht, Fett % der Kalorien, Kohlenhydrate = Rest – oder feste Grammwerte (z. B. aus Yazio).
    Ampel: Kalorien ±10 % grün, ±20 % orange, sonst rot. Protein/Ballaststoffe ab 90 % grün, ab 75 % orange.
-   Kohlenhydrate/Fett ±15 % grün, ±30 % orange. Zucker/Salz bis zur Grenze grün, bis +20 % orange. */
+   Kohlenhydrate/Fett ±15 % grün, ±30 % orange. Zucker/Salz bis zur Grenze grün, bis +20 % orange.
+   Ausgleich (Cheat Day): Kalorien über dem Tagesziel lassen sich an den folgenden 7 Tagen ausgleichen. Pro Tag zählen
+   höchstens 300 kcal unter dem Ziel (mehr Hungern bringt nichts); mehr Bewegung hebt über die Trainingskalorien das Ziel
+   und schafft so ebenfalls Luft. Ist der Überschuss vollständig ausgeglichen, gilt der Tag als „ausgeglichen“ (grün ↺). */
 const EK=(()=>{
  const pad=n=>String(n).padStart(2,"0"),day=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
  const add=(s,n)=>{const d=new Date(s+"T12:00:00");d.setDate(d.getDate()+n);return day(d)};
@@ -67,7 +70,24 @@ const EK=(()=>{
  /* Gesamtbewertung eines abgeschlossenen Tages */
  function dayGrade(s,t,m){const a=[ampel("kcal",s.kcal,t.kcal),ampel("p",s.p,m.p)].filter(Boolean);
   return a.includes("r")?"r":a.includes("y")?"y":a.length?"g":null}
+ /* Ausgleich: days = [{d, has, eaten, target}] chronologisch (nur abgeschlossene Tage); liefert je Tag den Stand */
+ const AUS={WIN:7,CAP:300};
+ function ausgleich(days,today){
+  const res={},open=[];
+  for(const x of days.slice().sort((a,b)=>a.d<b.d?-1:1)){
+   if(!x.has||!x.target||x.d>=today)continue;
+   for(let i=open.length-1;i>=0;i--)if(add(open[i].d,AUS.WIN)<x.d)open.splice(i,1);   /* Fenster vorbei */
+   const diff=x.eaten-x.target;
+   if(diff>0&&ampel("kcal",x.eaten,x.target)!=="g"){const o={d:x.d,need:Math.round(diff),got:0};res[x.d]={need:o.need,got:0,by:[]};open.push(o)}
+   else if(diff<0&&open.length){let credit=Math.min(AUS.CAP,-diff);const gave=[];
+    for(const o of open){if(credit<=0)break;const t=Math.min(credit,o.need-o.got);if(t<=0)continue;o.got+=t;credit-=t;res[o.d].got=o.got;res[o.d].by.push(x.d);gave.push([o.d,Math.round(t)])}
+    if(gave.length)res[x.d]={...(res[x.d]||{}),gave};
+    for(let i=open.length-1;i>=0;i--)if(open[i].got>=open[i].need)open.splice(i,1)}}
+  for(const k in res){const r=res[k];if(r.need){r.state=r.got>=r.need?"full":r.got>0?"part":"open";r.until=add(k,AUS.WIN)}}
+  /* was heute noch offen ist (Fenster reicht bis heute) */
+  const still=Object.entries(res).filter(([k,r])=>r.need&&r.got<r.need&&add(k,AUS.WIN)>=today).map(([k,r])=>({d:k,rest:r.need-r.got,until:add(k,AUS.WIN)}));
+  return{days:res,open:still,cap:AUS.CAP}}
  const norm=s=>String(s||"").toLowerCase().replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss").replace(/[^a-z0-9 ]+/g," ");
  const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
- return{MEALS,NUTR,JOBS,GOALS,SRC,PROFIL,prof,bmr,pal,goalAdj,trainKcal,garminBase,bases,target,macros,sum,scale,ampel,dayGrade,norm,uid,day,add,r}
+ return{MEALS,NUTR,JOBS,GOALS,SRC,PROFIL,prof,bmr,pal,goalAdj,trainKcal,garminBase,bases,target,macros,sum,scale,ampel,dayGrade,ausgleich,AUS,norm,uid,day,add,r}
 })();
