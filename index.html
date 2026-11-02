@@ -2,9 +2,9 @@
 <html lang="de"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>KingFuel</title>
+<title>KingStats</title>
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="KingFuel"><meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="KingStats"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#eef2f4" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0c1418" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
@@ -80,6 +80,14 @@ label.f{display:block;font-size:13px;color:var(--mute);margin:10px 0 4px}
 .sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin:16px 2px 6px}
 .qs{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.qs button{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:6px 12px;font-size:14px}
 .seg{display:flex;background:var(--grid);border-radius:12px;padding:3px;gap:3px}.seg button{flex:1;border:0;background:none;border-radius:9px;padding:7px 4px;font-size:14px}.seg button.on{background:var(--card);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.amt .units{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin:0 -4px 10px;padding-left:4px;scrollbar-width:none}.amt .units::-webkit-scrollbar{display:none}
+.amt .units button{flex:none;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:7px 12px;font-size:14px;font-weight:600;display:flex;flex-direction:column;align-items:center;line-height:1.15}
+.amt .units button small{font-size:10px;font-weight:500;color:var(--mute)}.amt .units button.on{background:var(--acc);border-color:var(--acc);color:#fff}.amt .units button.on small{color:#e6f2f6}
+.qrow{display:flex;align-items:center;justify-content:center;gap:14px;margin:4px 0 8px}
+.qb{width:52px;height:52px;border-radius:50%;border:1px solid var(--line);background:var(--grid);font-size:28px;line-height:1;color:var(--acc)}
+.qv{text-align:center;min-width:120px}.qv input{width:120px;border:0;background:none;text-align:center;font-size:40px;font-weight:700;color:var(--ink);padding:0}
+.qv input:focus{outline:none;border-bottom:2px solid var(--acc)}.qv span{display:block;font-size:14px;color:var(--mute);font-weight:600}
+.qs button.on{background:var(--acc-bg);border-color:var(--acc);color:var(--acc);font-weight:600}
 .nut{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center;margin:12px 0}.nut div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 2px}.nut b{display:block;font-size:18px}.nut small{color:var(--mute);font-size:11px}
 video{width:100%;border-radius:var(--rad);background:#000;aspect-ratio:3/4;object-fit:cover}
 .toast{position:fixed;left:14px;right:14px;bottom:calc(86px + env(safe-area-inset-bottom));z-index:30;background:var(--ink);color:var(--bg);border-radius:14px;padding:12px 14px;font-size:14px;
@@ -282,7 +290,7 @@ const NAV=[["Ernährung",[["tag","book","Tagebuch"],["kal","cal","Kalender"],["v
  ["Training & Gesundheit",[["meintag","heart","Mein Tag"],["plan","run","Trainingsplan"],["dash","grid","Komplettes Dashboard"]]]];
 const TITLE={tag:"",kal:"Kalender",verlauf:"Verlauf",rezepte:"Gerichte",plan:"Trainingsplan",lm:"Meine Lebensmittel",profil:"Profil & Ziele",meintag:"Mein Tag",dash:"Dashboard"};
 function go(v){view=v;LS.set("view",v);closeDrawer();render();scrollTo(0,0)}
-function openDrawer(){const d=$("drawer");d.innerHTML=`<div class="ttl">👑 KingFuel</div>`+NAV.map(([g,L])=>`<div class="hd">${g}</div>`+L.map(([k,i,l])=>`<button class="it ${view===k?"on":""}" data-go="${k}">${svg(i)}${l}</button>`).join("")).join("")+
+function openDrawer(){const d=$("drawer");d.innerHTML=`<div class="ttl">👑 KingStats</div>`+NAV.map(([g,L])=>`<div class="hd">${g}</div>`+L.map(([k,i,l])=>`<button class="it ${view===k?"on":""}" data-go="${k}">${svg(i)}${l}</button>`).join("")).join("")+
  `<div class="hd">Garmin</div><button class="it" data-sync="1">${svg("sync")}Jetzt synchronisieren</button><p class="foot" style="margin:6px 10px">${C.store&&C.store.synced?"Letzter Stand: "+new Date(C.store.synced*1000).toLocaleString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):""}</p>`;
  d.classList.add("on");$("scrim").classList.add("on")}
 function closeDrawer(){$("drawer").classList.remove("on");$("scrim").classList.remove("on")}
@@ -324,7 +332,7 @@ function vTag(){
  o+=`<div class="row" style="margin:0 0 12px"><button class="btn" data-go="rezepte">📖 Gerichte</button><button class="btn" data-recipe="1">🍲 Kochen & teilen</button></div>`;
  for(const[k,l]of EK.MEALS){const e=i.e.filter(x=>x.meal===k),s=EK.sum(e);
   o+=`<div class="card meal"><h2><span>${l} <small>${e.length?n0(s.kcal)+" kcal · P "+n0(s.p)+" g":""}</small></span><button class="add" data-add="${k}" aria-label="${l} hinzufügen">+</button></h2>
-  ${e.length?e.map(x=>swRow(`data-ent="${h(x.id)}"`,`<span>${h(x.name)} <small>${x.g!=null?n0(x.g)+" g":"1 Portion"}</small></span><span>${n0(x.n&&x.n.kcal)} <small>kcal</small></span>`,`data-delent="${h(x.id)}"`)).join(""):`<div class="empty">Noch nichts eingetragen</div>`}</div>`}
+  ${e.length?e.map(x=>swRow(`data-ent="${h(x.id)}"`,`<span>${h(x.name)} <small>${unitText(x)}</small></span><span>${n0(x.n&&x.n.kcal)} <small>kcal</small></span>`,`data-delent="${h(x.id)}"`)).join(""):`<div class="empty">Noch nichts eingetragen</div>`}</div>`}
  o+=weightCard()+actsRow(cur);
  o+=`<p class="foot">Tipp: Nach links/rechts wischen wechselt den Tag. Einträge nach links wischen zum Löschen, antippen zum Ändern.</p>`;
  return o}
@@ -428,6 +436,8 @@ function openFoodForm(f,fromAdd){FF_ADD=!!fromAdd;const sh=$("sheet");sh.classLi
  <div class="row">${fl("kcal","Kalorien")}${fl("p","Protein g")}</div><div class="row">${fl("c","KH g")}${fl("f","Fett g")}</div>
  <div class="row">${fl("fib","Ballastst. g")}${fl("sug","Zucker g")}${fl("salt","Salz g")}</div>
  <label class="f">Übliche Portion in g (optional)</label><input class="inp" name="pg" type="text" inputmode="decimal" value="${x.portion&&x.portion.g!==100?x.portion.g:""}" placeholder="z. B. 350">
+ <div class="row"><div><label class="f">1 Stück wiegt (g, optional)</label><input class="inp" name="stg" type="text" inputmode="decimal" value="${x.stk?x.stk.g:""}" placeholder="z. B. 21"></div>
+ <div><label class="f">Packung (g/ml, optional)</label><input class="inp" name="pkg" type="text" inputmode="decimal" value="${x.pack?x.pack.g:""}" placeholder="z. B. 420"></div></div>
  <div class="tg"><span>Favorit</span><input type="checkbox" name="fav" ${x.fav?"checked":""}></div>
  <input type="hidden" name="id" value="${h(x.id||"")}">
  <button class="btn p w" style="margin-top:12px" type="submit">Speichern</button>${f?`<button class="btn d w" style="margin-top:8px" type="button" data-delfood="${h(f.id)}">Löschen</button>`:""}</form></main>`}
@@ -437,6 +447,7 @@ function saveFoodForm(fm){const v=k=>{const s=fm.elements[k].value.trim().replac
  const item={...(old||{}),id,src:old?old.src:id,own:old?isOwn(old):true,name,marke:fm.elements.marke.value.trim()||undefined,
   n:{kcal:Math.round(v("kcal")),p:v("p"),c:v("c"),f:v("f"),fib:v("fib"),sug:v("sug"),salt:v("salt")},portion:pg?{g:pg,label:pg+" g"}:{g:100,label:"100 g"},fav:fm.elements.fav.checked};
  if(fm.elements.ean&&fm.elements.ean.value)item.ean=fm.elements.ean.value;
+ const stg=v("stg"),pkg=v("pkg");item.pack=pkg?{g:pkg,label:pkg+" g"}:undefined;item.stk=stg?{g:stg,max:pkg?Math.round(pkg/stg):null}:undefined;
  /* aus der Suche/dem Scanner angelegt: direkt weiter zur Menge, damit es auch eingetragen wird */
  if(FF_ADD){change(P_LM,{t:"food",item},true);toast("Gespeichert – jetzt Menge wählen");return openAmount({food:item})}
  change(P_LM,{t:"food",item});closeSheet();toast("Gespeichert")}
@@ -697,8 +708,16 @@ function offFood(p){const n=p.nutriments||{},k=n["energy-kcal_100g"]??(n.energy_
  if(k==null)return null;const sq=+p.serving_quantity;
  return{id:"off:"+p.code,name:p.product_name_de||p.product_name||"Produkt "+p.code,marke:(p.brands||"").split(",")[0].trim(),src:"off:"+p.code,
   n:{kcal:Math.round(k),p:n.proteins_100g??null,c:n.carbohydrates_100g??null,f:n.fat_100g??null,fib:n.fiber_100g??null,sug:n.sugars_100g??null,salt:n.salt_100g??null},
-  portion:sq>0?{g:sq,label:p.serving_size||sq+" g"}:null}}
-const OFF_F="code,product_name,product_name_de,brands,nutriments,serving_quantity,serving_size";
+  portion:sq>0?{g:sq,label:p.serving_size||sq+" g"}:null,...offPack(p)}}
+/* Packungsgröße und Stückzahl aus Open Food Facts lesen: "20 x 21 g", "1 l", "500 g", product_quantity */
+function offPack(p){const q=String(p.quantity||""),o={},num=x=>+String(x).replace(",",".");let m;
+ const F={kg:1000,g:1,l:1000,ml:1,cl:10};
+ if(m=q.match(/(\d+)\s*[x×]\s*([\d.,]+)\s*(kg|g|ml|cl|l)\b/i)){const each=num(m[2])*F[m[3].toLowerCase()];o.pack={g:+m[1]*each,label:q.trim()};o.stk={g:each,max:+m[1]}}
+ else if(m=q.match(/([\d.,]+)\s*(kg|g|ml|cl|l)\b/i)){o.pack={g:num(m[1])*F[m[2].toLowerCase()],label:q.trim()}}
+ else if(+p.product_quantity>0)o.pack={g:+p.product_quantity,label:p.product_quantity+" "+(p.product_quantity_unit||"g")};
+ if(/\b(ml|cl|l)\b/i.test(q)||/ml/i.test(p.product_quantity_unit||""))o.liquid=true;
+ return o}
+const OFF_F="code,product_name,product_name_de,brands,nutriments,serving_quantity,serving_size,quantity,product_quantity,product_quantity_unit";
 async function offSearch(){const q=S.q.trim();if(!q)return;const b=$("rl").querySelector("[data-off]");if(b)b.textContent="Suche …";
  try{const r=await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=25&lc=de&fields=${OFF_F}`);
   const j=await r.json();S.off=(j.products||[]).map(offFood).filter(Boolean);S.offq=q}
@@ -712,7 +731,7 @@ async function byBarcode(code){
   const f=j.status===1&&j.product?offFood({...j.product,code}):null;
   if(f){change(P_LM,{t:"food",item:{...f,fav:false}},true);return openAmount({food:f})}
   toast("Produkt unbekannt – leg es einmal selbst an, danach erkennt die App den Barcode",4500);openFoodForm(null,true);setEan(code)}
- catch(e){toast("Open Food Facts nicht erreichbar");openFoodForm(null,true);setEan(code)}}
+ catch(e){console.error(e);toast("Open Food Facts nicht erreichbar");openFoodForm(null,true);setEan(code)}}
 function setEan(code){const f=$("ff");if(f){const i=document.createElement("input");i.type="hidden";i.name="ean";i.value=code;f.append(i)}}
 
 let SCAN=null;
@@ -733,26 +752,59 @@ async function openScan(){const sh=$("sheet");sh.classList.add("on");
 function stopScan(){if(!SCAN)return;SCAN.on=false;try{SCAN.st&&SCAN.st.getTracks().forEach(t=>t.stop())}catch(e){}try{SCAN.rd&&SCAN.rd.reset()}catch(e){}SCAN=null}
 
 let A=null;
+/* Einheiten für ein Lebensmittel: Stück/Portion, Packung, Gramm, Löffel … (g = Gramm je Einheit) */
+const portName=f=>{const l=String(f.portion&&f.portion.label||"");const m=l.match(/^\s*[\d.,]*\s*([A-Za-zÄÖÜäöüß]{3,})/);return m&&!/^(g|ml|gramm|portion)$/i.test(m[1])?m[1]:"Portion"};
+function unitsFor(f){const U=[],gl=f.liquid?"ml":"g";
+ if(f.stk&&f.stk.g)U.push({k:"stk",label:portName(f)==="Portion"?"Stück":portName(f),g:f.stk.g,max:f.stk.max});
+ else if(f.portion&&f.portion.g&&!(f.portion.g===100&&/100/.test(f.portion.label||""))){const pk=f.pack&&f.pack.g?Math.round(f.pack.g/f.portion.g):null;U.push({k:"por",label:portName(f),g:f.portion.g,max:pk&&pk>1&&pk<=60?pk:null})}
+ if(f.pack&&f.pack.g)U.push({k:"pack",label:"Packung",sub:f.pack.label,g:f.pack.g});
+ U.push({k:"g",label:gl==="ml"?"Milliliter":"Gramm",g:1});
+ U.push({k:"el",label:"Esslöffel",g:15},{k:"tl",label:"Teelöffel",g:5});
+ U.push({k:"prise",label:"Prise",g:0.5,more:1},{k:"hand",label:"Handvoll",g:30,more:1},{k:"glas",label:"Glas",sub:"200 ml",g:200,more:1},{k:"tasse",label:"Tasse",sub:"150 ml",g:150,more:1},{k:"scheibe",label:"Scheibe",sub:"≈ 25 g",g:25,more:1});
+ return U}
+const fq=q=>{const F={0.25:"¼",0.5:"½",0.75:"¾",0.33:"⅓",0.67:"⅔"},w=Math.floor(q),r=Math.round((q-w)*100)/100;return F[r]?(w?w+" ":"")+F[r]:n1(q).replace(/,0$/,"")};
+const unitText=e=>e.unit&&e.unit.k!=="g"?`${fq(e.unit.q)} ${e.unit.label}`:(e.g!=null?n0(e.g)+" g":"1 Portion");
 function openAmount({food,entry}){
- A={food:food||fromEntry(entry),entry,meal:entry?entry.meal:S.meal,g:entry?(entry.g??100):food.portion?food.portion.g:100};
- const sh=$("sheet");sh.classList.add("on");const f=A.food,isFav=foods().some(x=>x.id===f.id&&x.fav);
- const srcL=isOwn(f)?"von dir angelegt":String(f.src).startsWith("bls")?"Bundeslebensmittelschlüssel":String(f.src).startsWith("off")?"Open Food Facts":"";
- sh.innerHTML=`<div class="top"><button class="ib" data-back="${entry?"close":"1"}" aria-label="Zurück">‹</button><h1>${entry?"Eintrag ändern":"Menge"}</h1><button class="ib" data-fav="1" aria-label="Favorit">${isFav?"★":"☆"}</button></div><main>
- <div class="card"><b style="font-size:18px">${h(f.name)}</b>${f.marke?`<div class="mute s">${h(f.marke)}</div>`:""}<div class="mute s">${n0(f.n.kcal)} kcal je 100 g${srcL?" · "+srcL:""}</div></div>
- <label class="f">Menge in Gramm</label><input id="gr" class="inp" type="text" inputmode="decimal" value="${A.g}">
- <div class="qs">${[...(f.portion&&f.portion.g!==100?[[f.portion.g,(f.portion.label||"1 Portion")+(String(f.portion.label||"").includes(" g")?"":" ("+n0(f.portion.g)+" g)")]]:[]),[50,"50 g"],[100,"100 g"],[150,"150 g"],[200,"200 g"],[250,"250 g"]].map(([g,l])=>`<button data-g="${g}">${h(l)}</button>`).join("")}</div>
+ const f=food||fromEntry(entry),U=unitsFor(f),last=LS.get("unit_last",{})[f.id];
+ let u=entry&&entry.unit?U.find(x=>x.k===entry.unit.k)||U.find(x=>x.k==="g"):U.find(x=>x.k===last)||U.find(x=>x.k==="stk"||x.k==="por")||U.find(x=>x.k==="g");
+ let q=entry?(entry.unit&&entry.unit.q!=null?entry.unit.q:(entry.g??100)/(u.g||1)):(u.k==="g"?100:1);
+ A={food:f,entry,meal:entry?entry.meal:S.meal,U,u,q,more:!!u.more};renderAmount();
+ if(String(f.src).startsWith("off:")&&!f.pack&&!f._enr)enrichOff(f)}
+/* ältere gescannte Produkte um Packung/Stück ergänzen */
+async function enrichOff(f){f._enr=1;try{const r=await fetch(`https://world.openfoodfacts.org/api/v2/product/${f.src.slice(4)}.json?fields=${OFF_F}`),j=await r.json();
+ if(j.status!==1||!j.product)return;const x=offPack(j.product);if(!x.pack&&!x.stk)return;const ex=foods().find(y=>y.id===f.id);
+ Object.assign(f,x);if(ex){const{_enr,...clean}={...ex,...x};change(P_LM,{t:"food",item:clean},true)}
+ if(A&&A.food===f&&!A.entry){A.U=unitsFor(f);const nu=A.U.find(y=>y.k==="stk"||y.k==="por");if(nu&&A.u.k==="g"&&A.q===100){A.u=nu;A.q=1}renderAmount()}}catch(e){}}
+function renderAmount(){const f=A.food,entry=A.entry,u=A.u,sh=$("sheet");sh.classList.add("on");const isFav=foods().some(x=>x.id===f.id&&x.fav);
+ const srcL=isOwn(f)?"von dir angelegt":String(f.src).startsWith("bls")?"Grundnahrungsmittel":String(f.src).startsWith("off")?"Open Food Facts":"";
+ const quick=u.k==="pack"?[[.25,"¼"],[.5,"½"],[.75,"¾"],[1,"1"]]:u.k==="g"?[[50],[100],[150],[200],[250]]:u.k==="stk"||u.k==="por"?[1,2,3,4,5].filter(x=>!u.max||x<=u.max).map(x=>[x]).concat(u.max&&u.max>5?[[u.max,"alle "+u.max]]:[]):[[1],[2],[3]];
+ const chip=x=>`<button data-unit="${x.k}" class="${x.k===u.k?"on":""}">${h(x.label)}${x.sub?`<small>${h(x.sub)}</small>`:""}</button>`;
+ sh.innerHTML=`<div class="top"><button class="ib" data-back="${entry?"close":"1"}" aria-label="Zurück">‹</button><h1>${entry?"Eintrag ändern":"Wie viel?"}</h1><button class="ib" data-fav="1" aria-label="Favorit">${isFav?"★":"☆"}</button></div><main>
+ <div class="card" style="padding:12px 16px"><b style="font-size:18px">${h(f.name)}</b><div class="mute s">${f.marke?h(f.marke)+" · ":""}${n0(f.n.kcal)} kcal je 100 ${f.liquid?"ml":"g"}${srcL?" · "+srcL:""}</div></div>
+ <div class="card amt"><div class="units">${A.U.filter(x=>!x.more||A.more||x.k===u.k).map(chip).join("")}${A.more?"":`<button data-umore="1">Mehr …</button>`}</div>
+ <div class="qrow"><button class="qb" data-qd="-1" aria-label="weniger">−</button><div class="qv"><input id="qv" type="text" inputmode="decimal" value="${String(fq(A.q)).replace(/[¼½¾⅓⅔]/g,m=>({"¼":".25","½":".5","¾":".75","⅓":".33","⅔":".67"}[m])).replace(/^(\d+) \./,"$1.")}"><span>${h(u.label)}${u.max?` <small>von ${u.max}</small>`:""}</span></div><button class="qb" data-qd="1" aria-label="mehr">+</button></div>
+ <div class="qs" style="justify-content:center">${quick.map(([v,l])=>`<button data-qset="${v}" class="${Math.abs(A.q-v)<1e-6?"on":""}">${l||v}${u.k==="g"?" "+(f.liquid?"ml":"g"):""}</button>`).join("")}</div>
+ <p class="s mute" style="text-align:center;margin:4px 0 0" id="qg"></p></div>
  <div class="nut" id="nut"></div>
- ${S.mode==="recipe"&&!entry?"":`<label class="f">Mahlzeit</label><div class="seg">${EK.MEALS.map(([k,l])=>`<button data-meal="${k}" class="${A.meal===k?"on":""}">${l.replace("essen","")}</button>`).join("")}</div>`}
- <button class="btn p w" style="margin-top:16px" data-save="1">${entry?"Speichern":S.mode==="recipe"?"Zur Zutatenliste":"Hinzufügen"}</button>
+ ${S.mode==="recipe"&&!entry?"":`<div class="seg">${EK.MEALS.map(([k,l])=>`<button data-meal="${k}" class="${A.meal===k?"on":""}">${l.replace("essen","")}</button>`).join("")}</div>`}
+ <button class="btn p w" style="margin-top:14px;font-size:17px;padding:14px" data-save="1">${entry?"Speichern":S.mode==="recipe"?"Zur Zutatenliste":"Hinzufügen"}</button>
  ${entry?`<button class="btn d w" style="margin-top:8px" data-delent="${h(entry.id)}">Eintrag löschen</button>`:""}</main>`;
  nut()}
-function nut(){const g=+String($("gr").value).replace(",",".")||0;A.g=g;const n=EK.scale(A.food.n,g);
+function readQ(){const el=$("qv");if(el){const v=+String(el.value).replace(",",".");if(isFinite(v))A.q=v}}
+function nut(){A.g=Math.round(A.q*A.u.g*10)/10;const n=EK.scale(A.food.n,A.g);
+ const qg=$("qg");if(qg)qg.textContent=A.u.k==="g"?"":`= ${n1(A.g)} ${A.food.liquid?"ml":"g"}`;
  $("nut").innerHTML=[["kcal","kcal"],["p","Protein"],["c","KH"],["f","Fett"]].map(([k,l])=>`<div><b>${k==="kcal"?n0(n[k]):n1(n[k])}</b><small>${l}${k==="kcal"?"":" g"}</small></div>`).join("")}
-function saveAmount(){
+function setQ(v){A.q=Math.max(0,Math.round(v*100)/100);const el=$("qv");if(el)el.value=String(A.q).replace(".",",");
+ document.querySelectorAll("[data-qset]").forEach(b=>b.classList.toggle("on",Math.abs(+b.dataset.qset-A.q)<1e-6));nut()}
+function setUnit(k){readQ();const nu=A.U.find(x=>x.k===k);if(!nu)return;const g=A.q*A.u.g;A.u=nu;
+ A.q=k==="g"?Math.round(g):k==="pack"?Math.round(g/nu.g*4)/4||1:k==="stk"||k==="por"?Math.max(1,Math.round(g/nu.g)):Math.max(1,Math.round(g/nu.g));renderAmount()}
+function saveAmount(){readQ();nut();
  if(!(A.g>0))return toast("Bitte eine Menge eingeben");
+ const lu=LS.get("unit_last",{});lu[A.food.id]=A.u.k;LS.set("unit_last",lu);
+ const unit=A.u.k==="g"?null:{k:A.u.k,label:A.u.label,q:A.q};
  if(S.mode==="recipe"&&!A.entry){R.items.push({name:A.food.name+(A.food.marke?" ("+A.food.marke+")":""),src:A.food.src,g:A.g,n:EK.scale(A.food.n,A.g)});A=null;return renderRecipe()}
- const f=A.food,e={id:A.entry?A.entry.id:EK.uid(),meal:A.meal,name:A.entry?A.entry.name:f.name+(f.marke?" ("+f.marke+")":""),src:f.src,g:A.g,n:EK.scale(f.n,A.g),ts:Date.now()};
- change(pMonth(cur),{t:A.entry?"upd":"add",d:cur,e});closeSheet();toast(`${n0(e.n.kcal)} kcal eingetragen`)}
+ const f=A.food,e={id:A.entry?A.entry.id:EK.uid(),meal:A.meal,name:A.entry?A.entry.name:f.name+(f.marke?" ("+f.marke+")":""),src:f.src,g:A.g,n:EK.scale(f.n,A.g),ts:Date.now(),...(unit?{unit}:{})};
+ change(pMonth(cur),{t:A.entry?"upd":"add",d:cur,e});closeSheet();toast(`${unit?fq(unit.q)+" "+unit.label+" · ":""}${n0(e.n.kcal)} kcal eingetragen`)}
 function toggleFav(){const f=A.food,ex=foods().find(x=>x.id===f.id),fav=!(ex&&ex.fav);
  change(P_LM,{t:"food",item:{...(ex||f),fav}},true);const b=document.querySelector("[data-fav]");if(b)b.textContent=fav?"★":"☆";toast(fav?"Als Favorit gespeichert":"Favorit entfernt")}
 /* Schnell eintragen: nur Name + kcal (+ Makros) für eine Portion */
@@ -892,7 +944,10 @@ document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x
  else if(b("[data-scan]"))openScan();
  else if(b("[data-ean]"))byBarcode($("ean").value);
  else if(b("[data-manual]"))openManual();
- else if(x=b("[data-g]")){$("gr").value=x.dataset.g;nut()}
+ else if(x=b("[data-unit]"))setUnit(x.dataset.unit);
+ else if(b("[data-umore]")){readQ();A.more=true;renderAmount()}
+ else if(x=b("[data-qd]")){readQ();const st=A.u.k==="g"?10:A.u.k==="pack"?.25:1;setQ(Math.max(st===1?1:0,A.q+(+x.dataset.qd)*st))}
+ else if(x=b("[data-qset]"))setQ(+x.dataset.qset);
  else if(x=b("[data-meal]")){A.meal=x.dataset.meal;document.querySelectorAll("[data-meal]").forEach(y=>y.classList.toggle("on",y===x))}
  else if(b("[data-save]"))saveAmount();
  else if(b("[data-fav]"))toggleFav();
@@ -901,7 +956,7 @@ document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x
  else if(b("[data-reload]"))loadAll();
  else if(b("[data-blsload]"))loadBls(true);
  else if(b("[data-logout]")){if(confirm("Token von diesem iPhone entfernen?")){CFG.token="";LS.set("cfg",CFG);showSetup()}}});
-document.addEventListener("input",ev=>{if(ev.target.id==="ranl"&&R)R.anleitung=ev.target.value;else if(ev.target.id==="wziel"&&W)W.ziel=ev.target.value;else if(ev.target.id==="rname"&&R)R.name=ev.target.value;else if(ev.target.id==="q"){S.q=ev.target.value;clearTimeout(results.t);results.t=setTimeout(results,120)}else if(ev.target.id==="gr")nut()});
+document.addEventListener("input",ev=>{if(ev.target.id==="ranl"&&R)R.anleitung=ev.target.value;else if(ev.target.id==="wziel"&&W)W.ziel=ev.target.value;else if(ev.target.id==="rname"&&R)R.name=ev.target.value;else if(ev.target.id==="q"){S.q=ev.target.value;clearTimeout(results.t);results.t=setTimeout(results,120)}else if(ev.target.id==="qv"){readQ();nut()}});
 document.addEventListener("change",ev=>{if(W&&ev.target.id==="wjob"){W.job=ev.target.value;renderWizard();return}if(R&&ev.target.id==="rspread"){R.spread=ev.target.checked;renderRecipe();return}if(R&&ev.target.id==="rkeep"){R.keep=ev.target.checked;return}if(ev.target.name==="fixon"&&ev.target.form&&ev.target.form.id==="pf")saveProfil(ev.target.form)});
 document.addEventListener("submit",ev=>{ev.preventDefault();const f=ev.target;
  if(f.id==="pf")saveProfil(f);else if(f.id==="mf")saveManual(f);else if(f.id==="sf")setup(f);

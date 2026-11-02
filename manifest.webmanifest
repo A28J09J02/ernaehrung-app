@@ -1,6 +1,6 @@
 {
- "name": "KingFuel – Ernährung & Training",
- "short_name": "KingFuel",
+ "name": "KingStats – Ernährung & Training",
+ "short_name": "KingStats",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",

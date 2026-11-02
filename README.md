@@ -1,4 +1,4 @@
-# Ernährung – iPhone-App
+# KingStats – iPhone-App (Ernährung & Training)
 
 Kleine Web-App fürs iPhone (Homescreen-Symbol, ohne App Store). Sie trägt Mahlzeiten ins Repo
 `garmin-dashboard` ein (`data/ernaehrung/`) und zeigt dazu die Garmin-Werte aus `data/store.json`.
