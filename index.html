@@ -92,7 +92,7 @@ label.f{display:block;font-size:13px;color:var(--mute);margin:10px 0 4px}
 .nut{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center;margin:12px 0}.nut div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 2px}.nut b{display:block;font-size:18px}.nut small{color:var(--mute);font-size:11px}
 video{width:100%;border-radius:var(--rad);background:#000;aspect-ratio:3/4;object-fit:cover}
 .scanwrap{position:relative;border-radius:var(--rad);overflow:hidden;background:#000;aspect-ratio:3/4}.scanwrap video{height:100%;border-radius:0;display:block}
-.scanbox{position:absolute;left:9%;right:9%;top:36%;height:24%;border:3px solid #fff;border-radius:16px;box-shadow:0 0 0 999px rgba(0,0,0,.5);transition:border-color .15s}
+.scanbox{position:absolute;left:14%;right:14%;top:50%;transform:translateY(-50%);aspect-ratio:1;border:3px solid #fff;border-radius:16px;box-shadow:0 0 0 999px rgba(0,0,0,.5);transition:border-color .15s}
 .scanbox i{position:absolute;left:6%;right:6%;top:50%;height:2px;background:var(--r);box-shadow:0 0 8px var(--r);animation:scl 1.6s ease-in-out infinite alternate}
 .scanbox.hit{border-color:var(--g)}.scanbox.hit i{background:var(--g);box-shadow:0 0 8px var(--g);animation:none}
 @keyframes scl{from{top:18%}to{top:82%}}
@@ -170,7 +170,7 @@ main.dragx{will-change:transform}main.snap{transition:transform .28s cubic-bezie
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=fc3dc40"></script>
+<script src="kern.js?v=a2bfc29"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -809,17 +809,19 @@ async function openScan(){const sh=$("sheet");sh.classList.add("on");
    const hints=new Map();hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,[ZXing.BarcodeFormat.EAN_13,ZXing.BarcodeFormat.EAN_8,ZXing.BarcodeFormat.UPC_A,ZXing.BarcodeFormat.UPC_E]);
    hints.set(ZXing.DecodeHintType.TRY_HARDER,true);const rd=new ZXing.MultiFormatReader();rd.setHints(hints);
    dec=async c=>{try{return rd.decode(new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(new ZXing.HTMLCanvasElementLuminanceSource(c)))).getText()}catch(e){return null}}}
-  if(!me.on)return;msg("Barcode in den Rahmen halten");
+  if(!me.on)return;msg("Barcode in den Rahmen halten – egal ob quer oder hochkant");
   /* nur den Bereich im Rahmen auswerten (Video ist per object-fit:cover beschnitten) */
-  const cv=document.createElement("canvas"),cx=cv.getContext("2d",{willReadFrequently:true});
+  const cv=document.createElement("canvas"),cx=cv.getContext("2d",{willReadFrequently:true});const rv=document.createElement("canvas"),rx=rv.getContext("2d",{willReadFrequently:true});
   const tick=async()=>{if(!me.on||SCAN!==me)return;
    const box=$("sbox");if(!box||!v.videoWidth)return setTimeout(tick,120);
    const vr=v.getBoundingClientRect(),br=box.getBoundingClientRect(),vw=v.videoWidth,vh=v.videoHeight,
     k=Math.max(vr.width/vw,vr.height/vh),ox=(vr.width-vw*k)/2,oy=(vr.height-vh*k)/2,
     mx=br.width*.12,my=br.height*.15,/* etwas Rand um den Rahmen mitnehmen, falls der Code knapp übersteht */
-    sx=Math.max(0,(br.left-mx-vr.left-ox)/k),sy=Math.max(0,(br.top-my-vr.top-oy)/k),sw=Math.min(vw-sx,(br.width+2*mx)/k),sh2=Math.min(vh-sy,(br.height+2*my)/k),sc=Math.min(1,1000/sw);
+    sx=Math.max(0,(br.left-mx-vr.left-ox)/k),sy=Math.max(0,(br.top-my-vr.top-oy)/k),sw=Math.min(vw-sx,(br.width+2*mx)/k),sh2=Math.min(vh-sy,(br.height+2*my)/k),sc=Math.min(1,800/Math.max(sw,sh2));
    cv.width=Math.round(sw*sc);cv.height=Math.round(sh2*sc);cx.drawImage(v,sx,sy,sw,sh2,0,0,cv.width,cv.height);
    let c=null;try{c=await dec(cv)}catch(e){}
+   /* hochkant liegender Barcode: Ausschnitt um 90° drehen, dann muss das Handy nicht gedreht werden */
+   if(!c){rv.width=cv.height;rv.height=cv.width;rx.setTransform(0,1,-1,0,rv.width,0);rx.drawImage(cv,0,0);rx.setTransform(1,0,0,1,0,0);try{c=await dec(rv)}catch(e){}}
    if(c&&me.on&&SCAN===me){me.on=false;box.classList.add("hit");setTimeout(()=>{stopScan();byBarcode(c)},250);return}
    setTimeout(tick,90)};
   tick()}
@@ -1156,7 +1158,7 @@ noZoom(document);
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="fc3dc40";
+const APPV="a2bfc29";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
