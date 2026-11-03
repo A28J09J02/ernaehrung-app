@@ -134,6 +134,10 @@ body.full .toast{bottom:calc(16px + env(safe-area-inset-bottom))}
 .btn.sm{padding:4px 10px;font-size:13px}.west{margin-top:10px;display:grid;gap:4px}
 .burn .na b{color:var(--mute)}
 main.slide-l{animation:sl .22s ease}main.slide-r{animation:sr .22s ease}
+main.dragx{will-change:transform}main.snap{transition:transform .28s cubic-bezier(.2,.9,.3,1.15)}
+#dhint{position:fixed;top:50%;z-index:40;padding:8px 13px;border-radius:999px;background:var(--card);color:var(--mute);font-size:14px;font-weight:600;
+ box-shadow:0 4px 16px rgba(0,0,0,.14);pointer-events:none;opacity:0;transform:translateY(-50%) scale(.85);transition:opacity .15s,transform .15s,background .15s,color .15s}
+#dhint.l{left:10px}#dhint.r{right:10px}#dhint.on{opacity:1;transform:translateY(-50%) scale(1)}#dhint.go{background:var(--acc);color:#fff;transform:translateY(-50%) scale(1.06)}
 @keyframes sl{from{transform:translateX(40px);opacity:.3}to{transform:none;opacity:1}}@keyframes sr{from{transform:translateX(-40px);opacity:.3}to{transform:none;opacity:1}}
 /* Suchergebnisse */
 .res{border-left:4px solid var(--src,var(--line));padding:11px 12px 11px 12px;align-items:stretch}
@@ -158,7 +162,7 @@ main.slide-l{animation:sl .22s ease}main.slide-r{animation:sr .22s ease}
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=481964c"></script>
+<script src="kern.js?v=1ea3c64"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -914,18 +918,32 @@ function resetSwipes(except){document.querySelectorAll(".swc").forEach(x=>{if(x!
 let SD=null;
 document.addEventListener("touchstart",ev=>{SD=null;const c=ev.target.closest(".swc");
  if(!c){resetSwipes();if(view==="tag"&&!$("sheet").classList.contains("on")&&!$("drawer").classList.contains("on")&&!ev.target.closest("input,select,textarea,.bar,details"))
-   SD={x:ev.touches[0].clientX,y:ev.touches[0].clientY,t:Date.now()};return}resetSwipes(c);
+   SD={x:ev.touches[0].clientX,y:ev.touches[0].clientY,t:Date.now(),lock:null,dx:0};return}resetSwipes(c);
  SW={c,x:ev.touches[0].clientX,y:ev.touches[0].clientY,base:c.dataset.swopen?OPEN:0,dx:0,lock:null}},{passive:true});
-document.addEventListener("touchmove",ev=>{if(!SW)return;const dx=ev.touches[0].clientX-SW.x,dy=ev.touches[0].clientY-SW.y;
+/* Tageswechsel mit Widerstand: Seite folgt dem Finger gebremst, erst ab DTH px wird gewechselt */
+const DTH=120;let DH=null;
+function dHint(dir,p,go,lbl){if(!DH){DH=document.createElement("div");DH.id="dhint";document.body.appendChild(DH)}
+ DH.className=(dir<0?"l":"r")+(p>.15?" on":"")+(go?" go":"");DH.textContent=dir<0?"‹ "+lbl:lbl+" ›"}
+function dDrag(dx){const m=document.querySelector("main");if(!m)return;const dir=dx<0?1:-1,a=Math.abs(dx),blocked=dir>0&&cur>=MAXD();
+ const vis=blocked?a*.08:Math.min(a,DTH)*.32+Math.max(0,a-DTH)*.08;
+ m.classList.remove("snap");m.classList.add("dragx");m.style.transform=`translateX(${dx<0?-vis:vis}px)`;
+ const t=EK.add(cur,dir);dHint(dx<0?1:-1,a/DTH,!blocked&&a>=DTH,blocked?"Zukunft gesperrt":(t===TODAY()?"Heute":ddm(t)))}
+function dEnd(go,v){const m=document.querySelector("main");if(DH)DH.className=DH.className.replace(/ on| go/g,"");if(!m)return;
+ m.classList.remove("dragx");if(go){m.style.transform="";shiftDay(v);return}
+ m.classList.add("snap");m.style.transform="";setTimeout(()=>m.classList.remove("snap"),300)}
+document.addEventListener("touchmove",ev=>{if(SD){const dx=ev.touches[0].clientX-SD.x,dy=ev.touches[0].clientY-SD.y;
+  if(SD.lock==null&&(Math.abs(dx)>10||Math.abs(dy)>10))SD.lock=Math.abs(dx)>Math.abs(dy)*1.3?"x":"y";
+  if(SD.lock==="x"){SD.dx=dx;dDrag(dx)}}
+ if(!SW)return;const dx=ev.touches[0].clientX-SW.x,dy=ev.touches[0].clientY-SW.y;
  if(SW.lock==null&&(Math.abs(dx)>8||Math.abs(dy)>8))SW.lock=Math.abs(dx)>Math.abs(dy)?"x":"y";
  if(SW.lock!=="x")return;SW.dx=dx;SW.c.classList.add("drag");SW.c.style.transform=`translateX(${Math.min(0,SW.base+dx)}px)`},{passive:true});
-document.addEventListener("touchend",ev=>{if(SD){const t=ev.changedTouches&&ev.changedTouches[0];if(t){const dx=t.clientX-SD.x,dy=t.clientY-SD.y;
-  if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.8&&Date.now()-SD.t<700)shiftDay(dx<0?1:-1)}SD=null}
+document.addEventListener("touchend",ev=>{if(SD){if(SD.lock==="x"){const dx=SD.dx,v=dx<0?1:-1;dEnd(Math.abs(dx)>=DTH&&!(v>0&&cur>=MAXD()),v)}SD=null}
  if(!SW)return;const c=SW.c,pos=Math.min(0,SW.base+SW.dx);c.classList.remove("drag");
  if(SW.lock==="x"){SW.moved=true;if(pos<-c.offsetWidth*.55){c.style.transform=`translateX(-100%)`;const b=c.parentNode.querySelector(".bg button");setTimeout(()=>b&&b.click(),180)}
   else if(pos<OPEN/2){c.style.transform=`translateX(${OPEN}px)`;c.dataset.swopen="1"}else{c.style.transform="";c.dataset.swopen=""}
   c.dataset.swiped=Date.now()}
  SW=null});
+document.addEventListener("touchcancel",()=>{if(SD&&SD.lock==="x")dEnd(false);SD=null});
 
 /* ===== Garmin-Sync anstoßen ===== */
 /* Automatisch beim Öffnen: Garmin-Stand älter als 2 h → Cloud-Sync anstoßen (geplante GitHub-Läufe kommen oft Stunden zu spät).
@@ -1043,7 +1061,7 @@ noZoom(document);
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="481964c";
+const APPV="1ea3c64";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
