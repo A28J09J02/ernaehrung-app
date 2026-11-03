@@ -32,6 +32,12 @@ Die Master-Kopie liegt im privaten Repo unter `ernaehrung-app/`, veröffentlicht
 Im Repo `garmin-dashboard`: **Actions → „BLS importieren“ → Run workflow**. Danach in der App
 *Profil → Datenbank aktualisieren*. (Markenprodukte und Barcodes kommen live von Open Food Facts.)
 
+## Veröffentlichen (automatisch)
+Jede Änderung an `ernaehrung-app/` im Branch `main` des privaten Repos wird vom Workflow
+`.github/workflows/app-veroeffentlichen.yml` ins öffentliche Repo kopiert (Secret `APP_PUBLISH_TOKEN`).
+Dabei wird die Version gestempelt (`APPV` in `index.html`, `version.txt`); die App prüft das beim Öffnen
+und lädt sich bei einer neuen Version selbst neu. Nie von Hand ins öffentliche Repo schreiben.
+
 ## Daten
 - `data/ernaehrung/profil.json` – Profil und Ziele
 - `data/ernaehrung/lebensmittel.json` – eigene Lebensmittel, Favoriten, gescannte Produkte
