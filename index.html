@@ -43,6 +43,7 @@ details.more{margin-top:10px;font-size:14px}details.more summary{color:var(--acc
 .mrow{margin:8px 0}.mrow .t{display:flex;justify-content:space-between;font-size:14px}.mrow .t span:last-child{color:var(--mute)}.mrow .t b{color:var(--ink);font-weight:600}
 .hint{display:flex;gap:10px;align-items:center;background:color-mix(in srgb,#f08a24 12%,var(--card));border:1px solid color-mix(in srgb,#f08a24 30%,var(--line));border-radius:14px;padding:10px 12px;margin-bottom:12px;font-size:14px}
 .meal{padding:12px 14px 6px}.meal h2{margin-bottom:4px}
+.meal h2 .mbtns{display:flex;gap:6px}.meal h2 .add.sp{font-size:18px;background:color-mix(in srgb,#f08a24 14%,transparent)}
 .meal h2 .add{border:0;background:var(--acc-bg);color:var(--acc);border-radius:99px;width:44px;height:44px;font-size:24px;line-height:1;font-weight:500}
 .empty{font-size:13px;color:var(--mute);padding:4px 0 8px}
 /* Wischen zum Löschen */
@@ -176,7 +177,7 @@ main.dragx{will-change:transform}main.snap{transition:transform .28s cubic-bezie
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=d4ff575"></script>
+<script src="kern.js?v=255414f"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -370,9 +371,8 @@ function vTag(sk=streaks()){
   <div class="mac">${mac}</div><details class="more"><summary>Weitere Nährwerte ›</summary>${more}<button class="btn w mt10" data-micro="1">Vitamine & Mineralstoffe ›</button></details></div>`;
  /* Mahlzeiten direkt unter der Ring-Karte (häufigste Aktion), Wochen-/Gewichtskarten darunter */
  for(const[k,l]of EK.MEALS){const e=i.e.filter(x=>x.meal===k),s=EK.sum(e);
-  o+=`<div class="card meal"><h2><span>${l} <small>${e.length?n0(s.kcal)+" kcal · P "+n0(s.p)+" g":""}</small></span><button class="add" data-add="${k}" aria-label="${l} hinzufügen">+</button></h2>
+  o+=`<div class="card meal"><h2><span>${l} <small>${e.length?n0(s.kcal)+" kcal · P "+n0(s.p)+" g":""}</small></span><span class="mbtns">${cur>=T?`<button class="add sp" data-imealgo="${k}" aria-label="Ideen für ${l}">✨</button>`:""}<button class="add" data-add="${k}" aria-label="${l} hinzufügen">+</button></span></h2>
   ${e.length?e.map(x=>swRow(`data-ent="${h(x.id)}"`,`<span>${h(x.name)} <small>${unitText(x)}</small></span><span>${n0(x.n&&x.n.kcal)} <small>kcal</small></span>`,`data-delent="${h(x.id)}"`)).join(""):`<div class="empty">Noch nichts eingetragen</div>`}</div>`}
- if(cur>=T){const pl=Math.max(0,i.m.p-i.s.p);o+=`<button class="btn idee" data-go="ideen"><span>✨ Worauf hast du Bock?</span><small>${left>0?`noch ${n0(left)} kcal${pl>5?" · "+n0(pl)+" g Protein":""}`:"Ziel erreicht"} ›</small></button>`}
  o+=`<div class="row mb"><button class="btn" data-go="rezepte">📖 Gerichte</button><button class="btn" data-go="einkauf">🛒 Einkauf${shopItems().some(x=>!x.done)?` (${shopItems().filter(x=>!x.done).length})`:""}</button><button class="btn" data-recipe="1">🍲 Kochen</button></div>`;
  o+=carrierNote(i)+weekCard()+weightCard()+actsRow(cur);
  if(TIPS<5)o+=`<p class="foot">Tipp: Nach links/rechts wischen wechselt den Tag. Einträge nach links wischen zum Löschen, antippen zum Ändern.</p>`;
@@ -747,35 +747,35 @@ function dishShop(f,portions){const fac=portions/(f.portionen||1);
    Quellen: deine Gerichte, deine Favoriten/eigenen Lebensmittel (je Portion) und die eingebaute Ideensammlung (IDEEN).
    Nährwerte der Ideen sind Richtwerte je Portion (aus Standard-Nährwerttabellen gerechnet, gerundet). */
 const IDEEN=[
- /* [id, Name, Tags, Minuten, [kcal,p,c,f,fib,sug,salt], Zutaten [[Name,g,Stück?]], Anleitung] */
- ["quarkcreme","Protein-Quarkcreme mit Beeren","suess protein snack",5,[257,31,27,1,4,24,.2],[["Magerquark",250],["TK-Beeren",100],["Honig",10],["Milch 1,5 %",30]],"Quark mit Milch glatt rühren, Honig unterrühren, Beeren (gern angetaut) drübergeben."],
- ["skyrbowl","Skyr mit Banane & Haferflocken","suess protein snack",3,[326,27,46,3,5.5,20,.2],[["Skyr",200],["Banane",100,1],["Haferflocken",30]],"Skyr in eine Schale, Banane in Scheiben drauf, Haferflocken drüberstreuen."],
- ["oats","Schoko-Overnight-Oats","suess protein",5,[397,30,39,11,10,8,.3],[["Haferflocken",50],["Milch 1,5 %",150],["Proteinpulver Schoko",20],["Kakao (ungesüßt)",5],["Chiasamen",10]],"Alles in ein Glas, gut verrühren, über Nacht in den Kühlschrank. Morgens kalt löffeln."],
- ["pancakes","Bananen-Hafer-Pfannkuchen","suess warm",15,[395,20,44,14,6.5,13,.4],[["Eier",110,2],["Banane",100,1],["Haferflocken",40]],"Banane zerdrücken, mit Eiern und Haferflocken verrühren, 5 Min quellen lassen. In einer beschichteten Pfanne kleine Pfannkuchen je Seite 2 Min backen."],
- ["greekhonig","Griechischer Joghurt mit Honig & Walnüssen","suess protein snack",2,[274,22,17,14,1,16,.1],[["Griechischer Joghurt 2 %",200],["Honig",10],["Walnüsse",15]],"Joghurt in eine Schale, Honig drüber, Walnüsse grob hacken und drüberstreuen."],
- ["proteinpudding","Proteinpudding","suess protein snack",1,[150,20,10,3,0,8,.3],[["Proteinpudding",200]],"Fertig – direkt aus dem Becher."],
- ["apfelpb","Apfel mit Erdnussbutter","suess snack",3,[198,5,19,10,4.5,16,.1],[["Apfel",150,1],["Erdnussbutter",20]],"Apfel in Spalten schneiden und in die Erdnussbutter dippen."],
- ["zartbitter","Zartbitterschokolade (2 Riegel)","suess snack",0,[115,2,7,8,2,5,0],[["Zartbitterschokolade 70 %",20]],"Langsam genießen – dazu ein Kaffee oder Tee."],
- ["nicecream","Schoko-Bananen-Nicecream","suess protein snack",5,[251,19,34,2.5,5.5,21,.1],[["TK-Banane",150,1.5],["Milch 1,5 %",50],["Proteinpulver Schoko",20],["Kakao (ungesüßt)",5]],"Gefrorene Bananenstücke mit Milch, Proteinpulver und Kakao im Mixer cremig pürieren. Sofort essen."],
- ["milchreis","Milchreis mit Apfelmus & Zimt","suess warm",30,[386,13.5,70,5,2,29,.2],[["Milchreis",50],["Milch 1,5 %",300],["Apfelmus",100],["Zimt",1]],"Milch aufkochen, Milchreis einrühren, bei kleiner Hitze 25 Min unter Rühren quellen lassen. Mit Apfelmus und Zimt servieren."],
- ["reiswaffel","Reiswaffeln mit Quark & Marmelade","suess snack",3,[209,14,35,1,.5,16,.3],[["Reiswaffeln",24,3],["Magerquark",100],["Marmelade",20]],"Quark auf die Reiswaffeln streichen, Marmelade drauf."],
- ["shake","Bananen-Protein-Shake","suess protein snack",3,[344,34,37,6,2.5,28,.4],[["Milch 1,5 %",300],["Proteinpulver",30],["Banane",100,1]],"Alles in den Mixer oder Shaker, kurz mixen, fertig."],
- ["bowl","Hähnchen-Reis-Bowl mit Brokkoli","herzhaft warm protein",25,[514,44,60,7,5.5,3,2.6],[["Hähnchenbrust",150],["Reis",70],["Brokkoli",150],["Sojasauce",15],["Rapsöl",5]],"Reis kochen. Brokkoli 5 Min dämpfen. Hähnchen in Streifen in Öl 6–8 Min braten, mit Sojasauce ablöschen. Alles in eine Schale."],
- ["ruehrei","Rührei mit Vollkornbrot & Tomaten","herzhaft warm protein",10,[466,29,42,18,8,4,1.6],[["Eier",165,3],["Vollkornbrot",100,2],["Tomaten",100,1]],"Eier verquirlen, salzen, pfeffern und bei mittlerer Hitze stocken lassen. Mit Brot und Tomaten servieren."],
- ["wrap","Thunfisch-Wrap","herzhaft protein",8,[368,33,37,8,3,4,1.5],[["Weizen-Wrap",60,1],["Thunfisch (Dose, eigener Saft)",100],["Frischkäse light",30],["Salat & Gurke",60],["Mais (Dose)",30]],"Wrap mit Frischkäse bestreichen, Thunfisch, Mais, Salat und Gurke drauf, fest einrollen."],
- ["linsencurry","Rotes Linsen-Curry","herzhaft warm",25,[420,20,50,11,12,10,1.2],[["Rote Linsen",70],["Kokosmilch light",100],["Passierte Tomaten",150],["Zwiebel",50,1],["Spinat",50],["Currypaste",10]],"Zwiebel anschwitzen, Currypaste kurz mitrösten. Linsen, Tomaten, Kokosmilch und 150 ml Wasser dazu, 15 Min köcheln. Spinat unterheben."],
- ["thunfischpasta","Vollkornnudeln mit Tomaten-Thunfisch-Sauce","herzhaft warm protein",20,[555,39,72,8.5,9,11,1],[["Vollkornnudeln",90],["Passierte Tomaten",200],["Thunfisch (Dose, eigener Saft)",100],["Zwiebel",50,1],["Olivenöl",5]],"Nudeln kochen. Zwiebel in Öl anschwitzen, Tomaten dazu, 10 Min köcheln, Thunfisch unterheben, würzen. Mit den Nudeln mischen."],
- ["ofenkartoffel","Ofenkartoffel mit Kräuterquark","herzhaft warm protein",45,[361,24,51,5.5,6.5,6,.3],[["Kartoffeln",300],["Magerquark",150],["Kräuter",10],["Leinöl",5]],"Kartoffeln halbieren, bei 200 °C ca. 40 Min backen. Quark mit Kräutern, Leinöl, Salz und Pfeffer verrühren."],
- ["chili","Chili con Carne mit Reis","herzhaft warm protein",35,[600,40,78,10,11,10,1.4],[["Rinderhack (mager)",125],["Kidneybohnen (Dose)",120],["Mais (Dose)",50],["Passierte Tomaten",150],["Zwiebel",50,1],["Reis",50]],"Hack mit Zwiebel krümelig braten, Tomaten, Bohnen, Mais und Gewürze (Chili, Kreuzkümmel, Paprika) dazu, 20 Min köcheln. Mit Reis servieren."],
- ["omelett","Gemüse-Omelett mit Feta","herzhaft warm protein",12,[355,28,8,23,3.5,6,1.3],[["Eier",165,3],["Paprika",100,1],["Spinat",50],["Feta",30]],"Paprika anbraten, Spinat zusammenfallen lassen. Verquirlte Eier drübergießen, Feta drüberbröseln, bei kleiner Hitze stocken lassen."],
- ["huettenbrot","Vollkornbrot mit Hüttenkäse & Gurke","herzhaft protein",3,[377,26,43,8,8,4,1.6],[["Vollkornbrot",100,2],["Hüttenkäse",150],["Gurke",100]],"Brot mit Hüttenkäse bestreichen, Gurkenscheiben drauf, pfeffern."],
- ["lachs","Lachs mit Kartoffeln & Brokkoli","herzhaft warm protein",25,[490,34,43,18,9.5,4,.4],[["Lachsfilet",125],["Kartoffeln",250],["Brokkoli",150]],"Kartoffeln 20 Min kochen, Brokkoli die letzten 5 Min dazu. Lachs je Seite 3–4 Min braten, salzen, mit Zitrone servieren."],
- ["putensalat","Bunter Salat mit Putenbrust","herzhaft protein",15,[375,42,8,19,4,6,1],[["Putenbrust",150],["Gemischter Salat",150],["Tomaten",100,1],["Feta",30],["Olivenöl",10]],"Pute in Streifen braten. Salat und Tomaten schneiden, Feta drüber, mit Olivenöl, Essig, Salz und Pfeffer anmachen."],
- ["edamame","Edamame mit Meersalz","herzhaft protein snack warm",6,[180,17,13,8,8,3,.8],[["TK-Edamame",150]],"Edamame 4–5 Min in Salzwasser kochen, abgießen, mit grobem Salz bestreuen."],
- ["hummus","Hummus mit Gemüsesticks","herzhaft snack",5,[250,6,20,14,9,10,.8],[["Hummus",60],["Karotten",100],["Paprika",100,1]],"Gemüse in Sticks schneiden und in den Hummus dippen."],
- ["eier","2 gekochte Eier","herzhaft protein snack",10,[155,13,1,11,0,1,.3],[["Eier",110,2]],"Eier 8–9 Min kochen, abschrecken, pellen, salzen."],
- ["kraeuterquark","Kräuterquark mit Gurke","herzhaft protein snack",5,[186,31,12.5,.6,1,10,.2],[["Magerquark",250],["Gurke",150],["Kräuter",10]],"Quark mit Kräutern, Salz und Pfeffer verrühren, Gurke in Sticks dazu."],
- ["popcorn","Selbstgemachtes Popcorn","herzhaft snack",8,[155,3.5,20,6,4,0,.5],[["Popcorn-Mais",30],["Rapsöl",5]],"Öl im Topf erhitzen, Mais dazu, Deckel drauf, Topf rütteln, bis es nicht mehr ploppt. Leicht salzen."]
+ /* @fr/@mi/@ab/@sn = passt zu Frühstück/Mittag/Abend/Snacks · [id, Name, Tags, Minuten, [kcal,p,c,f,fib,sug,salt], Zutaten [[Name,g,Stück?]], Anleitung] */
+ ["quarkcreme","Protein-Quarkcreme mit Beeren","suess protein snack @fr @sn",5,[257,31,27,1,4,24,.2],[["Magerquark",250],["TK-Beeren",100],["Honig",10],["Milch 1,5 %",30]],"Quark mit Milch glatt rühren, Honig unterrühren, Beeren (gern angetaut) drübergeben."],
+ ["skyrbowl","Skyr mit Banane & Haferflocken","suess protein snack @fr @sn",3,[326,27,46,3,5.5,20,.2],[["Skyr",200],["Banane",100,1],["Haferflocken",30]],"Skyr in eine Schale, Banane in Scheiben drauf, Haferflocken drüberstreuen."],
+ ["oats","Schoko-Overnight-Oats","suess protein @fr",5,[397,30,39,11,10,8,.3],[["Haferflocken",50],["Milch 1,5 %",150],["Proteinpulver Schoko",20],["Kakao (ungesüßt)",5],["Chiasamen",10]],"Alles in ein Glas, gut verrühren, über Nacht in den Kühlschrank. Morgens kalt löffeln."],
+ ["pancakes","Bananen-Hafer-Pfannkuchen","suess warm @fr",15,[395,20,44,14,6.5,13,.4],[["Eier",110,2],["Banane",100,1],["Haferflocken",40]],"Banane zerdrücken, mit Eiern und Haferflocken verrühren, 5 Min quellen lassen. In einer beschichteten Pfanne kleine Pfannkuchen je Seite 2 Min backen."],
+ ["greekhonig","Griechischer Joghurt mit Honig & Walnüssen","suess protein snack @fr @sn",2,[274,22,17,14,1,16,.1],[["Griechischer Joghurt 2 %",200],["Honig",10],["Walnüsse",15]],"Joghurt in eine Schale, Honig drüber, Walnüsse grob hacken und drüberstreuen."],
+ ["proteinpudding","Proteinpudding","suess protein snack @sn",1,[150,20,10,3,0,8,.3],[["Proteinpudding",200]],"Fertig – direkt aus dem Becher."],
+ ["apfelpb","Apfel mit Erdnussbutter","suess snack @sn",3,[198,5,19,10,4.5,16,.1],[["Apfel",150,1],["Erdnussbutter",20]],"Apfel in Spalten schneiden und in die Erdnussbutter dippen."],
+ ["zartbitter","Zartbitterschokolade (2 Riegel)","suess snack @sn",0,[115,2,7,8,2,5,0],[["Zartbitterschokolade 70 %",20]],"Langsam genießen – dazu ein Kaffee oder Tee."],
+ ["nicecream","Schoko-Bananen-Nicecream","suess protein snack @sn",5,[251,19,34,2.5,5.5,21,.1],[["TK-Banane",150,1.5],["Milch 1,5 %",50],["Proteinpulver Schoko",20],["Kakao (ungesüßt)",5]],"Gefrorene Bananenstücke mit Milch, Proteinpulver und Kakao im Mixer cremig pürieren. Sofort essen."],
+ ["milchreis","Milchreis mit Apfelmus & Zimt","suess warm @fr @ab",30,[386,13.5,70,5,2,29,.2],[["Milchreis",50],["Milch 1,5 %",300],["Apfelmus",100],["Zimt",1]],"Milch aufkochen, Milchreis einrühren, bei kleiner Hitze 25 Min unter Rühren quellen lassen. Mit Apfelmus und Zimt servieren."],
+ ["reiswaffel","Reiswaffeln mit Quark & Marmelade","suess snack @fr @sn",3,[209,14,35,1,.5,16,.3],[["Reiswaffeln",24,3],["Magerquark",100],["Marmelade",20]],"Quark auf die Reiswaffeln streichen, Marmelade drauf."],
+ ["shake","Bananen-Protein-Shake","suess protein snack @fr @sn",3,[344,34,37,6,2.5,28,.4],[["Milch 1,5 %",300],["Proteinpulver",30],["Banane",100,1]],"Alles in den Mixer oder Shaker, kurz mixen, fertig."],
+ ["bowl","Hähnchen-Reis-Bowl mit Brokkoli","herzhaft warm protein @mi @ab",25,[514,44,60,7,5.5,3,2.6],[["Hähnchenbrust",150],["Reis",70],["Brokkoli",150],["Sojasauce",15],["Rapsöl",5]],"Reis kochen. Brokkoli 5 Min dämpfen. Hähnchen in Streifen in Öl 6–8 Min braten, mit Sojasauce ablöschen. Alles in eine Schale."],
+ ["ruehrei","Rührei mit Vollkornbrot & Tomaten","herzhaft warm protein @fr @mi @ab",10,[466,29,42,18,8,4,1.6],[["Eier",165,3],["Vollkornbrot",100,2],["Tomaten",100,1]],"Eier verquirlen, salzen, pfeffern und bei mittlerer Hitze stocken lassen. Mit Brot und Tomaten servieren."],
+ ["wrap","Thunfisch-Wrap","herzhaft protein @mi @ab",8,[368,33,37,8,3,4,1.5],[["Weizen-Wrap",60,1],["Thunfisch (Dose, eigener Saft)",100],["Frischkäse light",30],["Salat & Gurke",60],["Mais (Dose)",30]],"Wrap mit Frischkäse bestreichen, Thunfisch, Mais, Salat und Gurke drauf, fest einrollen."],
+ ["linsencurry","Rotes Linsen-Curry","herzhaft warm @mi @ab",25,[420,20,50,11,12,10,1.2],[["Rote Linsen",70],["Kokosmilch light",100],["Passierte Tomaten",150],["Zwiebel",50,1],["Spinat",50],["Currypaste",10]],"Zwiebel anschwitzen, Currypaste kurz mitrösten. Linsen, Tomaten, Kokosmilch und 150 ml Wasser dazu, 15 Min köcheln. Spinat unterheben."],
+ ["thunfischpasta","Vollkornnudeln mit Tomaten-Thunfisch-Sauce","herzhaft warm protein @mi @ab",20,[555,39,72,8.5,9,11,1],[["Vollkornnudeln",90],["Passierte Tomaten",200],["Thunfisch (Dose, eigener Saft)",100],["Zwiebel",50,1],["Olivenöl",5]],"Nudeln kochen. Zwiebel in Öl anschwitzen, Tomaten dazu, 10 Min köcheln, Thunfisch unterheben, würzen. Mit den Nudeln mischen."],
+ ["ofenkartoffel","Ofenkartoffel mit Kräuterquark","herzhaft warm protein @mi @ab",45,[361,24,51,5.5,6.5,6,.3],[["Kartoffeln",300],["Magerquark",150],["Kräuter",10],["Leinöl",5]],"Kartoffeln halbieren, bei 200 °C ca. 40 Min backen. Quark mit Kräutern, Leinöl, Salz und Pfeffer verrühren."],
+ ["chili","Chili con Carne mit Reis","herzhaft warm protein @mi @ab",35,[600,40,78,10,11,10,1.4],[["Rinderhack (mager)",125],["Kidneybohnen (Dose)",120],["Mais (Dose)",50],["Passierte Tomaten",150],["Zwiebel",50,1],["Reis",50]],"Hack mit Zwiebel krümelig braten, Tomaten, Bohnen, Mais und Gewürze (Chili, Kreuzkümmel, Paprika) dazu, 20 Min köcheln. Mit Reis servieren."],
+ ["omelett","Gemüse-Omelett mit Feta","herzhaft warm protein @fr @mi @ab",12,[355,28,8,23,3.5,6,1.3],[["Eier",165,3],["Paprika",100,1],["Spinat",50],["Feta",30]],"Paprika anbraten, Spinat zusammenfallen lassen. Verquirlte Eier drübergießen, Feta drüberbröseln, bei kleiner Hitze stocken lassen."],
+ ["huettenbrot","Vollkornbrot mit Hüttenkäse & Gurke","herzhaft protein @fr @ab",3,[377,26,43,8,8,4,1.6],[["Vollkornbrot",100,2],["Hüttenkäse",150],["Gurke",100]],"Brot mit Hüttenkäse bestreichen, Gurkenscheiben drauf, pfeffern."],
+ ["lachs","Lachs mit Kartoffeln & Brokkoli","herzhaft warm protein @mi @ab",25,[490,34,43,18,9.5,4,.4],[["Lachsfilet",125],["Kartoffeln",250],["Brokkoli",150]],"Kartoffeln 20 Min kochen, Brokkoli die letzten 5 Min dazu. Lachs je Seite 3–4 Min braten, salzen, mit Zitrone servieren."],
+ ["putensalat","Bunter Salat mit Putenbrust","herzhaft protein @mi @ab",15,[375,42,8,19,4,6,1],[["Putenbrust",150],["Gemischter Salat",150],["Tomaten",100,1],["Feta",30],["Olivenöl",10]],"Pute in Streifen braten. Salat und Tomaten schneiden, Feta drüber, mit Olivenöl, Essig, Salz und Pfeffer anmachen."],
+ ["edamame","Edamame mit Meersalz","herzhaft protein snack warm @sn",6,[180,17,13,8,8,3,.8],[["TK-Edamame",150]],"Edamame 4–5 Min in Salzwasser kochen, abgießen, mit grobem Salz bestreuen."],
+ ["hummus","Hummus mit Gemüsesticks","herzhaft snack @sn",5,[250,6,20,14,9,10,.8],[["Hummus",60],["Karotten",100],["Paprika",100,1]],"Gemüse in Sticks schneiden und in den Hummus dippen."],
+ ["eier","2 gekochte Eier","herzhaft protein snack @fr @sn",10,[155,13,1,11,0,1,.3],[["Eier",110,2]],"Eier 8–9 Min kochen, abschrecken, pellen, salzen."],
+ ["kraeuterquark","Kräuterquark mit Gurke","herzhaft protein snack @sn @ab",5,[186,31,12.5,.6,1,10,.2],[["Magerquark",250],["Gurke",150],["Kräuter",10]],"Quark mit Kräutern, Salz und Pfeffer verrühren, Gurke in Sticks dazu."],
+ ["popcorn","Selbstgemachtes Popcorn","herzhaft snack @sn",8,[155,3.5,20,6,4,0,.5],[["Popcorn-Mais",30],["Rapsöl",5]],"Öl im Topf erhitzen, Mais dazu, Deckel drauf, Topf rütteln, bis es nicht mehr ploppt. Leicht salzen."]
 ].map(([id,name,tags,min,v,zut,anl])=>{const[kcal,p,c,f,fib,sug,salt]=v,g=zut.reduce((s,z)=>s+z[1],0);
  return{id,name,tags:tags.split(" "),min,g,n:{kcal,p,c,f,fib,sug,salt},zutaten:zut.map(([name,g,stk])=>({name,g,...(stk?{stk}:{})})),anleitung:anl}});
 const MOODS=[["alle","✨ Alles"],["suess","🍫 Süß"],["herzhaft","🥪 Herzhaft"],["protein","💪 Protein"],["snack","⚡ Snack"],["warm","🍲 Warm"]];
@@ -801,13 +801,15 @@ function renderDislike(){const sh=$("sheet");sh.classList.add("on");const W=disl
  <p class="foot">Mehrere auf einmal mit Komma trennen. Gilt nur für die Vorschläge bei „Worauf hast du Bock?“ – suchen und eintragen kannst du weiterhin alles. Wird im Profil gespeichert und ist auf allen Geräten gleich.</p></main>`}
 function dislikeAdd(){const i=$("dislq");if(!i)return;const add=i.value.split(/[,;]/).map(x=>x.trim()).filter(Boolean),W=dislikes();
  const neu=add.filter(x=>!W.some(w=>EK.norm(w)===EK.norm(x)));if(neu.length)setProf({magNicht:[...W,...neu]});const j=$("dislq");if(j)j.focus()}
-let MOOD=LS.get("mood","alle"),ISEL=[],IMORE=false;
+let MOOD=LS.get("mood","alle"),ISEL=[],IMORE=false,IMEAL=null;
+/* Passt zur Mahlzeit? Ideen: über @-Tags. Deine Gerichte/Favoriten: Snacks bis 350 kcal, Mittag/Abend ab 250 kcal, nicht süß, Gericht oder warm, Frühstück alles */
+const mealFit=c=>c.k==="idee"?c.tags.includes("@"+IMEAL):IMEAL==="sn"?c.n.kcal<=350:IMEAL==="mi"||IMEAL==="ab"?c.n.kcal>=250&&!c.tags.includes("suess")&&(c.k==="dish"||c.tags.includes("warm")):true;
 function ideas(i){const left=i.t.kcal-i.s.kcal,pl=Math.max(0,i.m.p-i.s.p),light=left<120,cap=light?150:left*1.05+20,L=[];
  for(const f of dishes()){const n=perPortion(f);if(n.kcal==null)continue;L.push({k:"dish",id:f.id,name:f.name,n,g:(f.portion&&f.portion.g)||100,tags:moodTags(f.name,n),zutaten:f.zutaten&&f.zutaten.length?f.zutaten:null,f})}
  for(const f of foods()){if(f.zutaten||f.rezept||!(f.fav||isOwn(f))||f.liquid)continue;const g=(f.portion&&f.portion.g)||100,n=EK.scale(f.n,g);if(n.kcal==null||n.kcal<20)continue;
   L.push({k:"fav",id:f.id,name:f.name+(f.marke?" ("+f.marke+")":""),n,g,tags:moodTags(f.name,n),f})}
  for(const x of IDEEN)L.push({k:"idee",id:x.id,name:x.name,n:x.n,g:x.g,tags:x.tags,zutaten:x.zutaten,x});
- const R=[];for(const c of L){if(MOOD!=="alle"&&!c.tags.includes(MOOD))continue;if(disliked(c))continue;if(c.n.kcal>cap)continue;
+ const R=[];for(const c of L){if(MOOD!=="alle"&&!c.tags.includes(MOOD))continue;if(disliked(c))continue;if(IMEAL&&!mealFit(c))continue;if(c.n.kcal>cap)continue;
   const b=bewOf(c.n,c.g);if(light&&b&&b.a==="r")continue;const p=c.n.p||0,k=Math.max(1,c.n.kcal);
   const fitP=pl>5?Math.min(p,pl)/pl:0,use=light?.5:k/Math.max(1,left);
   c.score=(pl>10?3*fitP:0)+(use>=.25&&use<=1?1:.3)+(b?b.pt*.3:0)+(MOOD==="protein"?12*p/k:0)+(c.k==="dish"?.4:c.k==="fav"?.2:0);
@@ -817,6 +819,7 @@ function vIdeen(){const T=TODAY(),i=info(cur),r=ideas(i),show=IMORE?r.list.slice
  let o=cur!==T?`<button class="today" data-iday="1">↩ Für heute vorschlagen</button>`:"";
  o+=`<div class="card"><div class="kp"><div><b>${n0(Math.max(0,r.left))}</b><span>kcal noch offen${cur!==T?" ("+ddm(cur)+")":""}</span></div><div><b>${n0(r.pl)}</b><span>g Protein fehlen</span></div><div><b>${n0(i.s.p)}</b><span>von ${n0(i.m.p)} g Protein</span></div></div>
  ${r.light?`<p class="s mute centernote">${r.left<=0?"Dein Kalorienziel ist für heute erreicht.":"Fast am Ziel."} Falls doch noch Hunger: hier leichte Sachen bis 150 kcal – ein Überschuss wird automatisch über die nächsten Tage ausgeglichen.</p>`:""}</div>
+ <div class="seg" style="margin-bottom:8px"><button data-imeal2="" class="${IMEAL?"":"on"}">Alle</button>${EK.MEALS.map(([k,l])=>`<button data-imeal2="${k}" class="${IMEAL===k?"on":""}">${l.replace("essen","")}</button>`).join("")}</div>
  <div class="qs mood">${MOODS.map(([k,l])=>`<button data-mood="${k}" class="${MOOD===k?"on":""}">${l}</button>`).join("")}</div>
  <button class="btn w dis" data-disl="1">🚫 Mag ich nicht${dislikes().length||hiddenIdeas().length?`: <span class="mute">${h([...dislikes(),...(hiddenIdeas().length?[hiddenIdeas().length+" Idee"+(hiddenIdeas().length>1?"n":"")]:[])].join(", "))}</span>`:` <span class="mute">– Lebensmittel ausschließen</span>`} ›</button>`;
  if(!show.length)return o+`<div class="card"><p class="empty" style="margin:0">Nichts gefunden, das noch reinpasst${MOOD!=="alle"?" – probier eine andere Lust":""}.</p></div>`;
@@ -827,13 +830,13 @@ function vIdeen(){const T=TODAY(),i=info(cur),r=ideas(i),show=IMORE?r.list.slice
   <span class="kc"><b>${n0(c.n.kcal)}</b><small>kcal</small><span class="ibtns">${c.zutaten?`<button class="pl sh" data-ishop="${k}" aria-label="Zutaten auf die Einkaufsliste">🛒</button>`:""}<button class="pl" data-ilog="${k}" aria-label="Eintragen">+</button></span></span></div>`}).join("");
  if(!IMORE&&r.list.length>show.length)o+=`<button class="btn w" data-imore="1">Mehr Vorschläge (${r.list.length-show.length})</button>`;
  return o+`<p class="foot">Sortiert danach, was deine Proteinlücke am besten schließt und noch ins Ziel passt (Aktivkalorien und Ausgleich sind eingerechnet). Ideen-Nährwerte sind Richtwerte je Portion. ${RINFO}</p>`}
-function ideaLog(c,meal){if(c.k==="dish")return logDish(c.id,meal);if(c.k==="fav")return openAmount({food:c.f});
+function ideaLog(c,meal){meal=meal||IMEAL||undefined;if(c.k==="dish")return logDish(c.id,meal);if(c.k==="fav"){S={...S,meal:meal||mealNow(),mode:"log"};return openAmount({food:c.f})}
  const d=cur,e={id:EK.uid(),meal:meal||mealNow(),name:c.name,src:"idee:"+c.id,g:c.g,n:{...c.n},ts:Date.now()};
  change(pMonth(d),{t:"add",d,e});toast(`${c.name}: ${n0(e.n.kcal)} kcal eingetragen`,4000,"Rückgängig",()=>change(pMonth(d),{t:"del",d,id:e.id}))}
 function ideaShop(c){if(c.k==="dish")return dishShop(c.f,c.f.portionen||1);const n=addToShop(c.zutaten,c.name);
  toast(`${n} Zutat${n>1?"en":""} auf der Einkaufsliste`,4000,"Ansehen",()=>{closeSheet();go("einkauf")})}
 let IDX=null;
-function openIdea(c){if(c.k==="dish")return openDish(c.id);if(c.k==="fav")return openAmount({food:c.f});IDX={c,meal:mealNow()};renderIdea()}
+function openIdea(c){if(c.k==="dish"){openDish(c.id);if(IMEAL){DSH.meal=IMEAL;renderDish()}return}if(c.k==="fav"){S={...S,meal:IMEAL||mealNow(),mode:"log"};return openAmount({food:c.f})}IDX={c,meal:IMEAL||mealNow()};renderIdea()}
 function renderIdea(){const c=IDX.c,x=c.x,sh=$("sheet");sh.classList.add("on");const saved=dishes().some(f=>f.idee===x.id);
  sh.innerHTML=`<div class="top"><button class="ib" data-close="1" aria-label="Schließen">✕</button><h1>Idee</h1><span style="min-width:42px"></span></div><main>
  <div class="card"><b style="font-size:20px">${h(c.name)}</b><div class="s mute">${x.min?`⏱ ${x.min} Min · `:""}1 Portion ≈ ${n0(c.g)} g</div>
@@ -1270,7 +1273,7 @@ document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x
  const sw=b(".swc");if(sw&&(sw.dataset.swopen||Date.now()-(+sw.dataset.swiped||0)<350)){if(sw.dataset.swopen&&Date.now()-(+sw.dataset.swiped||0)>350){sw.style.transform="";sw.dataset.swopen=""}return}
  if(b("[data-menu]"))openDrawer();
  else if(t===$("scrim"))closeDrawer();
- else if(x=b("[data-go]")){if(x.dataset.go!=="dash")hideDash();go(x.dataset.go)}
+ else if(x=b("[data-go]")){if(x.dataset.go!=="dash")hideDash();if(x.dataset.go==="ideen"&&x.closest("#drawer"))IMEAL=null;go(x.dataset.go)}
  else if(x=b("[data-day]")){const v=+x.dataset.day;shiftDay(v===0?null:v)}
  else if(x=b("[data-open]")){cur=x.dataset.open;go("tag")}
  else if(x=b("[data-cal]")){calM=x.dataset.cal;render()}
@@ -1298,6 +1301,8 @@ document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x
  else if(x=b("[data-shopt]"))shopToggle(x.dataset.shopt);
  else if(x=b("[data-shopdel]"))shopDel(x.dataset.shopdel);
  else if(b("[data-shopclr]"))shopClear();
+ else if(x=b("[data-imealgo]")){IMEAL=x.dataset.imealgo;IMORE=false;go("ideen")}
+ else if(x=b("[data-imeal2]")){IMEAL=x.dataset.imeal2||null;IMORE=false;render()}
  else if(x=b("[data-mood]")){MOOD=x.dataset.mood;LS.set("mood",MOOD);IMORE=false;render()}
  else if(b("[data-imore]")){IMORE=true;render()}
  else if(b("[data-iday]")){cur=TODAY();render()}
@@ -1362,7 +1367,7 @@ noZoom(document);
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="d4ff575";
+const APPV="255414f";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
