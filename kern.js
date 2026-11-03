@@ -23,6 +23,8 @@
 const EK=(()=>{
  const pad=n=>String(n).padStart(2,"0"),day=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
  const add=(s,n)=>{const d=new Date(s+"T12:00:00");d.setDate(d.getDate()+n);return day(d)};
+ /* Montag der Woche (Mo–So) zu einem Datum JJJJ-MM-TT */
+ const monday=s=>add(s,-((new Date(s+"T12:00:00").getDay()+6)%7));
  const MEALS=[["fr","Frühstück"],["mi","Mittagessen"],["ab","Abendessen"],["sn","Snacks"]];
  const NUTR=[["kcal","Kalorien","kcal"],["p","Protein","g"],["c","Kohlenhydrate","g"],["f","Fett","g"],
   ["fib","Ballaststoffe","g"],["sug","Zucker","g"],["salt","Salz","g"]];
@@ -124,5 +126,5 @@ const EK=(()=>{
   return{share,cheats,carry}}
  const norm=s=>String(s||"").toLowerCase().replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss").replace(/[^a-z0-9 ]+/g," ");
  const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
- return{MEALS,NUTR,MICRO,JOBS,GOALS,RATES,SRC,PROFIL,prof,bmr,pal,goalAdj,trainKcal,planKcal,garminBase,bases,target,macros,sum,scale,ampel,dayGrade,weight,ausgleich,AUS,norm,uid,day,add,r}
+ return{MEALS,NUTR,MICRO,JOBS,GOALS,RATES,SRC,PROFIL,prof,bmr,pal,goalAdj,trainKcal,planKcal,garminBase,bases,target,macros,sum,scale,ampel,dayGrade,weight,ausgleich,AUS,norm,uid,day,add,monday,r}
 })();

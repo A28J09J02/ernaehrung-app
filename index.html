@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="de"><head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>KingStats</title>
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="KingStats"><meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -13,6 +13,7 @@
 @media(prefers-color-scheme:dark){:root{--bg:#0c1418;--card:#151f24;--ink:#e3ebee;--mute:#8fa1a8;--line:#26343b;--grid:#1f2c33;--acc:#4fb6d6;--acc-bg:#16343f;
  --g:#4cb07f;--y:#e2a640;--r:#e0726c;--p:#a58ae6;--c:#e6a54a;--f:#5aa9e0;color-scheme:dark}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;font-variant-numeric:tabular-nums;overscroll-behavior-y:none}
 body{padding:env(safe-area-inset-top) 0 calc(78px + env(safe-area-inset-bottom))}
 body.full{padding-bottom:0}
@@ -20,8 +21,8 @@ button,input,select{font:inherit;color:inherit}button{cursor:pointer}
 .top{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
  display:flex;align-items:center;gap:6px;padding:8px 10px}
 .top h1{font-size:19px;margin:0;font-weight:700;flex:1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ib{border:0;background:transparent;font-size:22px;min-width:42px;height:42px;border-radius:12px;color:var(--acc);display:inline-flex;align-items:center;justify-content:center}.ib:disabled{opacity:.25}
-.streak{border:0;background:color-mix(in srgb,#f08a24 16%,transparent);color:#c4620a;font-weight:700;border-radius:99px;padding:5px 10px;font-size:15px;min-width:42px}
+.ib{border:0;background:transparent;font-size:22px;min-width:44px;height:44px;border-radius:12px;color:var(--acc);display:inline-flex;align-items:center;justify-content:center}.ib:disabled{opacity:.25}
+.streak{border:0;background:color-mix(in srgb,#f08a24 16%,transparent);color:#c4620a;font-weight:700;border-radius:99px;padding:5px 10px;font-size:15px;min-width:44px;min-height:44px}
 @media(prefers-color-scheme:dark){.streak{color:#f3a14f}}
 .streak.off{background:var(--grid);color:var(--mute)}
 .stat{font-size:12px;color:var(--mute);text-align:center;margin:-2px 0 8px;min-height:16px}.stat.w{color:var(--y)}
@@ -42,7 +43,7 @@ details.more{margin-top:10px;font-size:14px}details.more summary{color:var(--acc
 .mrow{margin:8px 0}.mrow .t{display:flex;justify-content:space-between;font-size:14px}.mrow .t span:last-child{color:var(--mute)}.mrow .t b{color:var(--ink);font-weight:600}
 .hint{display:flex;gap:10px;align-items:center;background:color-mix(in srgb,#f08a24 12%,var(--card));border:1px solid color-mix(in srgb,#f08a24 30%,var(--line));border-radius:14px;padding:10px 12px;margin-bottom:12px;font-size:14px}
 .meal{padding:12px 14px 6px}.meal h2{margin-bottom:4px}
-.meal h2 .add{border:0;background:var(--acc-bg);color:var(--acc);border-radius:99px;width:34px;height:34px;font-size:22px;line-height:1;font-weight:500}
+.meal h2 .add{border:0;background:var(--acc-bg);color:var(--acc);border-radius:99px;width:44px;height:44px;font-size:24px;line-height:1;font-weight:500}
 .empty{font-size:13px;color:var(--mute);padding:4px 0 8px}
 /* Wischen zum Löschen */
 .sw{position:relative;overflow:hidden;border-top:1px solid var(--grid)}
@@ -69,7 +70,7 @@ details.more{margin-top:10px;font-size:14px}details.more summary{color:var(--acc
 .drawer.on{transform:none}
 .drawer .hd{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin:14px 10px 4px}
 .drawer button.it{display:flex;align-items:center;gap:12px;border:0;background:none;border-radius:12px;padding:11px 10px;text-align:left;font-size:16px}
-.drawer button.it.on{background:var(--acc-bg);color:var(--acc);font-weight:600}
+.drawer button.it:disabled{color:var(--mute);cursor:default}.drawer button.it.on{background:var(--acc-bg);color:var(--acc);font-weight:600}
 .drawer .ttl{font-size:22px;font-weight:700;margin:0 10px 6px}
 .sheet{position:fixed;inset:0;z-index:20;background:var(--bg);overflow-y:auto;padding:env(safe-area-inset-top) 0 calc(20px + env(safe-area-inset-bottom));display:none}
 .sheet.on{display:block}.sheet .top{background:var(--bg)}
@@ -125,6 +126,15 @@ body.full .toast{bottom:calc(16px + env(safe-area-inset-bottom))}
 .alist{display:flex;flex-wrap:wrap;gap:8px}.alist div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:7px 10px;font-size:12px;color:var(--mute);display:flex;align-items:center;gap:6px}
 .alist div b{color:var(--ink);font-weight:600}.alist i{font-style:normal;font-size:18px}
 .fr{font-size:12px;color:var(--mute);text-align:center;margin:-4px 0 10px}
+/* Tagebuch: Klassen statt Inline-Stilen, „+“-Knopf im Daumenbereich */
+.fab{position:fixed;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:7;width:58px;height:58px;border-radius:50%;border:0;background:var(--acc);color:#fff;font-size:32px;line-height:1;font-weight:400;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.fabpad{height:64px}
+.hint.acc{background:color-mix(in srgb,var(--acc) 10%,var(--card));border-color:color-mix(in srgb,var(--acc) 35%,var(--line))}
+.card.acc{border-color:color-mix(in srgb,var(--acc) 40%,var(--line))}
+.ringnote{margin:6px 0 0;text-align:center}.centernote{margin:8px 0 0;text-align:center}.block{display:block}
+.row.mb{margin:0 0 12px}.mt10{margin-top:10px}.p6{margin:0 0 6px}
+.btn.sm{padding:4px 10px;font-size:13px}.west{margin-top:10px;display:grid;gap:4px}
+.burn .na b{color:var(--mute)}
 main.slide-l{animation:sl .22s ease}main.slide-r{animation:sr .22s ease}
 @keyframes sl{from{transform:translateX(40px);opacity:.3}to{transform:none;opacity:1}}@keyframes sr{from{transform:translateX(-40px);opacity:.3}to{transform:none;opacity:1}}
 /* Suchergebnisse */
@@ -238,10 +248,15 @@ const trimStore=(st,days)=>{const lim=EK.add(TODAY(),-days),d={},a=[];
  for(const k in st.acts){const x=st.acts[k];if(x.date>=lim)a.push({date:x.date,name:x.name,type:x.type,kcal:x.kcal,bmr:x.bmr,km:x.km,min:x.min,hr:x.hr,t0:x.t0})}
  return{days:d,acts:a,synced:st.synced}};
 const trimPlan=p=>{if(!p||!p.days)return null;const lo=EK.add(TODAY(),-10),hi=EK.add(TODAY(),21),d={};for(const k in p.days)if(k>=lo&&k<=hi)d[k]=p.days[k];return{meta:p.meta,days:d}};
+/* Neuester Commit auf dem Branch (1 kleine Anfrage) */
+async function headSha(){const r=await gh(`/branches/${CFG.branch}`);if(!r.ok)return null;const j=await r.json();return j.commit&&j.commit.sha||null}
+/* Rückkehr in die App: nur neu laden, wenn sich im Repo etwas geändert hat */
+async function refreshIfChanged(){try{const sha=await headSha();if(sha&&sha===C.head){C.ts=Date.now();saveC();return flush()}}catch(e){if(e.auth)return showSetup(e.message)}return loadAll()}
 async function loadAll(){
  if(!CFG.token)return showSetup();
  status="lädt";setStatus();
- try{const dir=await gh(`/contents/data/ernaehrung?ref=${CFG.branch}`);
+ try{const hd=await headSha().catch(e=>{if(e.auth)throw e;return null});
+  const dir=await gh(`/contents/data/ernaehrung?ref=${CFG.branch}`);
   const ms=dir.ok?(await dir.json()).map(x=>x.name).filter(n=>/^\d{4}-\d{2}\.json$/.test(n)).map(n=>n.slice(0,7)):[];
   const[pr,lm,st,pl,an,...mm]=await Promise.all([getJson(P_PROF),getJson(P_LM),getRaw("data/store.json"),getRaw("data/plan.json"),getRaw("data/anpassungen.json"),
    ...ms.map(m=>getJson(`data/ernaehrung/${m}.json`))]);
@@ -249,9 +264,9 @@ async function loadAll(){
   if(st){C.store=trimStore(st,60);KV.set("store_full",JSON.stringify(st))}
   C.plan=trimPlan(pl);C.anp=an;if(pl)KV.set("plan_full",JSON.stringify(pl));
   for(const x of Q)local(x.path,x.op);
-  C.ts=Date.now();saveC();status=""}
+  C.head=hd;C.ts=Date.now();saveC();status=""}
  catch(e){if(e.auth)return showSetup(e.message);status="offline"}
- setStatus();render();flush();loadBls()}
+ setStatus();render();flush();loadBls();if(status!=="offline")autoSync()}
 /* Lebensmitteldatenbank: Zeilen [Code, Name, Werte… (Reihenfolge = BLSM.felder), norm(Name)] */
 const BLSV=2;let BLSM={felder:["kcal","p","c","f","fib","sug","salt"],einheiten:{}};
 async function loadBls(force){
@@ -266,7 +281,7 @@ function setStatus(){const e=$("st");if(!e)return;
  const syn=C.store&&C.store.synced?new Date(C.store.synced*1000).toLocaleString("de-DE",{weekday:"short",hour:"2-digit",minute:"2-digit"}):null;
  e.className="stat"+(status==="offline"||Q.length?" w":"");
  e.innerHTML=busy?`<span class="spin">↻</span> speichert …`:status==="lädt"?`<span class="spin">↻</span> aktualisiert …`:
-  status==="offline"?`Offline – ${Q.length?Q.length+" Änderung(en) warten":"letzter Stand"}`:Q.length?`${Q.length} Änderung(en) warten`:syn?`Garmin-Stand ${syn}`:""}
+  status==="offline"?`Offline – ${Q.length?Q.length+" Änderung(en) warten":"letzter Stand"}`:Q.length?`${Q.length} Änderung(en) warten`:syn?`Garmin-Stand ${syn}${syncSince()?` · <span class="spin">↻</span> wird aktualisiert`:""}`:""}
 
 /* ===== Berechnungen ===== */
 const GW=()=>{const d=C.store&&C.store.days;if(!d)return null;const k=Object.keys(d).sort().reverse().find(x=>d[x].weight);return k?d[k].weight:null};
@@ -287,7 +302,8 @@ const liveAmp=(k,v,goal,done)=>{const a=EK.ampel(k,v,goal);if(done||!a)return a;
 const AMPT={g:"Ziel erreicht",y:"Knapp daneben",r:"Deutlich daneben"};
 /* Streak: Tage in Folge mit mindestens einem Eintrag; heute zählt, sobald etwas eingetragen ist */
 function streaks(){const T=TODAY(),has=d=>entries(d).length>0;let d=has(T)?T:EK.add(T,-1),n=0;while(has(d)){n++;d=EK.add(d,-1)}
- const all=Object.values(C.months).flatMap(m=>Object.keys(m).filter(k=>m[k]&&m[k].length)).sort();let best=0,run=0,prev=null;
+ /* Rekord nur über Tage bis heute – vorausgeplante Tage zählen nicht */
+ const all=Object.values(C.months).flatMap(m=>Object.keys(m).filter(k=>k<=T&&m[k]&&m[k].length)).sort();let best=0,run=0,prev=null;
  for(const k of all){run=prev&&EK.add(prev,1)===k?run+1:1;best=Math.max(best,run);prev=k}
  return{n,best:Math.max(best,n),today:has(T)}}
 
@@ -297,7 +313,7 @@ const NAV=[["Ernährung",[["tag","book","Tagebuch"],["kal","cal","Kalender"],["v
 const TITLE={tag:"",kal:"Kalender",verlauf:"Verlauf",rezepte:"Gerichte",plan:"Trainingsplan",lm:"Meine Lebensmittel",profil:"Profil & Ziele",meintag:"Mein Tag",dash:"Dashboard"};
 function go(v){view=v;LS.set("view",v);closeDrawer();render();scrollTo(0,0)}
 function openDrawer(){const d=$("drawer");d.innerHTML=`<div class="ttl">👑 KingStats</div>`+NAV.map(([g,L])=>`<div class="hd">${g}</div>`+L.map(([k,i,l])=>`<button class="it ${view===k?"on":""}" data-go="${k}">${svg(i)}${l}</button>`).join("")).join("")+
- `<div class="hd">Garmin</div><button class="it" data-sync="1">${svg("sync")}Jetzt synchronisieren</button><p class="foot" style="margin:6px 10px">${C.store&&C.store.synced?"Letzter Stand: "+new Date(C.store.synced*1000).toLocaleString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):""}</p>`;
+ `<div class="hd">Garmin</div>${syncSince()?`<button class="it" disabled>${svg("sync")}Sync läuft … seit ${hhmm(syncSince())}</button>`:`<button class="it" data-sync="1">${svg("sync")}Jetzt synchronisieren</button>`}<p class="foot" style="margin:6px 10px">${C.store&&C.store.synced?"Letzter Stand: "+new Date(C.store.synced*1000).toLocaleString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):""}</p>`;
  d.classList.add("on");$("scrim").classList.add("on")}
 function closeDrawer(){$("drawer").classList.remove("on");$("scrim").classList.remove("on")}
 function render(){
@@ -307,7 +323,7 @@ function render(){
  const title=view==="tag"?(cur===T?"Heute":cur===EK.add(T,-1)?"Gestern":cur===EK.add(T,1)?"Morgen":new Date(cur+"T12:00:00").toLocaleDateString("de-DE",{weekday:"short",day:"numeric",month:"short"})):TITLE[view];
  const right=food?`<span style="display:flex;align-items:center;gap:2px">${view!=="kal"?`<button class="ib" data-go="kal" aria-label="Kalender">${svg("cal")}</button>`:""}<button class="streak ${sk.today?"":"off"}" data-go="kal" aria-label="Streak ${sk.n} Tage">🔥 ${sk.n}</button></span>`:view==="dash"?`<button class="ib" data-dashre="1" aria-label="Neu laden">${svg("sync")}</button>`:`<span style="min-width:42px"></span>`;
  a.innerHTML=`<div class="top"><button class="ib" data-menu="1" aria-label="Menü">${svg("menu")}</button><h1>${title}</h1>${right}</div>
- ${view==="dash"?"":`<div class="stat" id="st"></div>`}<main>${({tag:vTag,kal:vKal,verlauf:vVerlauf,rezepte:vRezepte,lm:vLm,profil:vProfil,meintag:vMeinTag,plan:vPlan,dash:vDash})[view]()}</main>
+ ${view==="dash"?"":`<div class="stat" id="st"></div>`}<main>${({tag:()=>vTag(sk),kal:vKal,verlauf:vVerlauf,rezepte:vRezepte,lm:vLm,profil:vProfil,meintag:vMeinTag,plan:vPlan,dash:vDash})[view]()}</main>
  ${food?`<nav class="tabs">${[["tag","book","Tagebuch"],["kal","cal","Kalender"],["verlauf","chart","Verlauf"],["profil","user","Profil"]].map(([k,i,l])=>`<button data-go="${k}" class="${view===k?"on":""}">${svg(i)}${l}</button>`).join("")}</nav>`:""}`;
  setStatus();if(view==="dash")showDash()}
 function ringSvg(f,c,big,small){const r=50,C2=2*Math.PI*r,q=Math.max(0,Math.min(1,f||0));
@@ -316,8 +332,8 @@ function ringSvg(f,c,big,small){const r=50,C2=2*Math.PI*r,q=Math.max(0,Math.min(
 
 /* ===== Tagebuch ===== */
 const ddm=d=>wd(d)+" "+dm(d);
-function vTag(){
- const i=info(cur),t=i.t,left=t.kcal-i.s.kcal,ka=i.has?(i.done?i.kg:(i.s.kcal<=t.kcal?"g":"r")):null,T=TODAY(),sk=streaks();
+function vTag(sk=streaks()){
+ const i=info(cur),t=i.t,left=t.kcal-i.s.kcal,ka=i.has?(i.done?i.kg:(i.s.kcal<=t.kcal?"g":"r")):null,T=TODAY();
  const src={formel:"Formel",yazio:"Yazio",garmin:"Garmin"}[t.src];
  let o=`<div class="dnav"><button class="ib" data-day="-1" aria-label="Vortag">‹</button><b data-day="0">${new Date(cur+"T12:00:00").toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long"})}</b><button class="ib" data-day="1" aria-label="Folgetag" ${cur>=MAXD()?"disabled":""}>›</button></div>${cur!==T?`<button class="today" data-day="0">↩ Zurück zu heute</button>`:""}${cur>T?`<div class="fr">Vorausplanen – Einträge zählen erst an diesem Tag</div>`:""}`;
  o+=cheatHint(i);
@@ -329,18 +345,19 @@ function vTag(){
  const zl=i.d>T&&t.aus?`Ausgleich −${n0(t.aus)}`:"";
  o+=`<div class="card"><div class="hero">${ringSvg(t.kcal?i.s.kcal/t.kcal:0,ka?COL[ka]:"var(--grid)",n0(Math.abs(left)),left>=0?"kcal übrig":"kcal zu viel")}
   <div class="kv"><div><span class="mute">Ziel</span><b>${n0(t.kcal)}</b></div><div><span class="mute">Gegessen</span><b>${n0(i.s.kcal)}</b></div>
-  ${zl?`<div class="s mute" style="display:block">${zl}</div>`:""}
+  ${zl?`<div class="s mute block">${zl}</div>`:""}
   ${i.done&&i.kg?`<div><span class="chip" style="--c0:${COL[i.kg]}">${i.ch&&i.ch.state==="full"?"Ausgeglichen ↺":AMPT[i.kg]}</span></div>`:`<div class="s mute">Basis: ${src}</div>`}</div></div>
-  <p class="s mute" style="margin:6px 0 0;text-align:center">Im Ring: Ziel − gegessen${i.d>T?" · Aktivkalorien kommen am Tag selbst dazu":""}</p>
+  <p class="s mute ringnote">Im Ring: Ziel − gegessen${i.d>T?" · Aktivkalorien kommen am Tag selbst dazu":""}</p>
   ${burnRow(i)}
-  <div class="mac">${mac}</div><details class="more"><summary>Weitere Nährwerte ›</summary>${more}<button class="btn w" style="margin-top:10px" data-micro="1">Vitamine & Mineralstoffe ›</button></details></div>`;
- o+=carrierNote(i)+weekCard();
- o+=`<div class="row" style="margin:0 0 12px"><button class="btn" data-go="rezepte">📖 Gerichte</button><button class="btn" data-recipe="1">🍲 Kochen & teilen</button></div>`;
+  <div class="mac">${mac}</div><details class="more"><summary>Weitere Nährwerte ›</summary>${more}<button class="btn w mt10" data-micro="1">Vitamine & Mineralstoffe ›</button></details></div>`;
+ /* Mahlzeiten direkt unter der Ring-Karte (häufigste Aktion), Wochen-/Gewichtskarten darunter */
  for(const[k,l]of EK.MEALS){const e=i.e.filter(x=>x.meal===k),s=EK.sum(e);
   o+=`<div class="card meal"><h2><span>${l} <small>${e.length?n0(s.kcal)+" kcal · P "+n0(s.p)+" g":""}</small></span><button class="add" data-add="${k}" aria-label="${l} hinzufügen">+</button></h2>
   ${e.length?e.map(x=>swRow(`data-ent="${h(x.id)}"`,`<span>${h(x.name)} <small>${unitText(x)}</small></span><span>${n0(x.n&&x.n.kcal)} <small>kcal</small></span>`,`data-delent="${h(x.id)}"`)).join(""):`<div class="empty">Noch nichts eingetragen</div>`}</div>`}
- o+=weightCard()+actsRow(cur);
- o+=`<p class="foot">Tipp: Nach links/rechts wischen wechselt den Tag. Einträge nach links wischen zum Löschen, antippen zum Ändern.</p>`;
+ o+=`<div class="row mb"><button class="btn" data-go="rezepte">📖 Gerichte</button><button class="btn" data-recipe="1">🍲 Kochen & teilen</button></div>`;
+ o+=carrierNote(i)+weekCard()+weightCard()+actsRow(cur);
+ if(TIPS<5)o+=`<p class="foot">Tipp: Nach links/rechts wischen wechselt den Tag. Einträge nach links wischen zum Löschen, antippen zum Ändern.</p>`;
+ o+=`<div class="fabpad"></div><button class="fab" data-add="${mealNow()}" aria-label="Eintragen (${(EK.MEALS.find(m=>m[0]===mealNow())||[])[1]||""})">+</button>`;
  return o}
 /* Cheat Day: Überschuss und wohin er verteilt wurde */
 function cheatHint(i){const c=i.ch;if(!c)return"";
@@ -348,14 +365,14 @@ function cheatHint(i){const c=i.ch;if(!c)return"";
  const st=c.state==="full"?`<b>Ausgeglichen!</b> Die ${n0(c.need)} kcal über dem Ziel sind über die Folgetage wieder drin.`:
   c.state==="run"?`<b>${n0(c.need)} kcal über dem Ziel</b> – kein Problem: automatisch verteilt auf ${list}. Halte dort dein (etwas niedrigeres) Ziel, dann ist der Tag wieder grün.`:
   `<b>${n0(c.need)} kcal über dem Ziel</b> – verteilt auf ${list||"–"}${c.left?`; ${n0(c.left)} kcal ließen sich nicht mehr unterbringen`:""}. Ein Ausgleichstag ohne Einträge zählt nicht.`;
- return`<div class="hint" style="background:color-mix(in srgb,var(--acc) 10%,var(--card));border-color:color-mix(in srgb,var(--acc) 35%,var(--line))">↺<span>${st}</span></div>`}
+ return`<div class="hint acc">↺<span>${st}</span></div>`}
 /* Ausgleichstag: warum das Ziel niedriger ist und wie es leichter geht */
 function carrierNote(i){if(!i.t.aus)return"";const pl=planDay(i.d),rest=pl&&pl.type==="rest",from=(i.t.carry||[]).map(([d,a])=>`${n0(a)} kcal von ${ddm(d)}`).join(" und ");
- return`<div class="card" style="border-color:color-mix(in srgb,var(--acc) 40%,var(--line))"><h2>↺ Ausgleich ${i.d>=TODAY()?"geplant":""}<small>−${n0(i.t.aus)} kcal</small></h2>
- <p class="s" style="margin:0 0 6px">Dein Ziel ist um ${n0(i.t.aus)} kcal niedriger (${from}). Statt weniger zu essen geht auch mehr Bewegung – sie hebt dein Ziel automatisch wieder an:</p>
+ return`<div class="card acc"><h2>↺ Ausgleich ${i.d>=TODAY()?"geplant":""}<small>−${n0(i.t.aus)} kcal</small></h2>
+ <p class="s p6">Dein Ziel ist um ${n0(i.t.aus)} kcal niedriger (${from}). Statt weniger zu essen geht auch mehr Bewegung – sie hebt dein Ziel automatisch wieder an:</p>
  <div class="s mute">🚶 45 Min Spaziergang ≈ 150 kcal${rest?" (heute Ruhetag – nur locker)":" · 🚴 30 Min lockeres Rad ≈ 200 kcal · 🏋️ 15 Min länger im Gym ≈ 70 kcal"} – als Aktivität auf der Uhr aufzeichnen.</div></div>`}
 /* Woche Mo–So: Bilanz gegessen gegen Garmin-Verbrauch und gegen das Wochenziel */
-function weekCard(){const T=TODAY(),mon=EK.add(T,-((new Date(T+"T12:00:00").getDay()+6)%7)),p=prof(),rate=p.rate!=null?+p.rate:null;
+function weekCard(){const T=TODAY(),mon=EK.monday(T),p=prof(),rate=p.rate!=null?+p.rate:null;
  let bal=0,n=0,plan=0;for(let k=0;k<7;k++){const d=EK.add(mon,k);if(d>=T)break;const i=info(d);if(!i.has)continue;n++;
   const use=i.gk!=null?i.gk:i.t.orig-EK.goalAdj(p);bal+=i.s.kcal-use;plan+=EK.goalAdj(p)}
  if(!n)return"";const kg=bal/7700,okc=bal<=plan+200;
@@ -363,14 +380,17 @@ function weekCard(){const T=TODAY(),mon=EK.add(T,-((new Date(T+"T12:00:00").getD
  <div><span>Bilanz</span><b class="${bal>0&&rate!=null&&rate<0?"warn":""}">${bal>0?"+":"−"}${n0(Math.abs(bal))}</b> <small class="mute">kcal</small></div>
  <div><span>≈ Körpergewicht</span><b>${kg>0?"+":"−"}${n1(Math.abs(kg))}</b> <small class="mute">kg</small></div>
  <div><span>Plan bisher</span><b>${plan>0?"+":plan<0?"−":""}${n0(Math.abs(plan))}</b> <small class="mute">kcal</small></div></div>
- <p class="s ${okc?"mute":"warn"}" style="margin:8px 0 0;text-align:center">${okc?"Du liegst im Plan.":"Noch über dem Plan – der Ausgleich der nächsten Tage holt das auf."} Bilanz = gegessen − Garmin-Verbrauch.</p></div>`}
+ <p class="s ${okc?"mute":"warn"} centernote">${okc?"Du liegst im Plan.":"Noch über dem Plan – der Ausgleich der nächsten Tage holt das auf."} Bilanz = gegessen − Garmin-Verbrauch.</p></div>`}
 /* Verbrannt laut Garmin – Aktivkalorien hervorgehoben */
 /* So entsteht das Tagesziel: Grundziel (inkl. Ausgleich) + Aktivkalorien = Ziel heute */
 function burnRow(i){const t=i.t;if(i.d>TODAY())return"";const grund=t.kcal-t.train,bonusL=t.bonusAll?"aktiv verbrannt":"Training";
- const syn=i.d===TODAY()&&C.store&&C.store.synced?"Stand "+new Date(C.store.synced*1000).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}):"";
+ const sy=C.store&&C.store.synced?new Date(C.store.synced*1000):null,isT=i.d===TODAY(),
+  /* Der letzte Sync stammt von einem früheren Tag: für heute gibt es noch keine Garmin-Werte – nicht „0 · Stand 22:52“ zeigen */
+  noData=isT&&sy&&EK.day(sy)!==i.d,
+  syn=isT&&sy?(noData?"noch keine Werte von heute<br>letzter Sync "+sy.toLocaleString("de-DE",{weekday:"short",hour:"2-digit",minute:"2-digit"}):"Stand "+sy.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})):"";
  return`<div class="burn"><div><b>${n0(grund)}</b><span>Grundziel${t.aus?`<br>inkl. −${n0(t.aus)} Ausgleich`:""}</span></div>
- <div class="fire"><b>+ 🔥 ${n0(t.train)}</b><span>${bonusL}${syn?`<br>${syn}`:""}</span></div>
- <div><b>= ${n0(t.kcal)}</b><span>dein Ziel ${i.d===TODAY()?"heute":""}</span></div></div>`}
+ <div class="fire${noData?" na":""}"><b>+ 🔥 ${noData?"–":n0(t.train)}</b><span>${noData?"":bonusL}${syn?`${noData?"":"<br>"}${syn}`:""}</span></div>
+ <div><b>= ${n0(t.kcal)}</b><span>dein Ziel ${isT?(noData?"(vorläufig)":"heute"):""}</span></div></div>`}
 /* Gewicht: Wochen bis zum Ziel – nach Plan-Tempo und nach deinem echten Schnitt der letzten 14 Tage */
 function weightCard(){const p=prof(),w=GW(),goal=C.profil&&C.profil.zielGewicht;if(!w&&!goal)return"";
  let est="";if(goal&&w&&Math.abs(w-goal)>=0.2){const need=w-goal,dir=need>0?-1:1,fmtW=x=>x>52?"über ein Jahr":`ca. ${Math.ceil(x)} Woche${Math.ceil(x)>1?"n":""} (bis ${new Date(Date.now()+x*7*864e5).toLocaleDateString("de-DE",{day:"numeric",month:"short"})})`;
@@ -378,9 +398,9 @@ function weightCard(){const p=prof(),w=GW(),goal=C.profil&&C.profil.zielGewicht;
   let b=0,n=0;for(let k=1;k<=14;k++){const i=info(EK.add(TODAY(),-k));if(i.has&&i.gk!=null){b+=i.s.kcal-i.gk;n++}}
   if(n>=5){const kgw=b/n*7/7700;lines.push(Math.sign(kgw)===dir&&Math.abs(kgw)>0.02?`Nach deinem echten Schnitt (${b/n>0?"+":"−"}${n0(Math.abs(b/n))} kcal/Tag, ${n} Tage): <b>${fmtW(Math.abs(need/kgw))}</b>`:`Nach deinem echten Schnitt der letzten ${n} Tage geht es gerade nicht Richtung Ziel.`)}
   else lines.push(`Echter Schnitt: ab 5 erfassten Tagen mit Garmin-Werten.`);
-  est=`<div class="s" style="margin-top:10px;display:grid;gap:4px">${lines.map(x=>`<div>⏱ ${x}</div>`).join("")}</div>`}
+  est=`<div class="s west">${lines.map(x=>`<div>⏱ ${x}</div>`).join("")}</div>`}
  return`<div class="card"><div class="wt"><div><span>Aktuell</span><b>${w?n1(w):"–"}</b> <small class="mute">kg</small></div><div><span>Ziel</span><b>${goal?n1(goal):"–"}</b> <small class="mute">kg</small></div>
- <div><span>${goal&&w?(w>goal?"noch abnehmen":w<goal?"noch zunehmen":"erreicht"):"Zielgewicht"}</span><b>${goal&&w?n1(Math.abs(w-goal)):`<button class="btn" style="padding:4px 10px;font-size:13px" data-go="profil">eintragen</button>`}</b>${goal&&w?' <small class="mute">kg</small>':""}</div></div>${est}</div>`}
+ <div><span>${goal&&w?(w>goal?"noch abnehmen":w<goal?"noch zunehmen":"erreicht"):"Zielgewicht"}</span><b>${goal&&w?n1(Math.abs(w-goal)):`<button class="btn sm" data-go="profil">eintragen</button>`}</b>${goal&&w?' <small class="mute">kg</small>':""}</div></div>${est}</div>`}
 function actsRow(d){if(!C.store||d>TODAY())return"";const gd=C.store.days[d]||{},A=C.store.acts.filter(a=>a.date===d);if(!A.length&&gd.steps==null)return"";
  return`<div class="sec">Aktivitäten</div><div class="alist">${gd.steps!=null?`<div><i>👟</i><span><b>${n0(gd.steps)}</b> Schritte</span></div>`:""}
  ${A.map(a=>`<div><i>${EMO[a.type]||"⚡"}</i><span><b>${Math.round(a.min)} min</b>${a.km?" · "+n1(a.km)+" km":""} · ${n0(Math.max(0,(a.kcal||0)-(a.bmr||0)))} kcal</span></div>`).join("")}</div>`}
@@ -532,7 +552,7 @@ function vMeinTag(){
  ${tile("Schritte",st?n0(st.v):"–","",st&&st.row.steps_goal?Math.round(st.v/st.row.steps_goal*100)+" % vom Ziel":"",st&&st.row.steps_goal?(st.v>=st.row.steps_goal?"g":st.v>=st.row.steps_goal*.6?"y":"r"):null)}
  ${tile("Stress Ø",sr?sr.v:"–","",sr?sr.v<=25?"ruhig":sr.v<=50?"niedrig":sr.v<=75?"mittel":"hoch":"",sr?(sr.v<=50?"g":sr.v<=75?"y":"r"):null)}</div></div>`;
  if(C.anp&&C.anp.fazit)o+=`<div class="card"><h2>Einschätzung<small>${h(C.anp.stand||"")}</small></h2>${bullets(C.anp.fazit)}</div>`;
- const mon=EK.add(T,-((new Date(T+"T12:00:00").getDay()+6)%7));
+ const mon=EK.monday(T);
  o+=`<div class="card"><h2>Diese Woche</h2><div class="wkp">${[0,1,2,3,4,5,6].map(k=>{const d=EK.add(mon,k),pp=planDay(d),done=C.store.acts.some(a=>a.date===d&&a.min>=15);
   return`<div class="${d===T?"t":""}">${["Mo","Di","Mi","Do","Fr","Sa","So"][k]}<b>${pp?EMOP[pp.type]||"•":"·"}</b>${d<=T?(done?'<span style="color:var(--g)">✓</span>':pp&&pp.type!=="rest"&&d<T?'<span style="color:var(--r)">✗</span>':"&nbsp;"):"&nbsp;"}</div>`}).join("")}</div></div>`;
  const last=C.store.acts.slice().sort((a,b)=>a.date<b.date?1:-1).slice(0,5);
@@ -636,7 +656,7 @@ function dishToRecipe(f,mode){const z=f.zutaten||[],base=f.portionen||1,ok=z.len
 /* ===== Komplettes Dashboard: wird aus dem Repo (src/ + data/) direkt auf dem iPhone zusammengebaut, wie build.py ===== */
 let DASH={html:null,p:null,shown:null,url:null};
 /* Blob-URL statt srcdoc: das Dashboard ändert location.hash – in einem srcdoc-Rahmen würde das die App selbst neu laden */
-function setFrame(f,html){if(DASH.url)URL.revokeObjectURL(DASH.url);DASH.url=URL.createObjectURL(new Blob([html],{type:"text/html;charset=utf-8"}));f.src=DASH.url}
+function setFrame(f,html){if(DASH.url)URL.revokeObjectURL(DASH.url);f.onload=()=>{try{noZoom(f.contentDocument)}catch(e){}};DASH.url=URL.createObjectURL(new Blob([html],{type:"text/html;charset=utf-8"}));f.src=DASH.url}
 function vDash(){return`<div class="load" id="dl"><span class="spin">↻</span><br>Dashboard wird geladen …</div>`}
 function showDash(){
  const top=document.querySelector(".top"),put=html=>{let f=$("dashf");if(!f){f=document.createElement("iframe");f.id="dashf";f.title="Dashboard";document.body.append(f)}
@@ -910,15 +930,28 @@ document.addEventListener("touchend",ev=>{if(SD){const t=ev.changedTouches&&ev.c
  SW=null});
 
 /* ===== Garmin-Sync anstoßen ===== */
-async function syncGarmin(){closeDrawer();
- try{const r=await gh("/actions/workflows/garmin-sync.yml/dispatches",{method:"POST",body:JSON.stringify({ref:CFG.branch})});
-  if(r.status===403)return toast("Token darf keine Actions starten – Berechtigung „Actions: Read and write“ ergänzen",4500);
-  if(!r.ok)return toast("Sync konnte nicht gestartet werden ("+r.status+")");
-  toast("Garmin-Sync gestartet – neue Werte in 1–2 Minuten",3500);
+/* Automatisch beim Öffnen: Garmin-Stand älter als 2 h → Cloud-Sync anstoßen (geplante GitHub-Läufe kommen oft Stunden zu spät).
+   Höchstens 1× pro Stunde, nie während ein Sync läuft. */
+function autoSync(){const sy=C.store&&C.store.synced;if(!sy||!CFG.token||Date.now()/1000-sy<2*3600||syncSince())return;
+ if(Date.now()-LS.get("autosync",0)<36e5)return;LS.set("autosync",Date.now());syncGarmin(true)}
+/* Sperre gegen Doppeltipp: Zeitpunkt des Starts in localStorage (max. 5 Min.), vor dem Start Prüfung auf einen schon laufenden Lauf */
+const SYNC_LOCK=5*60e3,syncSince=()=>{const t=LS.get("sync",0);return t&&Date.now()-t<SYNC_LOCK?t:0},hhmm=t=>new Date(t).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});
+async function syncGarmin(auto){closeDrawer();
+ const since=syncSince();if(since)return auto?null:toast(`Sync läuft bereits (seit ${hhmm(since)}) – neue Werte in Kürze`,3500);
+ LS.set("sync",Date.now());
+ const unlock=()=>LS.set("sync",0);
+ try{let active=false;
+  try{const r=await gh("/actions/workflows/garmin-sync.yml/runs?per_page=5");if(r.ok){const j=await r.json();active=(j.workflow_runs||[]).some(x=>x.status==="queued"||x.status==="in_progress"||x.status==="waiting")}}catch(e){if(e.auth)throw e}
+  if(active){if(!auto)toast("Sync läuft bereits – neue Werte in Kürze",3500)}
+  else{const r=await gh("/actions/workflows/garmin-sync.yml/dispatches",{method:"POST",body:JSON.stringify({ref:CFG.branch})});
+   if(r.status===403){unlock();return toast("Token darf keine Actions starten – Berechtigung „Actions: Read and write“ ergänzen",4500)}
+   if(!r.ok){unlock();return toast("Sync konnte nicht gestartet werden ("+r.status+")")}
+   toast(auto?"Garmin-Daten sind älter als 2 h – hole aktuelle Werte (1–2 Min.)":"Garmin-Sync gestartet – neue Werte in 1–2 Minuten",3500)}
+  setStatus();
   const before=C.store&&C.store.synced;let n=0;
-  const poll=async()=>{if(++n>8)return;try{const st=await getRaw("data/store.json");if(st&&st.synced!==before){await loadAll();if(view==="dash")showDash();return toast("Garmin-Daten aktualisiert")}}catch(e){}setTimeout(poll,30000)};
+  const poll=async()=>{if(++n>8){unlock();return setStatus()}try{const st=await getRaw("data/store.json");if(st&&st.synced!==before){unlock();await loadAll();if(view==="dash")showDash();return toast("Garmin-Daten aktualisiert")}}catch(e){}setTimeout(poll,30000)};
   setTimeout(poll,60000)}
- catch(e){toast(e.auth?e.message:"Keine Verbindung")}}
+ catch(e){unlock();toast(e.auth?e.message:"Keine Verbindung")}}
 
 /* ===== Einrichtung ===== */
 function showSetup(err){
@@ -999,10 +1032,16 @@ document.addEventListener("submit",ev=>{ev.preventDefault();const f=ev.target;
 document.addEventListener("keydown",ev=>{if(ev.key==="Enter"&&ev.target.id==="ean")byBarcode(ev.target.value)});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState!=="visible")return;
  if(cur<TODAY()&&!$("sheet").classList.contains("on")&&Date.now()-C.ts>6*36e5)cur=TODAY();
- if(Date.now()-C.ts>60000){loadAll().then(()=>{if(view==="dash")showDash()})}else flush()});
+ if(Date.now()-C.ts>60000){refreshIfChanged().then(()=>{if(view==="dash")showDash()})}else flush()});
 addEventListener("online",flush);
 addEventListener("resize",()=>{const f=$("dashf"),t=document.querySelector(".top");if(f&&t){f.style.top=t.getBoundingClientRect().bottom+"px";f.style.height=`calc(100% - ${t.getBoundingClientRect().bottom}px)`}});
 
+/* Kein Zoomen wie auf einer Webseite: Pinch (iOS-Gesten, Zwei-Finger-Bewegung) und Doppeltipp sperren – auch im Dashboard-Rahmen */
+function noZoom(doc){const stop=e=>e.preventDefault();["gesturestart","gesturechange","gestureend"].forEach(t=>doc.addEventListener(t,stop,{passive:false}));
+ doc.addEventListener("touchmove",e=>{if(e.touches&&e.touches.length>1)e.preventDefault()},{passive:false})}
+noZoom(document);
+/* Tipp-Zeile im Tagebuch nur bei den ersten 5 Starts */
+const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Start: sofort mit dem letzten Stand anzeigen, dann im Hintergrund frisch laden */
 if(CFG.token){render();loadAll()}else showSetup();
 </script></body></html>
