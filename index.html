@@ -91,6 +91,14 @@ label.f{display:block;font-size:13px;color:var(--mute);margin:10px 0 4px}
 .qs button.on{background:var(--acc-bg);border-color:var(--acc);color:var(--acc);font-weight:600}
 .nut{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center;margin:12px 0}.nut div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 2px}.nut b{display:block;font-size:18px}.nut small{color:var(--mute);font-size:11px}
 video{width:100%;border-radius:var(--rad);background:#000;aspect-ratio:3/4;object-fit:cover}
+.scanwrap{position:relative;border-radius:var(--rad);overflow:hidden;background:#000;aspect-ratio:3/4}.scanwrap video{height:100%;border-radius:0;display:block}
+.scanbox{position:absolute;left:9%;right:9%;top:36%;height:24%;border:3px solid #fff;border-radius:16px;box-shadow:0 0 0 999px rgba(0,0,0,.5);transition:border-color .15s}
+.scanbox i{position:absolute;left:6%;right:6%;top:50%;height:2px;background:var(--r);box-shadow:0 0 8px var(--r);animation:scl 1.6s ease-in-out infinite alternate}
+.scanbox.hit{border-color:var(--g)}.scanbox.hit i{background:var(--g);box-shadow:0 0 8px var(--g);animation:none}
+@keyframes scl{from{top:18%}to{top:82%}}
+.lblhint{background:var(--acc-bg);border-radius:14px;padding:12px 14px;margin:4px 0 10px;display:grid;gap:4px;font-size:14px}.lblhint small{color:var(--mute)}.lblhint .lnk{border:0;background:none;padding:0;font:inherit;color:var(--acc);text-decoration:underline}
+.lblbtn{display:block;text-align:center;margin:6px 0 2px;cursor:pointer}.lblst{margin:4px 0 0;min-height:0;color:var(--mute)}.lblst.ok{color:var(--g)}.lblst.warn{color:var(--y)}.lblst.bad{color:var(--r)}
+.inp.auto{background:var(--acc-bg)}
 .toast{position:fixed;left:14px;right:14px;bottom:calc(86px + env(safe-area-inset-bottom));z-index:30;background:var(--ink);color:var(--bg);border-radius:14px;padding:12px 14px;font-size:14px;
  opacity:0;transform:translateY(10px);transition:.25s;pointer-events:none;display:flex;justify-content:space-between;align-items:center;gap:10px}
 .toast.on{opacity:1;transform:none}.toast button{border:0;background:none;color:var(--acc-bg);font-weight:700;pointer-events:auto;padding:4px 6px}
@@ -162,7 +170,7 @@ main.dragx{will-change:transform}main.snap{transition:transform .28s cubic-bezie
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=1ea3c64"></script>
+<script src="kern.js?v=fc3dc40"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -457,10 +465,13 @@ function vLm(){
  <div class="card" style="padding:4px 16px">${L.length?L.map(f=>swRow(`data-editfood="${h(f.id)}"`,`<span>${h(f.name)}${f.fav?" ★":""}<br><small>${f.marke?h(f.marke)+" · ":""}${n0(f.n&&f.n.kcal)} kcal · P ${n1(f.n&&f.n.p)} g je 100 g${f.portion&&f.portion.g!==100?" · Portion "+n0(f.portion.g)+" g":""}</small></span><span class="mute">›</span>`,`data-delfood="${h(f.id)}"`)).join("").replace('<div class="sw">','<div class="sw" style="border-top:0">')
   :`<p class="empty" style="padding:14px 0">${lmTab==="eigen"?"Lege hier Lebensmittel an, die es in keiner Datenbank gibt (z. B. Omas Lasagne). Sie erscheinen beim Suchen ganz oben als „von dir“.":lmTab==="fav"?"Markiere Lebensmittel beim Eintragen mit ☆ als Favorit.":"Gescannte Produkte werden hier gespeichert und funktionieren dann auch offline."}</p>`}</div>`}
 function delFood(id){const f=foods().find(x=>x.id===id);if(!f)return;change(P_LM,{t:"fooddel",id});toast(`„${f.name}“ entfernt`,4500,"Rückgängig",()=>change(P_LM,{t:"food",item:f}))}
-function openFoodForm(f,fromAdd){FF_ADD=!!fromAdd;const sh=$("sheet");sh.classList.add("on");const x=f||{n:{},portion:{g:100}},v=k=>x.n&&x.n[k]!=null?String(x.n[k]).replace(".",","):"";
+function openFoodForm(f,fromAdd,o={}){FF_ADD=!!fromAdd;const sh=$("sheet");sh.classList.add("on");const isNew=!f||!f.id,x=f||{n:{},portion:{g:100}},v=k=>x.n&&x.n[k]!=null?String(x.n[k]).replace(".",","):"";
  const fl=(k,l)=>`<div><label class="f">${l}</label><input class="inp" name="${k}" type="text" inputmode="decimal" value="${v(k)}"></div>`;
- sh.innerHTML=`<div class="top"><button class="ib" data-close="1" aria-label="Schließen">✕</button><h1>${f?"Lebensmittel":"Neues Lebensmittel"}</h1><span style="min-width:42px"></span></div><main><form id="ff">
- <label class="f">Name</label><input class="inp" name="name" required value="${h(x.name||"")}" placeholder="z. B. Omas Lasagne">
+ sh.innerHTML=`<div class="top"><button class="ib" data-close="1" aria-label="Schließen">✕</button><h1>${isNew?"Neues Lebensmittel":"Lebensmittel"}</h1><span style="min-width:42px"></span></div><main><form id="ff">
+ ${o.hint?`<div class="lblhint"><b>${h(o.hint)}</b><span>Fotografiere die Nährwerttabelle – die Werte werden übernommen, du gibst nur den Namen ein.</span><small>Barcode ${h(o.ean||"")} · <button type="button" class="lnk" data-scan="1">nochmal scannen</button></small></div>`:""}
+ ${isNew?`<label class="btn ${o.hint?"p ":""}w lblbtn">📷 Nährwerttabelle fotografieren<input type="file" id="lblfile" accept="image/*" capture="environment" hidden></label><p class="s lblst" id="lbl-st"></p>`:""}
+ ${o.ean?`<input type="hidden" name="ean" value="${h(o.ean)}">`:""}
+ <label class="f">Name</label><input class="inp" name="name" required value="${h(x.name||"")}" placeholder="${o.hint?"Name des Produkts":"z. B. Omas Lasagne"}">
  <label class="f">Marke (optional)</label><input class="inp" name="marke" value="${h(x.marke||"")}">
  <p class="s mute" style="margin:14px 0 0">Nährwerte <b>je 100 g</b> (stehen auf der Packung)</p>
  <div class="row">${fl("kcal","Kalorien")}${fl("p","Protein g")}</div><div class="row">${fl("c","KH g")}${fl("f","Fett g")}</div>
@@ -470,7 +481,7 @@ function openFoodForm(f,fromAdd){FF_ADD=!!fromAdd;const sh=$("sheet");sh.classLi
  <div><label class="f">Packung (g/ml, optional)</label><input class="inp" name="pkg" type="text" inputmode="decimal" value="${x.pack?x.pack.g:""}" placeholder="z. B. 420"></div></div>
  <div class="tg"><span>Favorit</span><input type="checkbox" name="fav" ${x.fav?"checked":""}></div>
  <input type="hidden" name="id" value="${h(x.id||"")}">
- <button class="btn p w" style="margin-top:12px" type="submit">Speichern</button>${f?`<button class="btn d w" style="margin-top:8px" type="button" data-delfood="${h(f.id)}">Löschen</button>`:""}</form></main>`}
+ <button class="btn p w" style="margin-top:12px" type="submit">Speichern</button>${f&&f.id?`<button class="btn d w" style="margin-top:8px" type="button" data-delfood="${h(f.id)}">Löschen</button>`:""}</form></main>`}
 function saveFoodForm(fm){const v=k=>{const s=fm.elements[k].value.trim().replace(",",".");return s===""?null:+s};
  const name=fm.elements.name.value.trim();if(!name||v("kcal")==null)return toast("Name und Kalorien angeben");
  const old=foods().find(x=>x.id===fm.elements.id.value),id=old?old.id:"eigen:"+EK.uid(),pg=v("pg");
@@ -756,33 +767,117 @@ async function offSearch(){const q=S.q.trim();if(!q)return;const b=$("rl").query
   const j=await r.json();S.off=(j.products||[]).map(offFood).filter(Boolean);S.offq=q}
  catch(e){S.off=[];S.offq=q;toast("Open Food Facts nicht erreichbar")}
  results()}
+/* Barcode → 1. eigene/gescannte Lebensmittel, 2. Open Food Facts. Nichts gefunden → Formular mit Hinweis
+   und „Nährwerttabelle fotografieren“; Werte werden per Texterkennung eingetragen, du gibst nur den Namen ein. */
 async function byBarcode(code){
  code=String(code).replace(/\D/g,"");if(code.length<8)return toast("Ungültiger Barcode");
  const own=foods().find(f=>f.src==="off:"+code||f.ean===code);if(own)return openAmount({food:own});
- toast("Suche Produkt …",1500);
+ toast("Suche Produkt …",1500);let part=null,offline=false;
  try{const r=await fetch(`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=${OFF_F}`),j=await r.json();
-  const f=j.status===1&&j.product?offFood({...j.product,code}):null;
+  const p=j.status===1&&j.product?{...j.product,code}:null,f=p?offFood(p):null;
   if(f){change(P_LM,{t:"food",item:{...f,fav:false}},true);return openAmount({food:f})}
-  toast("Produkt unbekannt – leg es einmal selbst an, danach erkennt die App den Barcode",4500);openFoodForm(null,true);setEan(code)}
- catch(e){console.error(e);toast("Open Food Facts nicht erreichbar");openFoodForm(null,true);setEan(code)}}
-function setEan(code){const f=$("ff");if(f){const i=document.createElement("input");i.type="hidden";i.name="ean";i.value=code;f.append(i)}}
+  /* Produkt bekannt, aber ohne Nährwerte: Name/Marke/Packung übernehmen */
+  if(p)part={name:p.product_name_de||p.product_name||"",marke:(p.brands||"").split(",")[0].trim(),...offPack(p)}}
+ catch(e){console.error(e);offline=true}
+ openFoodForm(part?{n:{},portion:{g:100},...part}:null,true,{ean:code,
+  hint:offline?"Open Food Facts ist gerade nicht erreichbar.":part?"Produkt gefunden, aber ohne Nährwerte.":"Produkt nicht gefunden – weder bei deinen Lebensmitteln noch bei Open Food Facts."})}
+function setEan(code){const f=$("ff");if(f&&!f.elements.ean){const i=document.createElement("input");i.type="hidden";i.name="ean";i.value=code;f.append(i)}}
 
-let SCAN=null;
+/* Kamera: einmal freigegeben, bleibt der Stream kurz offen – so fragt iOS beim nächsten Scan nicht erneut.
+   Geht nach 2 Minuten ohne Scanner oder sofort beim Verlassen der App aus. */
+let CAM=null,CAMT=null,SCAN=null;
+async function camStream(){clearTimeout(CAMT);
+ if(CAM&&CAM.getVideoTracks().some(t=>t.readyState==="live"))return CAM;
+ CAM=await navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:"environment",width:{ideal:1280},height:{ideal:720}}});return CAM}
+function camOff(){clearTimeout(CAMT);if(CAM){try{CAM.getTracks().forEach(t=>t.stop())}catch(e){}CAM=null}}
+function camLater(){clearTimeout(CAMT);CAMT=setTimeout(camOff,120000)}
+document.addEventListener("visibilitychange",()=>{if(document.hidden){if(SCAN)SCAN.on=false;camOff()}});
+const loadJs=src=>new Promise((ok,no)=>{const s=document.createElement("script");s.src=src;s.onload=ok;s.onerror=no;document.head.append(s)});
+
 async function openScan(){const sh=$("sheet");sh.classList.add("on");
  sh.innerHTML=`<div class="top"><button class="ib" data-back="1" aria-label="Zurück">‹</button><h1>Barcode</h1><span style="min-width:42px"></span></div><main>
- <video id="vid" playsinline muted autoplay></video><p class="s mute" id="sc-msg">Kamera wird gestartet …</p>
+ <div class="scanwrap"><video id="vid" playsinline muted autoplay></video><div class="scanbox" id="sbox"><i></i></div></div>
+ <p class="s mute" id="sc-msg" style="text-align:center">Kamera wird gestartet …</p>
  <label class="f">Oder Nummer eintippen</label><div class="row"><input id="ean" class="inp" inputmode="numeric" placeholder="4001234567890"><button class="btn p" data-ean="1" style="flex:0 0 auto">Suchen</button></div></main>`;
- const msg=t=>{const e=$("sc-msg");if(e)e.textContent=t},done=c=>{stopScan();byBarcode(c)};
- try{const v=$("vid");
-  if("BarcodeDetector" in window){const st=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});v.srcObject=st;await v.play();
-   const bd=new BarcodeDetector({formats:["ean_13","ean_8","upc_a","upc_e"]});SCAN={st,on:true};msg("Barcode ins Bild halten");
-   const loop=async()=>{if(!SCAN||!SCAN.on)return;try{const r=await bd.detect(v);if(r.length)return done(r[0].rawValue)}catch(e){}requestAnimationFrame(loop)};loop()}
-  else{if(!window.ZXing)await new Promise((ok,no)=>{const s=document.createElement("script");s.src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js";s.onload=ok;s.onerror=no;document.head.append(s)});
+ const msg=t=>{const e=$("sc-msg");if(e)e.textContent=t};
+ const me={on:true};SCAN=me;
+ try{const v=$("vid"),st=await camStream();if(!me.on)return camLater();
+  v.srcObject=st;await v.play();
+  let dec;
+  if("BarcodeDetector" in window){const bd=new BarcodeDetector({formats:["ean_13","ean_8","upc_a","upc_e"]});dec=async c=>{const r=await bd.detect(c);return r.length?r[0].rawValue:null}}
+  else{if(!window.ZXing)await loadJs("https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js");
    const hints=new Map();hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS,[ZXing.BarcodeFormat.EAN_13,ZXing.BarcodeFormat.EAN_8,ZXing.BarcodeFormat.UPC_A,ZXing.BarcodeFormat.UPC_E]);
-   const rd=new ZXing.BrowserMultiFormatReader(hints);SCAN={rd,on:true};msg("Barcode ins Bild halten");
-   await rd.decodeFromConstraints({video:{facingMode:"environment"}},v,(r)=>{if(r&&SCAN&&SCAN.on)done(r.getText())})}}
- catch(e){msg("Kamera nicht verfügbar ("+(e&&e.name||"Fehler")+"). Du kannst die Nummer unten eintippen.")}}
-function stopScan(){if(!SCAN)return;SCAN.on=false;try{SCAN.st&&SCAN.st.getTracks().forEach(t=>t.stop())}catch(e){}try{SCAN.rd&&SCAN.rd.reset()}catch(e){}SCAN=null}
+   hints.set(ZXing.DecodeHintType.TRY_HARDER,true);const rd=new ZXing.MultiFormatReader();rd.setHints(hints);
+   dec=async c=>{try{return rd.decode(new ZXing.BinaryBitmap(new ZXing.HybridBinarizer(new ZXing.HTMLCanvasElementLuminanceSource(c)))).getText()}catch(e){return null}}}
+  if(!me.on)return;msg("Barcode in den Rahmen halten");
+  /* nur den Bereich im Rahmen auswerten (Video ist per object-fit:cover beschnitten) */
+  const cv=document.createElement("canvas"),cx=cv.getContext("2d",{willReadFrequently:true});
+  const tick=async()=>{if(!me.on||SCAN!==me)return;
+   const box=$("sbox");if(!box||!v.videoWidth)return setTimeout(tick,120);
+   const vr=v.getBoundingClientRect(),br=box.getBoundingClientRect(),vw=v.videoWidth,vh=v.videoHeight,
+    k=Math.max(vr.width/vw,vr.height/vh),ox=(vr.width-vw*k)/2,oy=(vr.height-vh*k)/2,
+    mx=br.width*.12,my=br.height*.15,/* etwas Rand um den Rahmen mitnehmen, falls der Code knapp übersteht */
+    sx=Math.max(0,(br.left-mx-vr.left-ox)/k),sy=Math.max(0,(br.top-my-vr.top-oy)/k),sw=Math.min(vw-sx,(br.width+2*mx)/k),sh2=Math.min(vh-sy,(br.height+2*my)/k),sc=Math.min(1,1000/sw);
+   cv.width=Math.round(sw*sc);cv.height=Math.round(sh2*sc);cx.drawImage(v,sx,sy,sw,sh2,0,0,cv.width,cv.height);
+   let c=null;try{c=await dec(cv)}catch(e){}
+   if(c&&me.on&&SCAN===me){me.on=false;box.classList.add("hit");setTimeout(()=>{stopScan();byBarcode(c)},250);return}
+   setTimeout(tick,90)};
+  tick()}
+ catch(e){console.error(e);msg("Kamera nicht verfügbar ("+(e&&e.name||"Fehler")+"). Du kannst die Nummer unten eintippen.")}}
+function stopScan(){if(SCAN){SCAN.on=false;SCAN=null}const v=$("vid");if(v)v.srcObject=null;if(CAM)camLater()}
+
+/* ===== Nährwerttabelle per Foto (Texterkennung im iPhone, Tesseract.js, kostenlos) ===== */
+let OCRW=null;
+async function ocrWorker(){if(OCRW)return OCRW;
+ if(!window.Tesseract)await loadJs("https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js");
+ OCRW=await Tesseract.createWorker("deu",1);return OCRW}
+/* Foto verkleinern, in Graustufen umwandeln und Kontrast strecken – das hilft der Texterkennung deutlich */
+async function prepImg(file){const url=URL.createObjectURL(file);
+ try{const im=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=url});
+  const s=Math.min(1,2000/Math.max(im.naturalWidth,im.naturalHeight)),c=document.createElement("canvas");
+  c.width=Math.round(im.naturalWidth*s);c.height=Math.round(im.naturalHeight*s);const x=c.getContext("2d");x.drawImage(im,0,0,c.width,c.height);
+  const d=x.getImageData(0,0,c.width,c.height),p=d.data,hist=new Array(256).fill(0);
+  for(let i=0;i<p.length;i+=4){const g=(p[i]*.299+p[i+1]*.587+p[i+2]*.114)|0;p[i]=g;hist[g]++}
+  let lo=0,hi=255,n=0,lim=p.length/4*.02;while(lo<255&&(n+=hist[lo])<lim)lo++;n=0;while(hi>0&&(n+=hist[hi])<lim)hi--;
+  const r=hi>lo?255/(hi-lo):1;for(let i=0;i<p.length;i+=4){const g=Math.max(0,Math.min(255,(p[i]-lo)*r));p[i]=p[i+1]=p[i+2]=g}
+  x.putImageData(d,0,0);return c}
+ finally{URL.revokeObjectURL(url)}}
+/* Text der Nährwerttabelle → Werte je 100 g (erste Zahlenspalte) */
+function parseLabel(txt){
+ const lines=String(txt).toLowerCase().replace(/\r/g,"").split("\n")
+  .map(s=>s.replace(/[|_—–]/g," ").replace(/(\d)[oO](?=\D|$)/g,"$10").replace(/(^|\s)[oO](?=[.,]\d)/g,"$10").replace(/(\d),\s+(\d)/g,"$1,$2").replace(/\s+/g," ").trim()).filter(Boolean);
+ const num=s=>+String(s).replace(",",".");
+ /* alle Zahlen einer Zeile ab Position i; "12,59" ohne Einheit ist meist "12,5g" */
+ const nums=(s)=>{const o=[],re=/(<\s*)?(\d+(?:[.,]\d+)?)\s*(kcal|kj|mg|g)?/g;let m;
+  while(m=re.exec(s)){let v=m[2];if(!m[3]&&/[.,]\d+9$/.test(v))v=v.slice(0,-1);o.push({v:num(v),u:m[3]||""})}return o};
+ const pick=(re,not)=>{for(const l of lines){const m=l.match(re);if(!m||(not&&not.test(l)))continue;
+  const rest=l.slice(m.index+m[0].length),a=nums(rest);if(!a.length)continue;
+  const g=a.find(x=>x.u==="g")||a.find(x=>x.u==="mg"&&(x.v/=1000,true))||a[0];if(g.v<=100)return Math.round(g.v*100)/100}return null};
+ const n={p:pick(/eiwe[a-zäöüß8]*|protein[a-z]*/),c:pick(/kohlen[a-z]*/,/davon/),f:pick(/fett?(?![a-zäöüß])/,/s[äa]ur|ges[äa]tt|davon/),
+  sug:pick(/zucker[a-z]*/,/ersatz|ohne/),fib:pick(/ballast[a-zäöüß]*/),salt:pick(/salz(?![a-zäöüß])/)};
+ /* Energie: "1550 kJ / 370 kcal", "kJ/kcal 1550/370", "370 kcal" */
+ let kcal=null;
+ for(const l of lines){if(!/kcal|kj|brennwert|energie/.test(l))continue;const a=nums(l);
+  const kc=a.find(x=>x.u==="kcal");if(kc&&kc.v>0&&kc.v<1000){kcal=kc.v;break}
+  for(let i=0;i+1<a.length;i++){const q=a[i].v/a[i+1].v;if(q>3.9&&q<4.4&&a[i+1].v<1000){kcal=a[i+1].v;break}}if(kcal!=null)break;
+  const kj=a.find(x=>x.u==="kj");if(kj&&kj.v<4000){kcal=Math.round(kj.v/4.184);break}}
+ const warn=[],est=(n.p||0)*4+(n.c||0)*4+(n.f||0)*9+(n.fib||0)*2;
+ if(n.sug!=null&&n.c!=null&&n.sug>n.c+0.5)warn.push("Zucker größer als Kohlenhydrate");
+ if((n.p||0)+(n.c||0)+(n.f||0)+(n.fib||0)+(n.salt||0)>105)warn.push("Summe über 100 g");
+ if(kcal==null&&n.p!=null&&n.c!=null&&n.f!=null){kcal=Math.round(est);warn.push("Kalorien aus Makros berechnet")}
+ else if(kcal!=null&&est>20&&Math.abs(kcal-est)/Math.max(kcal,est)>.25)warn.push("Kalorien passen nicht ganz zu den Makros");
+ const liquid=/100\s*ml/.test(lines.join(" "));
+ return{n:{kcal:kcal!=null?Math.round(kcal):null,...n},warn,liquid,found:Object.values(n).filter(x=>x!=null).length+(kcal!=null?1:0)}}
+async function labelPhoto(file){const fm=$("ff"),st=$("lbl-st");if(!fm||!file)return;
+ const say=(t,cls)=>{if(st){st.textContent=t;st.className="s lblst "+(cls||"")}};
+ say("Lese Nährwerte … (beim ersten Mal lädt die Texterkennung, ca. 10–20 s)");
+ try{const [w,img]=await Promise.all([ocrWorker(),prepImg(file)]);
+  const {data}=await w.recognize(img),r=parseLabel(data.text);
+  if(!r.found)return say("Keine Nährwerte erkannt. Tabelle gerade und formatfüllend fotografieren – oder unten eintippen.","bad");
+  for(const k of["kcal","p","c","f","fib","sug","salt"]){const e=fm.elements[k];if(e&&r.n[k]!=null){e.value=String(r.n[k]).replace(".",",");e.classList.add("auto")}}
+  say(`✓ ${r.found} von 7 Werten übernommen${r.liquid?" (je 100 ml)":""} – kurz prüfen.`+(r.warn.length?" ⚠ "+r.warn.join(", ")+".":""),r.warn.length?"warn":"ok");
+  const nm=fm.elements.name;if(nm&&!nm.value)nm.focus()}
+ catch(e){console.error(e);say("Texterkennung nicht möglich (keine Verbindung?). Bitte Werte eintippen.","bad")}}
 
 let A=null;
 /* Einheiten für ein Lebensmittel: Stück/Portion, Packung, Gramm, Löffel … (g = Gramm je Einheit) */
@@ -1042,7 +1137,7 @@ document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x
  else if(b("[data-blsload]"))loadBls(true);
  else if(b("[data-logout]")){if(confirm("Token von diesem iPhone entfernen?")){CFG.token="";LS.set("cfg",CFG);showSetup()}}});
 document.addEventListener("input",ev=>{if(ev.target.id==="ranl"&&R)R.anleitung=ev.target.value;else if(ev.target.id==="wziel"&&W)W.ziel=ev.target.value;else if(ev.target.id==="rname"&&R)R.name=ev.target.value;else if(ev.target.id==="q"){S.q=ev.target.value;clearTimeout(results.t);results.t=setTimeout(results,120)}else if(ev.target.id==="qv"){readQ();nut()}});
-document.addEventListener("change",ev=>{if(W&&ev.target.id==="wjob"){W.job=ev.target.value;renderWizard();return}if(R&&ev.target.id==="rspread"){R.spread=ev.target.checked;renderRecipe();return}if(R&&ev.target.id==="rkeep"){R.keep=ev.target.checked;return}if(ev.target.name==="fixon"&&ev.target.form&&ev.target.form.id==="pf")saveProfil(ev.target.form)});
+document.addEventListener("change",ev=>{if(ev.target.id==="lblfile"){const fl=ev.target.files&&ev.target.files[0];ev.target.value="";if(fl)labelPhoto(fl);return}if(W&&ev.target.id==="wjob"){W.job=ev.target.value;renderWizard();return}if(R&&ev.target.id==="rspread"){R.spread=ev.target.checked;renderRecipe();return}if(R&&ev.target.id==="rkeep"){R.keep=ev.target.checked;return}if(ev.target.name==="fixon"&&ev.target.form&&ev.target.form.id==="pf")saveProfil(ev.target.form)});
 document.addEventListener("submit",ev=>{ev.preventDefault();const f=ev.target;
  if(f.id==="pf")saveProfil(f);else if(f.id==="mf")saveManual(f);else if(f.id==="sf")setup(f);
  else if(f.id==="ff")saveFoodForm(f)});
@@ -1061,7 +1156,7 @@ noZoom(document);
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="1ea3c64";
+const APPV="fc3dc40";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
