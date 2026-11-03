@@ -50,6 +50,13 @@ und lädt sich bei einer neuen Version selbst neu. Nie von Hand ins öffentliche
   Sortiert danach, was die Proteinlücke am besten schließt. Ideen lassen sich als eigenes Gericht speichern.
   **Mag ich nicht** (dort und unter Profil): Wörter in `profil.json` → `magNicht` filtern Vorschläge nach Name und Zutaten (Mehrzahl und Umlaute egal, Synonyme in `DISL_SYN`, Ausnahmen in `DISL_EXC`, z. B. Erbsen ≠ Kichererbsen); einzelne Ideen ausblenden → `ideeAus`.
 
+- **Offline-Start** (`sw.js`): Die App-Dateien werden zwischengespeichert, die App startet auch ohne Netz mit dem letzten Stand. Netz zuerst (max. 3 s), sonst Zwischenspeicher; GitHub-Anfragen und `version.txt` nie aus dem Speicher.
+- **Streak-Erinnerung** (Profil → 🔥 Streak-Erinnerung): Mitteilung am Abend, wenn heute noch nichts eingetragen ist. Nur in der App vom Homescreen (iOS 16.4+).
+  Anmeldung in `data/ernaehrung/push.json`, Einstellung `profil.json` → `erinnerung:{an,uhr}`. Gesendet vom Workflow `streak-erinnerung.yml`
+  (stündlich abends, `tools/streak_erinnerung.py`, höchstens 1× pro Tag, Zustand in `push_status.json`). Benötigt einmalig das Secret `VAPID_PRIVATE_KEY`;
+  der öffentliche Gegenschlüssel steht als `VAPID` in `index.html`.
+- **Trainingsplan-Haken**: Lauf zählt nur mit einer Laufaktivität, Gym nur mit Krafttraining (wie im Dashboard). Kurze Radfahrten (Schulweg) zählen nie.
+
 ## Daten
 - `data/ernaehrung/profil.json` – Profil und Ziele
 - `data/ernaehrung/lebensmittel.json` – eigene Lebensmittel, Favoriten, gescannte Produkte
