@@ -45,6 +45,7 @@ und lädt sich bei einer neuen Version selbst neu. Nie von Hand ins öffentliche
 - **Worauf hast du Bock?**: Vorschläge, die noch ins Tagesziel passen, nach Lust (Süß, Herzhaft, Protein, Snack, Warm) –
   aus deinen Gerichten, Favoriten und der eingebauten Ideensammlung (`IDEEN` in `index.html`, Nährwerte Richtwerte je Portion).
   Sortiert danach, was die Proteinlücke am besten schließt. Ideen lassen sich als eigenes Gericht speichern.
+  **Mag ich nicht** (dort und unter Profil): Wörter in `profil.json` → `magNicht` filtern Vorschläge nach Name und Zutaten; einzelne Ideen ausblenden → `ideeAus`.
 
 ## Daten
 - `data/ernaehrung/profil.json` – Profil und Ziele

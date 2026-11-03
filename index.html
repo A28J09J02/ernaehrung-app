@@ -166,7 +166,7 @@ main.dragx{will-change:transform}main.snap{transition:transform .28s cubic-bezie
 .shopadd{display:flex;gap:8px;margin-bottom:12px}.shopadd .btn{flex:none;width:52px;font-size:22px;padding:0}
 .card.list{padding:12px 16px 4px}.card.list h2{margin-bottom:2px}.card.list .sw:first-of-type{border-top:0}.card.list s{color:var(--mute)}
 .btn.idee{display:flex;justify-content:space-between;align-items:center;width:100%;margin:0 0 8px;background:color-mix(in srgb,var(--acc) 10%,var(--card));border-color:color-mix(in srgb,var(--acc) 35%,var(--line));color:var(--acc)}.btn.idee small{color:var(--mute);font-weight:500}
-.qs.mood{margin:0 0 12px}.res.idea{cursor:pointer}.res .ibtns{display:flex;gap:6px;margin-top:6px}.res .ibtns .pl{width:38px;height:38px}.res .pl.sh{background:var(--acc-bg);font-size:17px}
+.qs.mood{margin:0 0 8px}.btn.dis{text-align:left;margin-bottom:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.res.idea{cursor:pointer}.res .ibtns{display:flex;gap:6px;margin-top:6px}.res .ibtns .pl{width:38px;height:38px}.res .pl.sh{background:var(--acc-bg);font-size:17px}
 /* Dashboard */
 #dashf{position:fixed;left:0;right:0;bottom:0;width:100%;border:0;background:var(--bg)}
 .load{text-align:center;padding:60px 20px;color:var(--mute)}
@@ -176,7 +176,7 @@ main.dragx{will-change:transform}main.snap{transition:transform .28s cubic-bezie
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=a981d17"></script>
+<script src="kern.js?v=d4ff575"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -506,7 +506,7 @@ function saveFoodForm(fm){const v=k=>{const s=fm.elements[k].value.trim().replac
 function vProfil(){
  const p=prof(),pr=C.profil||{},g=G(),b=EK.bases(p,g),gw=GW(),opt=(L,v)=>L.map(x=>`<option value="${x[0]}" ${x[0]===v?"selected":""}>${x[x.length-1]}</option>`).join("");
  const fx=p.fix&&p.fix.p,ref=b.garmin,dev=v=>v!=null&&ref?` <small class="mute">(${v>ref?"+":""}${n1((v-ref)/ref*100)} %)</small>`:"",dz=v=>String(v).replace(".",",");
- return`<button class="btn p w" style="margin-bottom:12px" data-wizard="1">🔄 Kalorienbedarf neu berechnen</button><form id="pf" class="card"><h2>Körper & Alltag</h2>
+ return`<button class="btn p w" style="margin-bottom:12px" data-wizard="1">🔄 Kalorienbedarf neu berechnen</button><button class="btn w dis" data-disl="1">🚫 Mag ich nicht${dislikes().length?`: <span class="mute">${h(dislikes().join(", "))}</span>`:` <span class="mute">– aus Vorschlägen ausschließen</span>`} ›</button><form id="pf" class="card"><h2>Körper & Alltag</h2>
  <div class="row"><div><label class="f">Geschlecht</label><select class="inp" name="sex">${opt([["m","männlich"],["w","weiblich"]],p.sex)}</select></div><div><label class="f">Alter</label><input class="inp" name="age" type="number" inputmode="numeric" value="${p.age}"></div></div>
  <div class="row"><div><label class="f">Größe (cm)</label><input class="inp" name="height" type="number" inputmode="numeric" value="${p.height}"></div><div><label class="f">Gewicht (kg)</label><input class="inp" name="weight" type="text" inputmode="decimal" value="${pr.weight!=null?dz(pr.weight):""}" placeholder="${gw?n1(gw)+" (Garmin)":"79"}"></div></div>
  <label class="f">Zielgewicht (kg, optional)</label><input class="inp" name="zielGewicht" type="text" inputmode="decimal" value="${pr.zielGewicht!=null?dz(pr.zielGewicht):""}" placeholder="z. B. 77">
@@ -785,13 +785,29 @@ const KW_WARM=["nudel","pasta","spaghetti","reis","curry","suppe","eintopf","chi
 function moodTags(name,n){const t=" "+EK.norm(name)+" ",k=+n.kcal||1,T=new Set();
  const su=KW_SUESS.some(x=>t.includes(x))||(n.sug!=null&&n.sug>=8&&4*n.sug/k>=.25);T.add(su?"suess":"herzhaft");
  if(KW_WARM.some(x=>t.includes(x)))T.add("warm");if(k<=300)T.add("snack");if((n.p||0)>=15&&4*n.p/k>=.25)T.add("protein");return[...T]}
+/* „Mag ich nicht“: im Profil (profil.json) unter magNicht [Wörter] und ideeAus [Ideen-IDs].
+   Ein Vorschlag fällt raus, wenn ein Wort im Namen oder in einer Zutat vorkommt (Groß-/Kleinschreibung und Umlaute egal) oder die Idee ausgeblendet ist. */
+const dislikes=()=>((C.profil&&C.profil.magNicht)||[]),hiddenIdeas=()=>((C.profil&&C.profil.ideeAus)||[]);
+function disliked(c){if(c.k==="idee"&&hiddenIdeas().includes(c.id))return true;const W=dislikes().map(w=>EK.norm(w).trim()).filter(Boolean);if(!W.length)return false;
+ const T=[c.name,...(c.zutaten||[]).map(z=>z.name)].map(x=>" "+EK.norm(x)+" ");return T.some(t=>W.some(w=>t.includes(w)))}
+function setProf(patch){change(P_PROF,{t:"profil",v:{...(C.profil||{}),...patch}},true);render();if($("sheet").classList.contains("on")&&DISL)renderDislike()}
+let DISL=false;
+function openDislike(){DISL=true;renderDislike()}
+function renderDislike(){const sh=$("sheet");sh.classList.add("on");const W=dislikes(),H=hiddenIdeas().map(id=>IDEEN.find(x=>x.id===id)).filter(Boolean);
+ sh.innerHTML=`<div class="top"><button class="ib" data-close="1" aria-label="Schließen">✕</button><h1>Mag ich nicht</h1><span style="min-width:42px"></span></div><main>
+ <form id="dislf" class="shopadd"><input id="dislq" class="inp" placeholder="z. B. Lachs, Pilze, Feta" autocomplete="off" enterkeyhint="done"><button class="btn p" type="submit" aria-label="Hinzufügen">+</button></form>
+ <div class="card"><h2>Lebensmittel<small>${W.length}</small></h2>${W.length?`<div class="qs">${W.map((w,k)=>`<button data-dislrm="${k}">${h(w)} ✕</button>`).join("")}</div>`:`<p class="empty" style="margin:0">Noch nichts eingetragen. Alles, was ein Wort von hier im Namen oder in den Zutaten hat, wird nicht mehr vorgeschlagen.</p>`}</div>
+ ${H.length?`<div class="card list"><h2>Ausgeblendete Ideen<small>${H.length}</small></h2>${H.map(x=>`<div class="rcp"><span>${h(x.name)}</span><button class="btn sm" style="color:var(--acc)" data-ideeon="${x.id}">wieder zeigen</button></div>`).join("")}</div>`:""}
+ <p class="foot">Mehrere auf einmal mit Komma trennen. Gilt nur für die Vorschläge bei „Worauf hast du Bock?“ – suchen und eintragen kannst du weiterhin alles. Wird im Profil gespeichert und ist auf allen Geräten gleich.</p></main>`}
+function dislikeAdd(){const i=$("dislq");if(!i)return;const add=i.value.split(/[,;]/).map(x=>x.trim()).filter(Boolean),W=dislikes();
+ const neu=add.filter(x=>!W.some(w=>EK.norm(w)===EK.norm(x)));if(neu.length)setProf({magNicht:[...W,...neu]});const j=$("dislq");if(j)j.focus()}
 let MOOD=LS.get("mood","alle"),ISEL=[],IMORE=false;
 function ideas(i){const left=i.t.kcal-i.s.kcal,pl=Math.max(0,i.m.p-i.s.p),light=left<120,cap=light?150:left*1.05+20,L=[];
  for(const f of dishes()){const n=perPortion(f);if(n.kcal==null)continue;L.push({k:"dish",id:f.id,name:f.name,n,g:(f.portion&&f.portion.g)||100,tags:moodTags(f.name,n),zutaten:f.zutaten&&f.zutaten.length?f.zutaten:null,f})}
  for(const f of foods()){if(f.zutaten||f.rezept||!(f.fav||isOwn(f))||f.liquid)continue;const g=(f.portion&&f.portion.g)||100,n=EK.scale(f.n,g);if(n.kcal==null||n.kcal<20)continue;
   L.push({k:"fav",id:f.id,name:f.name+(f.marke?" ("+f.marke+")":""),n,g,tags:moodTags(f.name,n),f})}
  for(const x of IDEEN)L.push({k:"idee",id:x.id,name:x.name,n:x.n,g:x.g,tags:x.tags,zutaten:x.zutaten,x});
- const R=[];for(const c of L){if(MOOD!=="alle"&&!c.tags.includes(MOOD))continue;if(c.n.kcal>cap)continue;
+ const R=[];for(const c of L){if(MOOD!=="alle"&&!c.tags.includes(MOOD))continue;if(disliked(c))continue;if(c.n.kcal>cap)continue;
   const b=bewOf(c.n,c.g);if(light&&b&&b.a==="r")continue;const p=c.n.p||0,k=Math.max(1,c.n.kcal);
   const fitP=pl>5?Math.min(p,pl)/pl:0,use=light?.5:k/Math.max(1,left);
   c.score=(pl>10?3*fitP:0)+(use>=.25&&use<=1?1:.3)+(b?b.pt*.3:0)+(MOOD==="protein"?12*p/k:0)+(c.k==="dish"?.4:c.k==="fav"?.2:0);
@@ -801,7 +817,8 @@ function vIdeen(){const T=TODAY(),i=info(cur),r=ideas(i),show=IMORE?r.list.slice
  let o=cur!==T?`<button class="today" data-iday="1">↩ Für heute vorschlagen</button>`:"";
  o+=`<div class="card"><div class="kp"><div><b>${n0(Math.max(0,r.left))}</b><span>kcal noch offen${cur!==T?" ("+ddm(cur)+")":""}</span></div><div><b>${n0(r.pl)}</b><span>g Protein fehlen</span></div><div><b>${n0(i.s.p)}</b><span>von ${n0(i.m.p)} g Protein</span></div></div>
  ${r.light?`<p class="s mute centernote">${r.left<=0?"Dein Kalorienziel ist für heute erreicht.":"Fast am Ziel."} Falls doch noch Hunger: hier leichte Sachen bis 150 kcal – ein Überschuss wird automatisch über die nächsten Tage ausgeglichen.</p>`:""}</div>
- <div class="qs mood">${MOODS.map(([k,l])=>`<button data-mood="${k}" class="${MOOD===k?"on":""}">${l}</button>`).join("")}</div>`;
+ <div class="qs mood">${MOODS.map(([k,l])=>`<button data-mood="${k}" class="${MOOD===k?"on":""}">${l}</button>`).join("")}</div>
+ <button class="btn w dis" data-disl="1">🚫 Mag ich nicht${dislikes().length||hiddenIdeas().length?`: <span class="mute">${h([...dislikes(),...(hiddenIdeas().length?[hiddenIdeas().length+" Idee"+(hiddenIdeas().length>1?"n":"")]:[])].join(", "))}</span>`:` <span class="mute">– Lebensmittel ausschließen</span>`} ›</button>`;
  if(!show.length)return o+`<div class="card"><p class="empty" style="margin:0">Nichts gefunden, das noch reinpasst${MOOD!=="alle"?" – probier eine andere Lust":""}.</p></div>`;
  o+=show.map((c,k)=>{const tg=c.k==="dish"?["Dein Gericht","var(--acc)"]:c.k==="fav"?["Favorit","var(--c)"]:[`Idee${c.x.min?" · "+c.x.min+" Min":""}`,"var(--g)"];
   return`<div class="res idea" style="--src:${tg[1]}" data-iopen="${k}"><span style="min-width:0;flex:1"><span class="nm">${h(c.name)}</span>
@@ -827,6 +844,7 @@ function renderIdea(){const c=IDX.c,x=c.x,sh=$("sheet");sh.classList.add("on");c
  <button class="btn w mt10" data-ishopx="1">🛒 Zutaten auf die Einkaufsliste</button></div>
  <div class="card"><h2>So geht's</h2><div class="s" style="line-height:1.6">${h(x.anleitung)}</div></div>
  ${saved?`<p class="s mute centernote">Schon bei deinen Gerichten gespeichert.</p>`:`<button class="btn w" data-isave="1">📖 Als eigenes Gericht speichern</button>`}
+ <button class="btn w d mt10" data-ideeoff="1">🚫 Nicht mehr vorschlagen</button>
  <p class="foot">Nährwerte sind Richtwerte – mit deinen Produkten kann es etwas abweichen. Gespeichert kannst du das Gericht unter „Gerichte“ anpassen.</p></main>`}
 function ideaSave(){const x=IDX.c.x,id="eigen:"+EK.uid(),n={};for(const k in x.n)n[k]=x.n[k]==null?null:Math.round(x.n[k]*100/x.g*100)/100;
  change(P_LM,{t:"food",item:{id,src:id,own:true,idee:x.id,name:x.name,n,portion:{g:x.g,label:"1 Portion"},portionen:1,zutaten:x.zutaten.map(z=>({...z})),anleitung:x.anleitung,fav:false}});
@@ -1172,7 +1190,7 @@ function saveRecipe(){R.name=($("rname")||{}).value||R.name;R.anleitung=($("ranl
  const days=R.spread?[...Array(N)].map((_,k)=>EK.add(cur,k)):[cur];
  days.forEach((d,k)=>change(pMonth(d),{t:"add",d,e:{id:EK.uid()+k,meal:R.meal,name:`${name} (1/${N})`,src:id,g:EK.r(tg/N,0),n:{...per},ts:Date.now()}},true));
  closeSheet();R=null;S.mode="log";render();toast(days.length>1?`${name}: ${days.length} Portionen eingetragen (${dm(days[0])}–${dm(days[days.length-1])})`:`${name}: 1 Portion eingetragen`,4000)}
-function closeSheet(){stopScan();const sh=$("sheet");sh.classList.remove("on");sh.innerHTML="";A=null;W=null;DSH=null}
+function closeSheet(){stopScan();DISL=false;const sh=$("sheet");sh.classList.remove("on");sh.innerHTML="";A=null;W=null;DSH=null}
 
 /* ===== Wischen zum Löschen ===== */
 let SW=null;const OPEN=-92;
@@ -1291,6 +1309,10 @@ document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x
  else if(b("[data-ishopx]"))ideaShop(IDX.c);
  else if(b("[data-isave]"))ideaSave();
  else if(b("[data-rinfo]"))toast(RINFO,9000);
+ else if(b("[data-disl]"))openDislike();
+ else if(x=b("[data-dislrm]")){const W=dislikes().slice(),w=W.splice(+x.dataset.dislrm,1)[0];setProf({magNicht:W});toast(`„${w}“ wird wieder vorgeschlagen`)}
+ else if(x=b("[data-ideeon]"))setProf({ideeAus:hiddenIdeas().filter(i=>i!==x.dataset.ideeon)});
+ else if(b("[data-ideeoff]")){const id=IDX.c.id,nm=IDX.c.name;closeSheet();setProf({ideeAus:[...hiddenIdeas().filter(i=>i!==id),id]});toast(`„${nm}“ ausgeblendet`,4500,"Rückgängig",()=>setProf({ideeAus:hiddenIdeas().filter(i=>i!==id)}))}
  else if(b("[data-micro]"))openMicro(cur);
  else if(b("[data-wizard]"))openWizard();
  else if(x=b("[data-wrate]")){W.ziel=($("wziel")||{}).value??W.ziel;W.rate=+x.dataset.wrate;renderWizard()}
@@ -1323,7 +1345,8 @@ document.addEventListener("change",ev=>{if(ev.target.id==="lblfile"){const fl=ev
 document.addEventListener("submit",ev=>{ev.preventDefault();const f=ev.target;
  if(f.id==="pf")saveProfil(f);else if(f.id==="mf")saveManual(f);else if(f.id==="sf")setup(f);
  else if(f.id==="ff")saveFoodForm(f);
- else if(f.id==="shopf")shopAddText()});
+ else if(f.id==="shopf")shopAddText();
+ else if(f.id==="dislf")dislikeAdd()});
 document.addEventListener("keydown",ev=>{if(ev.key==="Enter"&&ev.target.id==="ean")byBarcode(ev.target.value)});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState!=="visible")return;
  if(cur<TODAY()&&!$("sheet").classList.contains("on")&&Date.now()-C.ts>6*36e5)cur=TODAY();
@@ -1339,7 +1362,7 @@ noZoom(document);
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="a981d17";
+const APPV="d4ff575";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
