@@ -40,7 +40,8 @@ und lädt sich bei einer neuen Version selbst neu. Nie von Hand ins öffentliche
 
 ## Funktionen (Auszug)
 - **Navigation**: untere Leiste überall gleich (Heute · Training · Ideen · Einkauf · Mehr); „Mehr“ öffnet das Seitenmenü. Im Tagebuch steht das Datum mit Pfeilen in der Kopfzeile, Tippen aufs Datum = heute.
-- **Mahlzeit kopieren** (Leiste unten in jeder Mahlzeit: „✨ Ideen“ · „Kopieren“): auf andere Tage kopieren (Mehrfachauswahl, auch als andere Mahlzeit) oder von einem der letzten 14 Tage übernehmen. Leere Mahlzeit zeigt „Wie gestern übernehmen“. Mit Rückgängig.
+- **Mahlzeiten wie bei Yazio**: im Tagebuch je Mahlzeit eine Zeile mit Ring (gegessen / Anteil am Tagesziel: Frühstück 30 %, Mittag 40 %, Abend 25 %, Snacks 5 % – `MSHARE`) und „+“. Antippen öffnet die Mahlzeit einzeln (Nährwerte, Einträge, Kopieren, Ideen).
+- **Kopieren & Einfügen**: in der Mahlzeit „Kopieren“ → zu einem anderen Tag wechseln → 📋 an der gewünschten Mahlzeit (oder „Einfügen“ in der Mahlzeit). Die Kopie bleibt, bis eine neue kopiert oder sie mit ✕ verworfen wird. Leere Mahlzeit: „Wie gestern übernehmen“. Mit Rückgängig.
 - **Einkaufsliste** (Seitenmenü): Freitext („500 g Hähnchen“, „3 Eier“), nach Ladenbereichen sortiert, antippen = abhaken, wischen = löschen.
   In jedem Gericht und bei jeder Idee: „🛒 Zutaten auf die Einkaufsliste“ (mit Portionszahl).
 - **Bewertung** von Lebensmitteln und Gerichten (Top/Okay/Sparsam) – Regel in `kern.js` → `EK.bewertung`.

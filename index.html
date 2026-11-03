@@ -45,6 +45,20 @@ details.more{margin-top:10px;font-size:14px}details.more summary{color:var(--acc
 .meal h2 .mbtns{display:flex;gap:6px}.meal h2 .add.sp{font-size:18px;background:color-mix(in srgb,#f08a24 14%,transparent)}
 .meal h2 .add svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .meal{padding-bottom:0}
+.mlist{padding:4px 14px}.mrw{display:flex;align-items:center;gap:12px;padding:10px 0;cursor:pointer}.mrw+.mrw{border-top:1px solid var(--grid)}
+.mic{position:relative;width:56px;height:56px;flex:none}.mic svg{width:56px;height:56px;display:block}.mic i{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:24px}
+.mtx{flex:1;min-width:0;display:flex;flex-direction:column}.mtx b{font-size:17px}.mtx .arr{color:var(--mute);font-weight:400}.mtx small{color:var(--mute);font-size:14px}
+.mpl,.mpb{flex:none;width:44px;height:44px;border-radius:50%;border:0;background:var(--acc);color:#fff;font-size:26px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0 0 2px}
+.mpb{background:var(--acc-bg);font-size:19px}
+.hint .lnk{margin-left:auto;border:0;background:none;color:var(--mute);font-size:16px;padding:4px 6px}
+.mdet{padding-bottom:90px}.mhero{background:color-mix(in srgb,var(--acc) 22%,var(--card));border-radius:var(--rad);height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;margin-bottom:12px}
+.mhero i{font-style:normal;font-size:64px;line-height:1}.mhero small{color:var(--mute);font-size:13px}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:var(--rad);overflow:hidden;background:var(--card);margin-bottom:12px}
+.mgrid div{padding:12px;text-align:center;display:flex;flex-direction:column}.mgrid div:nth-child(odd){border-right:1px solid var(--line)}.mgrid div:nth-child(-n+2){border-bottom:1px solid var(--line)}
+.mgrid b{font-size:20px}.mgrid span{font-size:13px;color:var(--mute)}
+.mact{display:flex;gap:8px;margin-bottom:12px}.mact button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--acc);border-radius:12px;padding:10px 6px;font-weight:600;font-size:14px;display:flex;flex-direction:column;align-items:center;gap:2px;min-height:48px;justify-content:center}
+.mact button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.mact small{font-size:11px;color:var(--mute);font-weight:400}
+.mh{font-size:20px;margin:16px 2px 8px}.mgo{position:fixed;left:0;right:0;bottom:0;padding:12px 14px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 30%);max-width:640px;margin:auto}
 .mft{display:flex;border-top:1px solid var(--grid);margin:4px -14px 0}.mft button{flex:1;border:0;background:none;color:var(--acc);font-size:14px;font-weight:600;padding:11px 6px;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px}
 .mft button+button{border-left:1px solid var(--grid)}.mft svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .cpy{display:block;width:100%;text-align:left;border:1px dashed color-mix(in srgb,var(--acc) 45%,var(--line));background:color-mix(in srgb,var(--acc) 6%,var(--card));color:var(--acc);border-radius:12px;padding:9px 12px;margin:2px 0 10px;font-size:14px;font-weight:600}
@@ -184,7 +198,7 @@ main.dragx{will-change:transform}main.snap{transition:transform .28s cubic-bezie
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=2ff5a53"></script>
+<script src="kern.js?v=dd40415"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -338,7 +352,7 @@ function streaks(){const T=TODAY(),has=d=>entries(d).length>0;let d=has(T)?T:EK.
 const NAV=[["Ernährung",[["tag","book","Tagebuch"],["kal","cal","Kalender"],["verlauf","chart","Verlauf"],["ideen","spark","Ideen – worauf hast du Bock?"],["rezepte","pot","Gerichte"],["einkauf","cart","Einkaufsliste"],["lm","apple","Meine Lebensmittel"],["profil","user","Profil & Ziele"]]],
  ["Training & Gesundheit",[["meintag","heart","Mein Tag"],["plan","run","Trainingsplan"],["dash","grid","Komplettes Dashboard"]]]];
 const TITLE={tag:"",kal:"Kalender",verlauf:"Verlauf",rezepte:"Gerichte",ideen:"Ideen",einkauf:"Einkaufsliste",plan:"Trainingsplan",lm:"Meine Lebensmittel",profil:"Profil & Ziele",meintag:"Mein Tag",dash:"Dashboard"};
-function go(v){view=v;LS.set("view",v);closeDrawer();render();scrollTo(0,0)}
+function go(v){if(v!=="tag")MRET=null;view=v;LS.set("view",v);closeDrawer();render();scrollTo(0,0)}
 function openDrawer(){const d=$("drawer");d.innerHTML=`<div class="ttl">👑 KingStats</div>`+NAV.map(([g,L])=>`<div class="hd">${g}</div>`+L.map(([k,i,l])=>`<button class="it ${view===k?"on":""}" data-go="${k}">${svg(i)}${l}${k==="einkauf"&&shopItems().some(x=>!x.done)?` <small class="mute">(${shopItems().filter(x=>!x.done).length})</small>`:""}</button>`).join("")).join("")+
  `<div class="hd">Garmin</div>${syncSince()?`<button class="it" disabled>${svg("sync")}Sync läuft … seit ${hhmm(syncSince())}</button>`:`<button class="it" data-sync="1">${svg("sync")}Jetzt synchronisieren</button>`}<p class="foot" style="margin:6px 10px">${C.store&&C.store.synced?"Letzter Stand: "+new Date(C.store.synced*1000).toLocaleString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):""}</p>`;
  d.classList.add("on");$("scrim").classList.add("on")}
@@ -387,11 +401,13 @@ function vTag(sk=streaks()){
   ${i.d<=T?`<details class="more"><summary>So entsteht dein Ziel ›</summary>${burnRow(i)}<p class="s mute" style="margin:8px 0 0">Basis: ${src}${t.aus?` · Ausgleich −${n0(t.aus)} kcal`:""}. Im Ring steht Ziel − gegessen.</p></details>`:""}
   <details class="more"><summary>Weitere Nährwerte ›</summary>${more}<button class="btn w mt10" data-micro="1">Vitamine & Mineralstoffe ›</button></details></div>`;
  /* Mahlzeiten direkt unter der Ring-Karte (häufigste Aktion), Wochen-/Gewichtskarten darunter */
- for(const[k,l]of EK.MEALS){const e=i.e.filter(x=>x.meal===k),s=EK.sum(e);
-  o+=`<div class="card meal"><h2><span>${l} <small>${e.length?n0(s.kcal)+" kcal · P "+n0(s.p)+" g":""}</small></span><span class="mbtns"><button class="add" data-add="${k}" aria-label="${l} hinzufügen">+</button></span></h2>
-  ${e.length?e.map(x=>swRow(`data-ent="${h(x.id)}"`,`<span>${h(x.name)} <small>${unitText(x)}</small></span><span>${n0(x.n&&x.n.kcal)} <small>kcal</small></span>`,`data-delent="${h(x.id)}"`)).join(""):(()=>{const pv=prevMeal(k);
-   return pv?`<button class="cpy" data-cpfrom="${pv.d}|${k}">⧉ Wie ${relDay(pv.d)} übernehmen · ${n0(EK.sum(pv.e).kcal)} kcal<small>${h(pv.e.map(x=>x.name).join(", "))}</small></button>`:`<div class="empty">Noch nichts eingetragen</div>`})()}
-  <div class="mft">${cur>=T?`<button data-imealgo="${k}">✨ Ideen</button>`:""}<button data-copy="${k}">${svg("copy")} ${e.length?"Kopieren":"Von anderem Tag"}</button></div></div>`}
+ /* Mahlzeiten wie bei Yazio: kompakte Zeilen mit Ring (gegessen / Anteil am Tagesziel), Antippen öffnet die Mahlzeit einzeln */
+ const clip=CLIP();
+ if(clip)o+=`<div class="hint acc">📋<span><b>${h(clip.label)}</b> kopiert – tippe bei einer Mahlzeit auf 📋 zum Einfügen.</span><button class="lnk" data-clipx="1" aria-label="Kopie verwerfen">✕</button></div>`;
+ o+=`<div class="card mlist">${EK.MEALS.map(([k,l])=>{const e=i.e.filter(x=>x.meal===k),s=EK.sum(e),mt=mealGoal(i,k),q=mt?s.kcal/mt:0;
+  return`<div class="mrw" data-mopen="${k}"><span class="mic">${ringSvg(q,q<=0?"transparent":q>1.15?COL.r:"var(--acc)","","")}<i>${MEMO[k]}</i></span>
+  <span class="mtx"><b>${l} <span class="arr">→</span></b><small>${n0(s.kcal)} / ${n0(mt)} kcal${e.length?` · ${e.length} Eintr${e.length>1?"äge":"ag"}`:""}</small></span>
+  ${clip?`<button class="mpb" data-mpaste="${k}" aria-label="In ${l} einfügen">📋</button>`:""}<button class="mpl" data-add="${k}" aria-label="${l} hinzufügen">+</button></div>`}).join("")}</div>`;
   o+=carrierNote(i)+weekCard()+weightCard()+actsRow(cur);
  if(TIPS<5)o+=`<p class="foot">Tipp: Nach links/rechts wischen wechselt den Tag, Tippen aufs Datum springt zu heute. Einträge nach links wischen zum Löschen, antippen zum Ändern.</p>`;
  
@@ -405,24 +421,32 @@ function prevMeal(k){for(let n=1;n<=14;n++){const d=EK.add(cur,-n),e=mealOf(d,k)
 /* Einträge (Liste) auf Tage/Mahlzeit kopieren – neue IDs, Rückgängig über den Toast */
 function copyEntries(list,days,meal){const made=[];
  for(const d of days)for(const e of list){const ne={...e,id:EK.uid(),meal,ts:Date.now()};change(pMonth(d),{t:"add",d,e:ne},true);made.push([d,ne.id])}
- render();const kc=n0(EK.sum(list).kcal),ml=EK.MEALS.find(m=>m[0]===meal)[1];
+ render();if(MRET&&$("sheet").classList.contains("on"))renderMeal();const kc=n0(EK.sum(list).kcal),ml=EK.MEALS.find(m=>m[0]===meal)[1];
  toast(days.length>1?`${ml} auf ${days.length} Tage kopiert (je ${kc} kcal)`:days[0]===cur?`${list.length} Eintr${list.length>1?"äge":"ag"} übernommen · ${kc} kcal`:`${ml} nach ${ddm(days[0])} kopiert`,4500,"Rückgängig",
-  ()=>{for(const[d,id]of made)change(pMonth(d),{t:"del",d,id},true);render()})}
-let CP=null;
-function openCopy(k){CP={meal:k,to:new Set([EK.add(cur,1)].filter(d=>d<=MAXD())),tm:k};renderCopy()}
-function renderCopy(){const sh=$("sheet");sh.classList.add("on");const k=CP.meal,l=EK.MEALS.find(m=>m[0]===k)[1],e=mealOf(cur,k);
- const tgt=[];for(let n=-1;n<=7;n++){const d=EK.add(cur,n);if(n!==0&&d<=MAXD())tgt.push(d)}
- const src=[];for(let n=1;n<=14;n++){const d=EK.add(cur,-n),x=mealOf(d,k);if(x.length)src.push({d,e:x})}
- sh.innerHTML=`<div class="top"><button class="ib" data-close="1" aria-label="Schließen">✕</button><h1>${l} kopieren</h1><span style="min-width:44px"></span></div><main>
- ${e.length?`<div class="card"><h2>Kopieren nach <small>${e.length} Eintr${e.length>1?"äge":"ag"} · ${n0(EK.sum(e).kcal)} kcal</small></h2>
-  <p class="s mute" style="margin:0 0 8px">${h(e.map(x=>x.name).join(", "))}</p>
-  <div class="qs">${tgt.map(d=>`<button data-cpto="${d}" class="${CP.to.has(d)?"on":""}">${d===EK.add(cur,-1)?"Gestern":d===EK.add(cur,1)?"Morgen":ddm(d)}</button>`).join("")}</div>
-  <label class="f">als</label><div class="seg">${EK.MEALS.map(([m,ml])=>`<button data-cptm="${m}" class="${CP.tm===m?"on":""}">${ml.replace("essen","")}</button>`).join("")}</div>
-  <button class="btn p w" style="margin-top:12px" data-cpgo="1" ${CP.to.size?"":"disabled"}>${CP.to.size>1?`Auf ${CP.to.size} Tage kopieren`:CP.to.size?"Kopieren":"Tag wählen"}</button></div>`:""}
- <div class="sec">${e.length?"Oder dazu übernehmen":"Übernehmen"} – ${l} von</div>
- ${src.length?src.map(x=>`<button class="res" style="--src:var(--acc)" data-cpfrom="${x.d}|${k}"><span style="min-width:0;flex:1"><span class="nm">${ddm(x.d)} <span class="mute s">${relDay(x.d)}</span></span><span class="s mute block" style="margin-top:3px">${h(x.e.map(y=>y.name).join(", "))}</span></span><span class="kc"><b>${n0(EK.sum(x.e).kcal)}</b><small>kcal</small></span><span class="pl">+</span></button>`).join("")
-  :`<p class="empty">In den letzten 14 Tagen gab es kein ${l}.</p>`}
- <p class="foot">Kopiert wird mit gleicher Menge. Danach kannst du jeden Eintrag antippen und ändern oder per Wischen löschen.</p></main>`}
+  ()=>{for(const[d,id]of made)change(pMonth(d),{t:"del",d,id},true);render();if(MRET&&$("sheet").classList.contains("on"))renderMeal()})}
+/* Anteil der Mahlzeit am Tagesziel (wie Yazio): Frühstück 30 %, Mittag 40 %, Abend 25 %, Snacks 5 % */
+const MSHARE={fr:.3,mi:.4,ab:.25,sn:.05},MEMO={fr:"☕",mi:"🍝",ab:"🥗",sn:"🍎"};
+const mealGoal=(i,k,f="kcal")=>(f==="kcal"?i.t.kcal:i.m[f])*MSHARE[k];
+/* Zwischenablage: kopierte Mahlzeit bleibt (auch nach Neustart), bis eine neue kopiert oder sie verworfen wird */
+const CLIP=()=>LS.get("clip",null);
+function copyMeal(k){const e=mealOf(cur,k);if(!e.length)return;const l=EK.MEALS.find(m=>m[0]===k)[1];
+ LS.set("clip",{label:`${l} vom ${ddm(cur)}`,items:e.map(({id,ts,...x})=>x),ts:Date.now()});
+ toast(`${l} kopiert – jetzt zu einem anderen Tag wechseln und einfügen`,4000);renderMeal()}
+function pasteMeal(k){const c=CLIP();if(!c)return;copyEntries(c.items,[cur],k)}
+let MRET=null;
+function openMeal(k){MRET=k;renderMeal()}
+function renderMeal(){const k=MRET;if(!k)return;const sh=$("sheet");sh.classList.add("on");const i=info(cur),l=EK.MEALS.find(m=>m[0]===k)[1],e=i.e.filter(x=>x.meal===k),s=EK.sum(e),T=TODAY(),clip=CLIP(),pv=e.length?null:prevMeal(k);
+ const bar=(lb,f,u)=>{const v=f==="kcal"?s.kcal:s[f],g=mealGoal(i,k,f),q=g?v/g:0;
+  return`<div class="mrow"><div class="t"><span>${lb}</span><span><b>${f==="kcal"?n0(v):n1(v)}</b> / ${n0(g)} ${u}</span></div><div class="bar"><i style="width:${Math.min(100,q*100)}%;background:${q>1.15?COL.r:"var(--acc)"}"></i></div></div>`};
+ sh.innerHTML=`<div class="top"><button class="ib" data-mclose="1" aria-label="Zurück">‹</button><h1>${l}</h1><span style="min-width:44px"></span></div><main class="mdet">
+ <div class="mhero"><i>${MEMO[k]}</i><small>${new Date(cur+"T12:00:00").toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long"})}</small></div>
+ <div class="mgrid"><div><b>${n0(s.kcal)} kcal</b><span>Kalorien</span></div><div><b>${n1(s.c)} g</b><span>Kohlenhydrate</span></div><div><b>${n1(s.p)} g</b><span>Eiweiß</span></div><div><b>${n1(s.f)} g</b><span>Fett</span></div></div>
+ <div class="mact">${e.length?`<button data-mcopy="${k}">${svg("copy")}Kopieren</button>`:""}${clip?`<button data-mpaste="${k}">📋 Einfügen<small>${h(clip.label)}</small></button>`:""}${cur>=T?`<button data-imealgo="${k}">✨ Ideen</button>`:""}</div>
+ ${pv?`<button class="cpy" data-cpfrom="${pv.d}|${k}">⧉ Wie ${relDay(pv.d)} übernehmen · ${n0(EK.sum(pv.e).kcal)} kcal<small>${h(pv.e.map(x=>x.name).join(", "))}</small></button>`:""}
+ <div class="card list"><h2>Einträge<small>${e.length}</small></h2>${e.length?e.map(x=>swRow(`data-ent="${h(x.id)}"`,`<span>${h(x.name)} <small>${unitText(x)}</small></span><span>${n0(x.n&&x.n.kcal)} <small>kcal</small></span>`,`data-delent="${h(x.id)}"`)).join(""):`<p class="empty">Noch nichts eingetragen.</p>`}</div>
+ <h2 class="mh">Nährwerte</h2><div class="card">${bar("Kalorien","kcal","kcal")}${bar("Kohlenhydrate","c","g")}${bar("Eiweiß","p","g")}${bar("Fett","f","g")}
+ <p class="s mute" style="margin:8px 0 0">Ziel der Mahlzeit = ${Math.round(MSHARE[k]*100)} % deines Tagesziels.</p></div>
+ <div class="mgo"><button class="btn p w" data-add="${k}">${e.length?"Weiteres hinzufügen":"Jetzt eintragen"}</button></div></main>`}
 /* Cheat Day: Überschuss und wohin er verteilt wurde */
 function cheatHint(i){const c=i.ch;if(!c)return"";
  const list=c.carriers.map(([d,a])=>`${ddm(d)} −${n0(a)}`).join(" · ");
@@ -1346,7 +1370,9 @@ function saveRecipe(){R.name=($("rname")||{}).value||R.name;R.anleitung=($("ranl
  const days=R.spread?[...Array(N)].map((_,k)=>EK.add(cur,k)):[cur];
  days.forEach((d,k)=>change(pMonth(d),{t:"add",d,e:{id:EK.uid()+k,meal:R.meal,name:`${name} (1/${N})`,src:id,g:EK.r(tg/N,0),n:{...per},ts:Date.now()}},true));
  closeSheet();R=null;S.mode="log";render();toast(days.length>1?`${name}: ${days.length} Portionen eingetragen (${dm(days[0])}–${dm(days[days.length-1])})`:`${name}: 1 Portion eingetragen`,4000)}
-function closeSheet(){stopScan();DISL=false;CP=null;const sh=$("sheet");sh.classList.remove("on");sh.innerHTML="";A=null;W=null;DSH=null}
+function closeSheet(){stopScan();DISL=false;const sh=$("sheet");sh.classList.remove("on");sh.innerHTML="";A=null;W=null;DSH=null;
+ /* kam das Fenster aus einer geöffneten Mahlzeit (Eintragen, Ändern), dorthin zurück */
+ if(MRET&&view==="tag")setTimeout(()=>{if(MRET&&!sh.classList.contains("on"))renderMeal()},0);else MRET=null}
 
 /* ===== Wischen zum Löschen ===== */
 let SW=null;const OPEN=-92;
@@ -1432,12 +1458,13 @@ document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x
  else if(x=b("[data-cal]")){calM=x.dataset.cal;render()}
  else if(x=b("[data-range]")){range=+x.dataset.range;render()}
  else if(x=b("[data-lmtab]")){lmTab=x.dataset.lmtab;render()}
+ else if(x=b("[data-mpaste]"))pasteMeal(x.dataset.mpaste);
  else if(x=b("[data-add]"))openAdd(x.dataset.add);
- else if(x=b("[data-copy]"))openCopy(x.dataset.copy);
- else if(x=b("[data-cpto]")){const d=x.dataset.cpto;CP.to.has(d)?CP.to.delete(d):CP.to.add(d);renderCopy()}
- else if(x=b("[data-cptm]")){CP.tm=x.dataset.cptm;renderCopy()}
- else if(b("[data-cpgo]")){const L=mealOf(cur,CP.meal),D=[...CP.to].sort(),m=CP.tm;if(!L.length||!D.length)return;closeSheet();copyEntries(L,D,m)}
- else if(x=b("[data-cpfrom]")){const[d,k]=x.dataset.cpfrom.split("|"),L=mealOf(d,k);if(!L.length)return;if($("sheet").classList.contains("on"))closeSheet();copyEntries(L,[cur],k)}
+ else if(x=b("[data-mopen]"))openMeal(x.dataset.mopen);
+ else if(b("[data-mclose]")){MRET=null;closeSheet()}
+ else if(x=b("[data-mcopy]"))copyMeal(x.dataset.mcopy);
+ else if(b("[data-clipx]")){LS.set("clip",null);render();toast("Kopie verworfen")}
+ else if(x=b("[data-cpfrom]")){const[d,k]=x.dataset.cpfrom.split("|"),L=mealOf(d,k);if(!L.length)return;copyEntries(L,[cur],k)}
  else if(b("[data-addnow]")){if(view!=="tag"){cur=TODAY();go("tag")}openAdd(mealNow())}
  else if(x=b("[data-ent]")){const e=entries(cur).find(y=>y.id===x.dataset.ent);if(e)openAmount({entry:e})}
  else if(x=b("[data-delent]")){const id=x.dataset.delent;if($("sheet").classList.contains("on"))closeSheet();delEntry(id)}
@@ -1459,7 +1486,7 @@ document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x
  else if(x=b("[data-shopt]"))shopToggle(x.dataset.shopt);
  else if(x=b("[data-shopdel]"))shopDel(x.dataset.shopdel);
  else if(b("[data-shopclr]"))shopClear();
- else if(x=b("[data-imealgo]")){IMEAL=x.dataset.imealgo;IMORE=false;go("ideen")}
+ else if(x=b("[data-imealgo]")){MRET=null;closeSheet();IMEAL=x.dataset.imealgo;IMORE=false;go("ideen")}
  else if(x=b("[data-imeal2]")){IMEAL=x.dataset.imeal2||null;IMORE=false;render()}
  else if(x=b("[data-mood]")){MOOD=x.dataset.mood;LS.set("mood",MOOD);IMORE=false;render()}
  else if(b("[data-imore]")){IMORE=true;render()}
@@ -1525,7 +1552,7 @@ noZoom(document);
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="2ff5a53";
+const APPV="dd40415";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
