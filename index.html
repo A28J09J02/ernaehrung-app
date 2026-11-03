@@ -52,7 +52,6 @@ details.more{margin-top:10px;font-size:14px}details.more summary{color:var(--acc
 .swc{position:relative;background:var(--card);display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;width:100%;border:0;text-align:left;transition:transform .2s;touch-action:pan-y}
 .swc.drag{transition:none}
 .swc span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis}.swc small{color:var(--mute)}
-.badge{display:inline-block;font-size:11px;font-weight:600;padding:1px 7px;border-radius:99px;background:var(--acc-bg);color:var(--acc);margin-left:4px;vertical-align:1px}
 .btn{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:11px 14px;font-weight:600}
 .btn.p{background:var(--acc);border-color:var(--acc);color:#fff}.btn.d{color:var(--r)}.btn.w{width:100%}
 .row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1;min-width:0}
@@ -127,8 +126,7 @@ body.full .toast{bottom:calc(16px + env(safe-area-inset-bottom))}
 .alist div b{color:var(--ink);font-weight:600}.alist i{font-style:normal;font-size:18px}
 .fr{font-size:12px;color:var(--mute);text-align:center;margin:-4px 0 10px}
 /* Tagebuch: Klassen statt Inline-Stilen, „+“-Knopf im Daumenbereich */
-.fab{position:fixed;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:7;width:58px;height:58px;border-radius:50%;border:0;background:var(--acc);color:#fff;font-size:32px;line-height:1;font-weight:400;box-shadow:0 4px 14px rgba(0,0,0,.25)}
-.fabpad{height:64px}
+.plus{border:0;background:var(--acc);color:#fff;width:36px;height:36px;margin:4px;border-radius:50%;font-size:24px;line-height:1;font-weight:500;display:inline-flex;align-items:center;justify-content:center;padding:0 0 2px}
 .hint.acc{background:color-mix(in srgb,var(--acc) 10%,var(--card));border-color:color-mix(in srgb,var(--acc) 35%,var(--line))}
 .card.acc{border-color:color-mix(in srgb,var(--acc) 40%,var(--line))}
 .ringnote{margin:6px 0 0;text-align:center}.centernote{margin:8px 0 0;text-align:center}.block{display:block}
@@ -160,7 +158,7 @@ main.slide-l{animation:sl .22s ease}main.slide-r{animation:sr .22s ease}
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=102c5a9"></script>
+<script src="kern.js?v=481964c"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -321,7 +319,7 @@ function render(){
  const a=$("app"),T=TODAY(),food=["tag","kal","verlauf","rezepte","lm","profil"].includes(view),sk=streaks();
  document.body.classList.toggle("full",!food);
  const title=view==="tag"?(cur===T?"Heute":cur===EK.add(T,-1)?"Gestern":cur===EK.add(T,1)?"Morgen":new Date(cur+"T12:00:00").toLocaleDateString("de-DE",{weekday:"short",day:"numeric",month:"short"})):TITLE[view];
- const right=food?`<span style="display:flex;align-items:center;gap:2px">${view!=="kal"?`<button class="ib" data-go="kal" aria-label="Kalender">${svg("cal")}</button>`:""}<button class="streak ${sk.today?"":"off"}" data-go="kal" aria-label="Streak ${sk.n} Tage">🔥 ${sk.n}</button></span>`:view==="dash"?`<button class="ib" data-dashre="1" aria-label="Neu laden">${svg("sync")}</button>`:`<span style="min-width:42px"></span>`;
+ const right=food?`<span style="display:flex;align-items:center;gap:2px"><button class="plus" data-addnow="1" aria-label="Eintragen">+</button>${view!=="kal"?`<button class="ib" data-go="kal" aria-label="Kalender">${svg("cal")}</button>`:""}<button class="streak ${sk.today?"":"off"}" data-go="kal" aria-label="Streak ${sk.n} Tage">🔥 ${sk.n}</button></span>`:view==="dash"?`<button class="ib" data-dashre="1" aria-label="Neu laden">${svg("sync")}</button>`:`<span style="min-width:42px"></span>`;
  a.innerHTML=`<div class="top"><button class="ib" data-menu="1" aria-label="Menü">${svg("menu")}</button><h1>${title}</h1>${right}</div>
  ${view==="dash"?"":`<div class="stat" id="st"></div>`}<main>${({tag:()=>vTag(sk),kal:vKal,verlauf:vVerlauf,rezepte:vRezepte,lm:vLm,profil:vProfil,meintag:vMeinTag,plan:vPlan,dash:vDash})[view]()}</main>
  ${food?`<nav class="tabs">${[["tag","book","Tagebuch"],["kal","cal","Kalender"],["verlauf","chart","Verlauf"],["profil","user","Profil"]].map(([k,i,l])=>`<button data-go="${k}" class="${view===k?"on":""}">${svg(i)}${l}</button>`).join("")}</nav>`:""}`;
@@ -357,7 +355,7 @@ function vTag(sk=streaks()){
  o+=`<div class="row mb"><button class="btn" data-go="rezepte">📖 Gerichte</button><button class="btn" data-recipe="1">🍲 Kochen & teilen</button></div>`;
  o+=carrierNote(i)+weekCard()+weightCard()+actsRow(cur);
  if(TIPS<5)o+=`<p class="foot">Tipp: Nach links/rechts wischen wechselt den Tag. Einträge nach links wischen zum Löschen, antippen zum Ändern.</p>`;
- o+=`<div class="fabpad"></div><button class="fab" data-add="${mealNow()}" aria-label="Eintragen (${(EK.MEALS.find(m=>m[0]===mealNow())||[])[1]||""})">+</button>`;
+ 
  return o}
 /* Cheat Day: Überschuss und wohin er verteilt wurde */
 function cheatHint(i){const c=i.ch;if(!c)return"";
@@ -981,6 +979,7 @@ document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x
  else if(x=b("[data-range]")){range=+x.dataset.range;render()}
  else if(x=b("[data-lmtab]")){lmTab=x.dataset.lmtab;render()}
  else if(x=b("[data-add]"))openAdd(x.dataset.add);
+ else if(b("[data-addnow]")){if(view!=="tag"){cur=TODAY();go("tag")}openAdd(mealNow())}
  else if(x=b("[data-ent]")){const e=entries(cur).find(y=>y.id===x.dataset.ent);if(e)openAmount({entry:e})}
  else if(x=b("[data-delent]")){const id=x.dataset.delent;if($("sheet").classList.contains("on"))closeSheet();delEntry(id)}
  else if(x=b("[data-editfood]")){const f=foods().find(y=>y.id===x.dataset.editfood);if(f)openFoodForm(f)}
@@ -1044,7 +1043,7 @@ noZoom(document);
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="102c5a9";
+const APPV="481964c";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
