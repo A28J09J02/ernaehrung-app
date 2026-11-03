@@ -170,7 +170,7 @@ main.dragx{will-change:transform}main.snap{transition:transform .28s cubic-bezie
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=a2bfc29"></script>
+<script src="kern.js?v=8ce57a8"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -783,8 +783,7 @@ async function byBarcode(code){
   hint:offline?"Open Food Facts ist gerade nicht erreichbar.":part?"Produkt gefunden, aber ohne Nährwerte.":"Produkt nicht gefunden – weder bei deinen Lebensmitteln noch bei Open Food Facts."})}
 function setEan(code){const f=$("ff");if(f&&!f.elements.ean){const i=document.createElement("input");i.type="hidden";i.name="ean";i.value=code;f.append(i)}}
 
-/* Kamera: einmal freigegeben, bleibt der Stream kurz offen – so fragt iOS beim nächsten Scan nicht erneut.
-   Geht nach 2 Minuten ohne Scanner oder sofort beim Verlassen der App aus. */
+/* Kamera läuft nur, solange der Scanner offen ist: aus nach Treffer, Zurück/Abbrechen oder Verlassen der App */
 let CAM=null,CAMT=null,SCAN=null;
 async function camStream(){clearTimeout(CAMT);
  if(CAM&&CAM.getVideoTracks().some(t=>t.readyState==="live"))return CAM;
@@ -801,7 +800,7 @@ async function openScan(){const sh=$("sheet");sh.classList.add("on");
  <label class="f">Oder Nummer eintippen</label><div class="row"><input id="ean" class="inp" inputmode="numeric" placeholder="4001234567890"><button class="btn p" data-ean="1" style="flex:0 0 auto">Suchen</button></div></main>`;
  const msg=t=>{const e=$("sc-msg");if(e)e.textContent=t};
  const me={on:true};SCAN=me;
- try{const v=$("vid"),st=await camStream();if(!me.on)return camLater();
+ try{const v=$("vid"),st=await camStream();if(!me.on)return camOff();
   v.srcObject=st;await v.play();
   let dec;
   if("BarcodeDetector" in window){const bd=new BarcodeDetector({formats:["ean_13","ean_8","upc_a","upc_e"]});dec=async c=>{const r=await bd.detect(c);return r.length?r[0].rawValue:null}}
@@ -826,7 +825,7 @@ async function openScan(){const sh=$("sheet");sh.classList.add("on");
    setTimeout(tick,90)};
   tick()}
  catch(e){console.error(e);msg("Kamera nicht verfügbar ("+(e&&e.name||"Fehler")+"). Du kannst die Nummer unten eintippen.")}}
-function stopScan(){if(SCAN){SCAN.on=false;SCAN=null}const v=$("vid");if(v)v.srcObject=null;if(CAM)camLater()}
+function stopScan(){if(SCAN){SCAN.on=false;SCAN=null}const v=$("vid");if(v)v.srcObject=null;camOff()}
 
 /* ===== Nährwerttabelle per Foto (Texterkennung im iPhone, Tesseract.js, kostenlos) ===== */
 let OCRW=null;
@@ -1158,7 +1157,7 @@ noZoom(document);
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="a2bfc29";
+const APPV="8ce57a8";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
