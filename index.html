@@ -161,6 +161,12 @@ main.dragx{will-change:transform}main.snap{transition:transform .28s cubic-bezie
 .rcp button{border:0;background:none;color:var(--r);font-size:18px;padding:0 4px}
 .step{display:flex;align-items:center;gap:12px}.step button{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:22px}.step b{font-size:22px;min-width:30px;text-align:center}
 .act{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--grid);font-size:14px}
+/* Bewertung, Einkaufsliste, Ideen */
+.rate{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin-top:8px;font-size:13px}.rate .lnk{border:1px solid var(--line);background:var(--card);color:var(--mute);border-radius:50%;width:22px;height:22px;padding:0;font-size:12px;line-height:1}
+.shopadd{display:flex;gap:8px;margin-bottom:12px}.shopadd .btn{flex:none;width:52px;font-size:22px;padding:0}
+.card.list{padding:12px 16px 4px}.card.list h2{margin-bottom:2px}.card.list .sw:first-of-type{border-top:0}.card.list s{color:var(--mute)}
+.btn.idee{display:flex;justify-content:space-between;align-items:center;width:100%;margin:0 0 8px;background:color-mix(in srgb,var(--acc) 10%,var(--card));border-color:color-mix(in srgb,var(--acc) 35%,var(--line));color:var(--acc)}.btn.idee small{color:var(--mute);font-weight:500}
+.qs.mood{margin:0 0 12px}.res.idea{cursor:pointer}.res .ibtns{display:flex;gap:6px;margin-top:6px}.res .ibtns .pl{width:38px;height:38px}.res .pl.sh{background:var(--acc-bg);font-size:17px}
 /* Dashboard */
 #dashf{position:fixed;left:0;right:0;bottom:0;width:100%;border:0;background:var(--bg)}
 .load{text-align:center;padding:60px 20px;color:var(--mute)}
@@ -170,7 +176,7 @@ main.dragx{will-change:transform}main.snap{transition:transform .28s cubic-bezie
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=8ce57a8"></script>
+<script src="kern.js?v=a981d17"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -189,7 +195,7 @@ const $=id=>document.getElementById(id),h=s=>String(s??"").replace(/[&<>"]/g,c=>
 for(const m of ["toLocaleDateString","toLocaleString","toLocaleTimeString"]){const o=Date.prototype[m];Date.prototype[m]=function(...a){if(isNaN(this)){console.warn("Ungültiges Datum",new Error().stack);return"–"}return o.apply(this,a)}}
 const TODAY=()=>EK.day(new Date()),MAXD=()=>EK.add(TODAY(),14); /* bis zu 14 Tage im Voraus eintragen */
 let cur=TODAY(),view=LS.get("view","tag"),range=7,calM=TODAY().slice(0,7),lmTab="eigen",status="",busy=false;
-if(!["tag","kal","verlauf","rezepte","lm","profil","meintag","plan","dash"].includes(view))view="tag";
+if(!["tag","kal","verlauf","rezepte","ideen","einkauf","lm","profil","meintag","plan","dash"].includes(view))view="tag";
 const n0=v=>v==null||!isFinite(v)?"–":Math.round(v).toLocaleString("de-DE"),n1=v=>v==null||!isFinite(v)?"–":(Math.round(v*10)/10).toLocaleString("de-DE");
 const WDS=["So","Mo","Di","Mi","Do","Fr","Sa"],wd=d=>WDS[new Date(d+"T12:00:00").getDay()],dm=d=>d.slice(8)+"."+d.slice(5,7)+".";
 const MON=["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
@@ -202,6 +208,7 @@ const IC={menu:'<path d="M4 7h16M4 12h16M4 17h16"/>',book:'<path d="M5 4h11a3 3 
  user:'<circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',apple:'<path d="M12 7c-2-2-7-2-7 4s3 9 5 9c1 0 1.5-.5 2-.5s1 .5 2 .5c2 0 5-3 5-9s-5-6-7-4z"/><path d="M12 7c0-2 1-4 3-4"/>',
  heart:'<path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>',grid:'<rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/>',
  pot:'<path d="M4 10h16v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M2 10h20M9 6c0-1 1-2 1-3M14 6c0-1 1-2 1-3"/>',run:'<circle cx="14" cy="4.5" r="2"/><path d="M8 21l3-6 3 2v4M6 12l3-4 4 1 3 3 3 1"/>',
+ cart:'<circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/><path d="M3 4h2.2l2.4 11h10.9l2-8H6.4"/>',spark:'<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M18.5 15l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/>',
  sync:'<path d="M20 12a8 8 0 0 1-14 5M4 12a8 8 0 0 1 14-5"/><path d="M18 3v4h-4M6 21v-4h4"/>'};
 const svg=k=>`<svg viewBox="0 0 24 24" aria-hidden="true">${IC[k]}</svg>`;
 
@@ -223,7 +230,7 @@ async function put(file,data,sha,msg){const r=await gh(`/contents/${file}`,{meth
  if(r.status===409||r.status===422)return false;if(!r.ok)throw new Error("Speichern fehlgeschlagen ("+r.status+")");return true}
 
 /* ===== Änderungen: lokal sofort, dann Warteschlange und hochladen ===== */
-const P_PROF="data/ernaehrung/profil.json",P_LM="data/ernaehrung/lebensmittel.json",pMonth=d=>`data/ernaehrung/${d.slice(0,7)}.json`;
+const P_PROF="data/ernaehrung/profil.json",P_LM="data/ernaehrung/lebensmittel.json",P_SHOP="data/ernaehrung/einkauf.json",pMonth=d=>`data/ernaehrung/${d.slice(0,7)}.json`;
 function apply(obj,op){
  if(op.t==="profil")return op.v;
  if(op.t==="food"||op.t==="fooddel"){const o=obj||{items:[]},it=(o.items||[]).filter(x=>x.id!==(op.t==="food"?op.item.id:op.id));
@@ -234,8 +241,9 @@ function apply(obj,op){
 function local(path,op){
  if(path===P_PROF)C.profil=apply(C.profil,op);
  else if(path===P_LM)C.lm=apply(C.lm,op);
+ else if(path===P_SHOP)C.shop=apply(C.shop,op);
  else{const m=path.slice(-12,-5);C.months[m]=apply(C.months[m]||{},op)}}
-function setFile(path,v){if(path===P_PROF)C.profil=v;else if(path===P_LM)C.lm=v||{items:[]};else C.months[path.slice(-12,-5)]=v||{};
+function setFile(path,v){if(path===P_PROF)C.profil=v;else if(path===P_LM)C.lm=v||{items:[]};else if(path===P_SHOP)C.shop=v||{items:[]};else C.months[path.slice(-12,-5)]=v||{};
  for(const x of Q)if(x.path===path)local(path,x.op)}
 function change(path,op,noRender){
  /* Schutz: nie unter ungültigem Datum speichern (sonst landet der Eintrag in data/ernaehrung/.json und ist unsichtbar) */
@@ -245,7 +253,7 @@ async function flush(){
  if(busy||!Q.length||!CFG.token)return;busy=true;setStatus();
  try{for(const path of [...new Set(Q.map(x=>x.path))]){const ops=Q.filter(x=>x.path===path);let ok=false;
    for(let i=0;i<4&&!ok;i++){const{data,sha}=await getJson(path);let v=data;for(const x of ops)v=apply(v,x.op);
-    const n=ops.length,msg=path===P_PROF?"Ernährung: Profil (iPhone)":path===P_LM?"Ernährung: Lebensmittel (iPhone)":`Ernährung: ${n} Änderung${n>1?"en":""} (iPhone)`;
+    const n=ops.length,msg=path===P_PROF?"Ernährung: Profil (iPhone)":path===P_LM?"Ernährung: Lebensmittel (iPhone)":path===P_SHOP?"Ernährung: Einkaufsliste (iPhone)":`Ernährung: ${n} Änderung${n>1?"en":""} (iPhone)`;
     ok=await put(path,v,sha,msg);if(ok){Q=Q.filter(x=>!ops.includes(x));saveQ();setFile(path,v)}}
    if(!ok)throw new Error("Konflikt beim Speichern")}
   saveC();if(status==="offline")status=""}
@@ -268,9 +276,9 @@ async function loadAll(){
  try{const hd=await headSha().catch(e=>{if(e.auth)throw e;return null});
   const dir=await gh(`/contents/data/ernaehrung?ref=${CFG.branch}`);
   const ms=dir.ok?(await dir.json()).map(x=>x.name).filter(n=>/^\d{4}-\d{2}\.json$/.test(n)).map(n=>n.slice(0,7)):[];
-  const[pr,lm,st,pl,an,...mm]=await Promise.all([getJson(P_PROF),getJson(P_LM),getRaw("data/store.json"),getRaw("data/plan.json"),getRaw("data/anpassungen.json"),
+  const[pr,lm,sp,st,pl,an,...mm]=await Promise.all([getJson(P_PROF),getJson(P_LM),getJson(P_SHOP),getRaw("data/store.json"),getRaw("data/plan.json"),getRaw("data/anpassungen.json"),
    ...ms.map(m=>getJson(`data/ernaehrung/${m}.json`))]);
-  C.profil=pr.data;C.lm=lm.data||{items:[]};C.months={};ms.forEach((m,i)=>C.months[m]=mm[i].data||{});
+  C.profil=pr.data;C.lm=lm.data||{items:[]};C.shop=sp.data||{items:[]};C.months={};ms.forEach((m,i)=>C.months[m]=mm[i].data||{});
   if(st){C.store=trimStore(st,60);KV.set("store_full",JSON.stringify(st))}
   C.plan=trimPlan(pl);C.anp=an;if(pl)KV.set("plan_full",JSON.stringify(pl));
   for(const x of Q)local(x.path,x.op);
@@ -318,22 +326,22 @@ function streaks(){const T=TODAY(),has=d=>entries(d).length>0;let d=has(T)?T:EK.
  return{n,best:Math.max(best,n),today:has(T)}}
 
 /* ===== Gerüst ===== */
-const NAV=[["Ernährung",[["tag","book","Tagebuch"],["kal","cal","Kalender"],["verlauf","chart","Verlauf"],["rezepte","pot","Gerichte"],["lm","apple","Meine Lebensmittel"],["profil","user","Profil & Ziele"]]],
+const NAV=[["Ernährung",[["tag","book","Tagebuch"],["kal","cal","Kalender"],["verlauf","chart","Verlauf"],["ideen","spark","Worauf hast du Bock?"],["rezepte","pot","Gerichte"],["einkauf","cart","Einkaufsliste"],["lm","apple","Meine Lebensmittel"],["profil","user","Profil & Ziele"]]],
  ["Training & Gesundheit",[["meintag","heart","Mein Tag"],["plan","run","Trainingsplan"],["dash","grid","Komplettes Dashboard"]]]];
-const TITLE={tag:"",kal:"Kalender",verlauf:"Verlauf",rezepte:"Gerichte",plan:"Trainingsplan",lm:"Meine Lebensmittel",profil:"Profil & Ziele",meintag:"Mein Tag",dash:"Dashboard"};
+const TITLE={tag:"",kal:"Kalender",verlauf:"Verlauf",rezepte:"Gerichte",ideen:"Worauf hast du Bock?",einkauf:"Einkaufsliste",plan:"Trainingsplan",lm:"Meine Lebensmittel",profil:"Profil & Ziele",meintag:"Mein Tag",dash:"Dashboard"};
 function go(v){view=v;LS.set("view",v);closeDrawer();render();scrollTo(0,0)}
-function openDrawer(){const d=$("drawer");d.innerHTML=`<div class="ttl">👑 KingStats</div>`+NAV.map(([g,L])=>`<div class="hd">${g}</div>`+L.map(([k,i,l])=>`<button class="it ${view===k?"on":""}" data-go="${k}">${svg(i)}${l}</button>`).join("")).join("")+
+function openDrawer(){const d=$("drawer");d.innerHTML=`<div class="ttl">👑 KingStats</div>`+NAV.map(([g,L])=>`<div class="hd">${g}</div>`+L.map(([k,i,l])=>`<button class="it ${view===k?"on":""}" data-go="${k}">${svg(i)}${l}${k==="einkauf"&&shopItems().some(x=>!x.done)?` <small class="mute">(${shopItems().filter(x=>!x.done).length})</small>`:""}</button>`).join("")).join("")+
  `<div class="hd">Garmin</div>${syncSince()?`<button class="it" disabled>${svg("sync")}Sync läuft … seit ${hhmm(syncSince())}</button>`:`<button class="it" data-sync="1">${svg("sync")}Jetzt synchronisieren</button>`}<p class="foot" style="margin:6px 10px">${C.store&&C.store.synced?"Letzter Stand: "+new Date(C.store.synced*1000).toLocaleString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):""}</p>`;
  d.classList.add("on");$("scrim").classList.add("on")}
 function closeDrawer(){$("drawer").classList.remove("on");$("scrim").classList.remove("on")}
 function render(){
  if(!CFG.token)return;if(!/^\d{4}-\d\d-\d\d$/.test(cur)||isNaN(new Date(cur+"T12:00:00")))cur=TODAY();calcAus();
- const a=$("app"),T=TODAY(),food=["tag","kal","verlauf","rezepte","lm","profil"].includes(view),sk=streaks();
+ const a=$("app"),T=TODAY(),food=["tag","kal","verlauf","rezepte","ideen","einkauf","lm","profil"].includes(view),sk=streaks();
  document.body.classList.toggle("full",!food);
  const title=view==="tag"?(cur===T?"Heute":cur===EK.add(T,-1)?"Gestern":cur===EK.add(T,1)?"Morgen":new Date(cur+"T12:00:00").toLocaleDateString("de-DE",{weekday:"short",day:"numeric",month:"short"})):TITLE[view];
  const right=food?`<span style="display:flex;align-items:center;gap:2px"><button class="plus" data-addnow="1" aria-label="Eintragen">+</button>${view!=="kal"?`<button class="ib" data-go="kal" aria-label="Kalender">${svg("cal")}</button>`:""}<button class="streak ${sk.today?"":"off"}" data-go="kal" aria-label="Streak ${sk.n} Tage">🔥 ${sk.n}</button></span>`:view==="dash"?`<button class="ib" data-dashre="1" aria-label="Neu laden">${svg("sync")}</button>`:`<span style="min-width:42px"></span>`;
  a.innerHTML=`<div class="top"><button class="ib" data-menu="1" aria-label="Menü">${svg("menu")}</button><h1>${title}</h1>${right}</div>
- ${view==="dash"?"":`<div class="stat" id="st"></div>`}<main>${({tag:()=>vTag(sk),kal:vKal,verlauf:vVerlauf,rezepte:vRezepte,lm:vLm,profil:vProfil,meintag:vMeinTag,plan:vPlan,dash:vDash})[view]()}</main>
+ ${view==="dash"?"":`<div class="stat" id="st"></div>`}<main>${({tag:()=>vTag(sk),kal:vKal,verlauf:vVerlauf,rezepte:vRezepte,ideen:vIdeen,einkauf:vEinkauf,lm:vLm,profil:vProfil,meintag:vMeinTag,plan:vPlan,dash:vDash})[view]()}</main>
  ${food?`<nav class="tabs">${[["tag","book","Tagebuch"],["kal","cal","Kalender"],["verlauf","chart","Verlauf"],["profil","user","Profil"]].map(([k,i,l])=>`<button data-go="${k}" class="${view===k?"on":""}">${svg(i)}${l}</button>`).join("")}</nav>`:""}`;
  setStatus();if(view==="dash")showDash()}
 function ringSvg(f,c,big,small){const r=50,C2=2*Math.PI*r,q=Math.max(0,Math.min(1,f||0));
@@ -364,7 +372,8 @@ function vTag(sk=streaks()){
  for(const[k,l]of EK.MEALS){const e=i.e.filter(x=>x.meal===k),s=EK.sum(e);
   o+=`<div class="card meal"><h2><span>${l} <small>${e.length?n0(s.kcal)+" kcal · P "+n0(s.p)+" g":""}</small></span><button class="add" data-add="${k}" aria-label="${l} hinzufügen">+</button></h2>
   ${e.length?e.map(x=>swRow(`data-ent="${h(x.id)}"`,`<span>${h(x.name)} <small>${unitText(x)}</small></span><span>${n0(x.n&&x.n.kcal)} <small>kcal</small></span>`,`data-delent="${h(x.id)}"`)).join(""):`<div class="empty">Noch nichts eingetragen</div>`}</div>`}
- o+=`<div class="row mb"><button class="btn" data-go="rezepte">📖 Gerichte</button><button class="btn" data-recipe="1">🍲 Kochen & teilen</button></div>`;
+ if(cur>=T){const pl=Math.max(0,i.m.p-i.s.p);o+=`<button class="btn idee" data-go="ideen"><span>✨ Worauf hast du Bock?</span><small>${left>0?`noch ${n0(left)} kcal${pl>5?" · "+n0(pl)+" g Protein":""}`:"Ziel erreicht"} ›</small></button>`}
+ o+=`<div class="row mb"><button class="btn" data-go="rezepte">📖 Gerichte</button><button class="btn" data-go="einkauf">🛒 Einkauf${shopItems().some(x=>!x.done)?` (${shopItems().filter(x=>!x.done).length})`:""}</button><button class="btn" data-recipe="1">🍲 Kochen</button></div>`;
  o+=carrierNote(i)+weekCard()+weightCard()+actsRow(cur);
  if(TIPS<5)o+=`<p class="foot">Tipp: Nach links/rechts wischen wechselt den Tag. Einträge nach links wischen zum Löschen, antippen zum Ändern.</p>`;
  
@@ -462,7 +471,7 @@ function vLm(){
  const L=foods().filter(f=>lmTab==="eigen"?isOwn(f):lmTab==="fav"?f.fav:String(f.src).startsWith("off:")).sort((a,b)=>a.name.localeCompare(b.name,"de"));
  return`<div class="seg" style="margin-bottom:12px">${[["eigen","Von dir"],["fav","Favoriten"],["off","Gescannt"]].map(([k,l])=>`<button data-lmtab="${k}" class="${lmTab===k?"on":""}">${l}</button>`).join("")}</div>
  ${lmTab==="eigen"?`<button class="btn p w" style="margin-bottom:12px" data-newfood="1">+ Neues Lebensmittel anlegen</button>`:""}
- <div class="card" style="padding:4px 16px">${L.length?L.map(f=>swRow(`data-editfood="${h(f.id)}"`,`<span>${h(f.name)}${f.fav?" ★":""}<br><small>${f.marke?h(f.marke)+" · ":""}${n0(f.n&&f.n.kcal)} kcal · P ${n1(f.n&&f.n.p)} g je 100 g${f.portion&&f.portion.g!==100?" · Portion "+n0(f.portion.g)+" g":""}</small></span><span class="mute">›</span>`,`data-delfood="${h(f.id)}"`)).join("").replace('<div class="sw">','<div class="sw" style="border-top:0">')
+ <div class="card" style="padding:4px 16px">${L.length?L.map(f=>swRow(`data-editfood="${h(f.id)}"`,`<span>${h(f.name)}${f.fav?" ★":""}<br><small>${f.marke?h(f.marke)+" · ":""}${n0(f.n&&f.n.kcal)} kcal · P ${n1(f.n&&f.n.p)} g je 100 g${f.portion&&f.portion.g!==100?" · Portion "+n0(f.portion.g)+" g":""}${(b=>b?` · <span style="color:${COL[b.a]}">● ${b.label}</span>`:"")(EK.bewertung(f.n))}</small></span><span class="mute">›</span>`,`data-delfood="${h(f.id)}"`)).join("").replace('<div class="sw">','<div class="sw" style="border-top:0">')
   :`<p class="empty" style="padding:14px 0">${lmTab==="eigen"?"Lege hier Lebensmittel an, die es in keiner Datenbank gibt (z. B. Omas Lasagne). Sie erscheinen beim Suchen ganz oben als „von dir“.":lmTab==="fav"?"Markiere Lebensmittel beim Eintragen mit ☆ als Favorit.":"Gescannte Produkte werden hier gespeichert und funktionieren dann auch offline."}</p>`}</div>`}
 function delFood(id){const f=foods().find(x=>x.id===id);if(!f)return;change(P_LM,{t:"fooddel",id});toast(`„${f.name}“ entfernt`,4500,"Rückgängig",()=>change(P_LM,{t:"food",item:f}))}
 function openFoodForm(f,fromAdd,o={}){FF_ADD=!!fromAdd;const sh=$("sheet");sh.classList.add("on");const isNew=!f||!f.id,x=f||{n:{},portion:{g:100}},v=k=>x.n&&x.n[k]!=null?String(x.n[k]).replace(".",","):"";
@@ -642,7 +651,7 @@ const perPortion=f=>EK.scale(f.n,(f.portion&&f.portion.g)||100);
 function vRezepte(){const L=dishes();
  return`<button class="btn p w" style="margin-bottom:12px" data-newdish="1">+ Neues Gericht anlegen</button>
  ${L.length?L.map(f=>{const pp=perPortion(f);return`<div class="res" style="--src:var(--acc);cursor:pointer" data-dish="${h(f.id)}"><span style="min-width:0;flex:1"><span class="nm">${h(f.name)}</span>
-  <span class="meta"><span class="tag" style="--src:var(--acc)">${f.portionen||1} Portion${(f.portionen||1)>1?"en":""}</span>${f.anleitung?'<span class="s mute">mit Anleitung</span>':""}</span>
+  <span class="meta"><span class="tag" style="--src:var(--acc)">${f.portionen||1} Portion${(f.portionen||1)>1?"en":""}</span>${rateChip(EK.bewertung(f.n))}${f.anleitung?'<span class="s mute">mit Anleitung</span>':""}</span>
   <span class="meta">${mc("P",pp.p,"var(--p)")}${mc("K",pp.c,"var(--c)")}${mc("F",pp.f,"var(--f)")}</span></span>
   <span class="kc"><b>${n0(pp.kcal)}</b><small>kcal / Portion</small></span><button class="pl" data-dishadd="${h(f.id)}" aria-label="1 Portion eintragen">+</button></div>`}).join(""):
   `<div class="card"><p class="empty" style="margin:0">Hier sammelst du deine Lieblingsgerichte mit Zutaten, Nährwerten und Anleitung. Mit einem Tipp auf ＋ trägst du eine Portion ein. Gerichte, die du über „Kochen & verteilen“ speicherst, landen auch hier.</p></div>`}`}
@@ -652,11 +661,11 @@ function renderDish(){const f=foods().find(x=>x.id===DSH.id);if(!f)return closeS
  const base=f.portionen||1,pp=perPortion(f),fac=DSH.n/base;
  sh.innerHTML=`<div class="top"><button class="ib" data-close="1" data-rclose="1" aria-label="Schließen">✕</button><h1>Gericht</h1><span style="min-width:42px"></span></div><main>
  <div class="card"><b style="font-size:20px">${h(f.name)}</b><div class="nut" style="margin-bottom:0"><div><b>${n0(pp.kcal)}</b><small>kcal</small></div><div><b>${n1(pp.p)}</b><small>Protein g</small></div><div><b>${n1(pp.c)}</b><small>KH g</small></div><div><b>${n1(pp.f)}</b><small>Fett g</small></div></div>
- <p class="s mute" style="margin:6px 0 0;text-align:center">pro Portion (${n0(f.portion&&f.portion.g)} g)</p></div>
+ <p class="s mute" style="margin:6px 0 0;text-align:center">pro Portion (${n0(f.portion&&f.portion.g)} g)</p>${rateRow(EK.bewertung(f.n))}</div>
  <div class="card"><h2>1 Portion eintragen <small>${ddm(cur)}</small></h2><div class="seg">${EK.MEALS.map(([k,l])=>`<button data-dmeal="${k}" class="${DSH.meal===k?"on":""}">${l.replace("essen","")}</button>`).join("")}</div>
  <button class="btn p w" style="margin-top:10px" data-dishlog="1">Eintragen</button><button class="btn w" style="margin-top:8px" data-dishcook="1">🍲 Gekocht – auf Tage verteilen</button></div>
  ${f.zutaten&&f.zutaten.length?`<div class="card"><h2>Zutaten <span class="step" style="font-size:14px"><button data-dn="-1" aria-label="weniger">−</button><b style="font-size:16px">${DSH.n}</b><button data-dn="1" aria-label="mehr">+</button></span></h2>
-  <p class="s mute" style="margin:-4px 0 6px">für ${DSH.n} Portion${DSH.n>1?"en":""}</p>${f.zutaten.map(z=>`<div class="rcp"><span>${h(z.name)}</span><b>${n0(z.g*fac)} g</b></div>`).join("")}</div>`:""}
+  <p class="s mute" style="margin:-4px 0 6px">für ${DSH.n} Portion${DSH.n>1?"en":""}</p>${f.zutaten.map(z=>`<div class="rcp"><span>${h(z.name)}</span><b>${z.stk?n1(z.stk*fac)+" Stück · ":""}${n0(z.g*fac)} g</b></div>`).join("")}<button class="btn w mt10" data-dishshop="1">🛒 Zutaten für ${DSH.n} Portion${DSH.n>1?"en":""} auf die Einkaufsliste</button></div>`:""}
  ${f.anleitung?`<div class="card"><h2>Anleitung</h2><div class="s" style="white-space:pre-wrap;line-height:1.6">${h(f.anleitung)}</div></div>`:""}
  <div class="row"><button class="btn" data-dishedit="1">Bearbeiten</button><button class="btn d" data-dishdel="1">Löschen</button></div></main>`}
 function logDish(id,meal){const f=foods().find(x=>x.id===id);if(!f)return;const g=(f.portion&&f.portion.g)||100,d=cur,e={id:EK.uid(),meal:meal||mealNow(),name:f.name,src:f.src||f.id,g,n:EK.scale(f.n,g),ts:Date.now()};
@@ -665,6 +674,163 @@ function dishToRecipe(f,mode){const z=f.zutaten||[],base=f.portionen||1,ok=z.len
  R={id:mode==="save"?f.id:null,mode,name:f.name,anleitung:f.anleitung||"",portions:base,spread:true,meal:DSH?DSH.meal:"mi",keep:mode==="save",
   items:ok?z.map(x=>({...x})):[{name:f.name,src:f.src||f.id,g:(f.portion&&f.portion.g||100)*base,n:EK.scale(f.n,(f.portion&&f.portion.g||100)*base)}]};
  S={...(S||{}),mode:"recipe",q:"",off:null,offq:""};renderRecipe()}
+
+/* ===== Bewertung (Regel im Rechenkern: EK.bewertung) ===== */
+const bewOf=(n,g)=>{if(!n)return null;if(!g||g===100)return EK.bewertung(n);const o={};for(const k in n)o[k]=n[k]==null?null:n[k]*100/g;return EK.bewertung(o)};
+const rateChip=b=>b?`<span class="mc" style="--m:${COL[b.a]}">● ${b.label}</span>`:"";
+function rateRow(b){if(!b)return"";
+ return`<div class="rate"><span class="chip" style="--c0:${COL[b.a]}">${b.label}</span>${b.why.map(([t,c])=>`<span class="${c==="r"?"warn":"mute"}">${t}</span>`).join("")}<button class="lnk" data-rinfo="1" aria-label="Wie wird bewertet?">?</button></div>`}
+const RINFO="Bewertung je 100 g: Punkte für viel Protein, wenig Kalorien und Ballaststoffe, Abzug für viel Zucker, Salz oder gesättigtes Fett. ≥ 2 Punkte Top, 0–1 Okay, darunter Sparsam. Nur Orientierung – Sparsames darf trotzdem rein.";
+
+/* ===== Einkaufsliste =====
+   data/ernaehrung/einkauf.json {items:[{id,name,g?,ml?,stk?,txt?,cat,done,von:[Gericht],ts}]} – gleiche Zutaten werden zusammengerechnet. */
+const shopItems=()=>(C.shop&&C.shop.items)||[];
+const SHOPCAT=[["obst","🥦 Obst & Gemüse"],["brot","🍞 Brot & Backwaren"],["fleisch","🥩 Fleisch & Fisch"],["kuehl","🥛 Kühlregal"],["tk","🧊 Tiefkühl"],
+ ["vorrat","🥫 Vorrat"],["suess","🍫 Süßes & Snacks"],["getr","🥤 Getränke"],["sonst","🛒 Sonstiges"]];
+const SHOPKW={
+ getr:["wasser","saft","cola","limo","kaffee","eistee","bier","wein","energy","sprudel"],
+ tk:["tiefkuehl","gefroren","tk ","eiscreme","nicecream"],
+ obst:["apfel","aepfel","banane","beere","erdbeer","himbeer","heidelbeer","blaubeer","orange","zitrone","limette","kiwi","mango","ananas","traube","birne","pfirsich","melone","avocado","tomate","gurke","paprika","zwiebel","knoblauch","karotte","moehre","salat","spinat","brokkoli","blumenkohl","zucchini","aubergine","kartoffel","pilz","champignon","lauch","porree","sellerie","kohl","ingwer","kraeuter","petersilie","basilikum","schnittlauch","radieschen","rucola","kuerbis","spargel","fruehlingszwiebel","obst","gemuese"],
+ kuehl:["milch","joghurt","skyr","quark","kaese","feta","mozzarella","frischkaese","butter","sahne","schmand","creme fraiche","eier","tofu","hummus","pudding","kefir","wurst","schinken","salami","aufschnitt","edamame"],
+ fleisch:["haehnchen","huhn","pute","rind","hack","schwein","steak","lachs","fisch","garnele","shrimp","kabeljau","forelle","speck","fleisch","filet"],
+ brot:["brot","broetchen","toast","wrap","tortilla","brezel","croissant","knaecke","baguette","bagel"],
+ vorrat:["nudel","pasta","spaghetti","penne","reis","haferflocken","flocken","mehl","zucker","oel","essig","linse","kichererbse","kidney","bohne","mais","dose","passierte","tomatenmark","thunfisch","bruehe","gewuerz","pfeffer","curry","zimt","kakao","honig","marmelade","erdnussbutter","nuss","nuesse","mandel","chia","leinsamen","couscous","quinoa","bulgur","muesli","sojasauce","senf","ketchup","proteinpulver","whey","reiswaffel","kokosmilch","backpulver","hefe","puddingpulver","milchreis","popcorn mais","maiskoerner"],
+ suess:["schoko","keks","riegel","chips","gummi","bonbon","kuchen","cracker","salzstangen","nachos","praline"]};
+/* Kategorie: Getränke/Tiefkühl zuerst, sonst das längste passende Stichwort (z. B. „Erdnussbutter“ → Vorrat, nicht Kühlregal) */
+function shopCat(name){const t=" "+EK.norm(name)+" ",w=t.split(/\s+/);
+ for(const c of ["getr","tk"])if(SHOPKW[c].some(k=>t.includes(k)))return c;
+ if(w.includes("ei"))return"kuehl";
+ let best="sonst",len=0;for(const c in SHOPKW)if(c!=="getr"&&c!=="tk")for(const k of SHOPKW[c])if(k.length>len&&t.includes(k)){best=c;len=k.length}return best}
+/* Namen aus der Datenbank kürzen: „Hähnchenbrust, roh“ → „Hähnchenbrust“ */
+const shopName=s=>String(s||"").split(/,\s/)[0].trim()||String(s||"");
+const shopKey=s=>EK.norm(shopName(s)).replace(/\s+/g," ").trim();
+const rg=g=>g<100?Math.round(g/5)*5||Math.round(g):Math.round(g/10)*10;
+function shopAmt(it){const p=[];if(it.stk)p.push(`${n1(it.stk)} Stück`);
+ if(it.g)p.push(it.g>=1000?`${n1(it.g/1000)} ${it.ml?"l":"kg"}`:`${n0(it.g)} ${it.ml?"ml":"g"}`);
+ if(it.txt)p.push(h(it.txt));return p.length>1&&it.stk?`${p[0]} (${p.slice(1).join(", ")})`:p.join(", ")}
+/* list: [{name,g?,stk?,ml?,txt?}] · von: Gericht/Rezept, für das eingekauft wird */
+function addToShop(list,von){const open=shopItems().filter(x=>!x.done);let n=0;
+ for(const z of list){if(!z||!z.name)continue;const key=shopKey(z.name),ex=open.find(x=>shopKey(x.name)===key),g=z.g?rg(z.g):0;
+  const it=ex?{...ex,g:(ex.g||0)+g||undefined,stk:(ex.stk||0)+(z.stk||0)||undefined,txt:[ex.txt,z.txt].filter(Boolean).join(" + ")||undefined,
+    von:von&&!(ex.von||[]).includes(von)?[...(ex.von||[]),von]:ex.von,ts:Date.now()}
+   :{id:EK.uid(),name:shopName(z.name),g:g||undefined,ml:z.ml||undefined,stk:z.stk||undefined,txt:z.txt||undefined,cat:shopCat(z.name),done:false,von:von?[von]:[],ts:Date.now()};
+  if(!ex)open.push(it);else open[open.indexOf(ex)]=it;
+  change(P_SHOP,{t:"food",item:it},true);n++}
+ render();return n}
+/* Freitext: „500 g Hähnchen“, „Hähnchen 500g“, „3 Eier“, „2x Milch“, „Milch“ */
+function parseShop(s){s=s.trim().replace(/\s+/g," ");if(!s)return null;
+ const U="(kg|g|gr|ml|l|x|stk\\.?|stück|st\\.?)",num=v=>+String(v).replace(",",".");
+ let m=s.match(new RegExp("^(\\d+(?:[.,]\\d+)?)\\s*"+U+"?\\s+(.+)$","i"))||null,q,u,name;
+ if(m){[,q,u,name]=m}else if(m=s.match(new RegExp("^(.+?)\\s+(\\d+(?:[.,]\\d+)?)\\s*"+U+"?$","i"))){[,name,q,u]=m}else return{name:s};
+ u=(u||"").toLowerCase();q=num(q);
+ if(u==="kg")return{name,g:q*1000};if(u==="g"||u==="gr")return{name,g:q};if(u==="l")return{name,g:q*1000,ml:true};if(u==="ml")return{name,g:q,ml:true};
+ return{name,stk:q}}
+function vEinkauf(){const L=shopItems(),open=L.filter(x=>!x.done),done=L.filter(x=>x.done);
+ const row=x=>swRow(`data-shopt="${h(x.id)}"`,`<span>${x.done?"✓ <s>":"○ "}${h(x.name)}${x.done?"</s>":""}${x.g||x.stk||x.txt?` <small>${shopAmt(x)}</small>`:""}${x.von&&x.von.length&&!x.done?`<br><small>für ${x.von.map(h).join(", ")}</small>`:""}</span>`,`data-shopdel="${h(x.id)}"`);
+ let o=`<form id="shopf" class="shopadd"><input id="shopq" class="inp" placeholder="z. B. 500 g Hähnchen, 3 Eier, Milch" autocomplete="off" enterkeyhint="done"><button class="btn p" type="submit" aria-label="Hinzufügen">+</button></form>`;
+ if(!L.length)return o+`<div class="card"><p class="empty" style="margin:0">Deine Einkaufsliste ist leer. Tipp: In einem Gericht oder bei „Worauf hast du Bock?“ auf 🛒 tippen – dann landen alle Zutaten hier, gleiche Zutaten werden zusammengerechnet.</p></div>`;
+ for(const[c,l]of SHOPCAT){const I=open.filter(x=>(x.cat||"sonst")===c).sort((a,b)=>a.name.localeCompare(b.name,"de"));if(!I.length)continue;
+  o+=`<div class="card list"><h2>${l}<small>${I.length}</small></h2>${I.map(row).join("")}</div>`}
+ if(!open.length)o+=`<div class="hint acc">🎉<span>Alles im Wagen!</span></div>`;
+ if(done.length)o+=`<div class="card list"><h2>Im Wagen<small>${done.length}</small></h2>${done.map(row).join("")}<button class="btn w mt10" data-shopclr="1">Erledigte entfernen</button></div>`;
+ return o+`<p class="foot">Antippen = abhaken (nochmal antippen = zurück). Nach links wischen löscht. Die Liste liegt im Repo und ist auf allen Geräten gleich.</p>`}
+function shopToggle(id){const it=shopItems().find(x=>x.id===id);if(it)change(P_SHOP,{t:"food",item:{...it,done:!it.done,ts:Date.now()}})}
+function shopDel(id){const it=shopItems().find(x=>x.id===id);if(!it)return;change(P_SHOP,{t:"fooddel",id});toast(`„${it.name}“ entfernt`,4500,"Rückgängig",()=>change(P_SHOP,{t:"food",item:it}))}
+function shopClear(){const D=shopItems().filter(x=>x.done);if(!D.length)return;for(const x of D)change(P_SHOP,{t:"fooddel",id:x.id},true);render();
+ toast(`${D.length} erledigte entfernt`,4500,"Rückgängig",()=>{for(const x of D)change(P_SHOP,{t:"food",item:x},true);render()})}
+function shopAddText(){const i=$("shopq");if(!i)return;const z=parseShop(i.value);if(!z)return;addToShop([z]);const j=$("shopq");if(j)j.focus()}
+function dishShop(f,portions){const fac=portions/(f.portionen||1);
+ const n=addToShop((f.zutaten||[]).map(z=>({name:z.name,g:z.g*fac,stk:z.stk?z.stk*fac:undefined})),f.name);
+ toast(`${n} Zutat${n>1?"en":""} auf der Einkaufsliste`,4000,"Ansehen",()=>{closeSheet();go("einkauf")})}
+
+/* ===== Worauf hast du Bock? – Vorschläge, die noch ins Tagesziel passen =====
+   Quellen: deine Gerichte, deine Favoriten/eigenen Lebensmittel (je Portion) und die eingebaute Ideensammlung (IDEEN).
+   Nährwerte der Ideen sind Richtwerte je Portion (aus Standard-Nährwerttabellen gerechnet, gerundet). */
+const IDEEN=[
+ /* [id, Name, Tags, Minuten, [kcal,p,c,f,fib,sug,salt], Zutaten [[Name,g,Stück?]], Anleitung] */
+ ["quarkcreme","Protein-Quarkcreme mit Beeren","suess protein snack",5,[257,31,27,1,4,24,.2],[["Magerquark",250],["TK-Beeren",100],["Honig",10],["Milch 1,5 %",30]],"Quark mit Milch glatt rühren, Honig unterrühren, Beeren (gern angetaut) drübergeben."],
+ ["skyrbowl","Skyr mit Banane & Haferflocken","suess protein snack",3,[326,27,46,3,5.5,20,.2],[["Skyr",200],["Banane",100,1],["Haferflocken",30]],"Skyr in eine Schale, Banane in Scheiben drauf, Haferflocken drüberstreuen."],
+ ["oats","Schoko-Overnight-Oats","suess protein",5,[397,30,39,11,10,8,.3],[["Haferflocken",50],["Milch 1,5 %",150],["Proteinpulver Schoko",20],["Kakao (ungesüßt)",5],["Chiasamen",10]],"Alles in ein Glas, gut verrühren, über Nacht in den Kühlschrank. Morgens kalt löffeln."],
+ ["pancakes","Bananen-Hafer-Pfannkuchen","suess warm",15,[395,20,44,14,6.5,13,.4],[["Eier",110,2],["Banane",100,1],["Haferflocken",40]],"Banane zerdrücken, mit Eiern und Haferflocken verrühren, 5 Min quellen lassen. In einer beschichteten Pfanne kleine Pfannkuchen je Seite 2 Min backen."],
+ ["greekhonig","Griechischer Joghurt mit Honig & Walnüssen","suess protein snack",2,[274,22,17,14,1,16,.1],[["Griechischer Joghurt 2 %",200],["Honig",10],["Walnüsse",15]],"Joghurt in eine Schale, Honig drüber, Walnüsse grob hacken und drüberstreuen."],
+ ["proteinpudding","Proteinpudding","suess protein snack",1,[150,20,10,3,0,8,.3],[["Proteinpudding",200]],"Fertig – direkt aus dem Becher."],
+ ["apfelpb","Apfel mit Erdnussbutter","suess snack",3,[198,5,19,10,4.5,16,.1],[["Apfel",150,1],["Erdnussbutter",20]],"Apfel in Spalten schneiden und in die Erdnussbutter dippen."],
+ ["zartbitter","Zartbitterschokolade (2 Riegel)","suess snack",0,[115,2,7,8,2,5,0],[["Zartbitterschokolade 70 %",20]],"Langsam genießen – dazu ein Kaffee oder Tee."],
+ ["nicecream","Schoko-Bananen-Nicecream","suess protein snack",5,[251,19,34,2.5,5.5,21,.1],[["TK-Banane",150,1.5],["Milch 1,5 %",50],["Proteinpulver Schoko",20],["Kakao (ungesüßt)",5]],"Gefrorene Bananenstücke mit Milch, Proteinpulver und Kakao im Mixer cremig pürieren. Sofort essen."],
+ ["milchreis","Milchreis mit Apfelmus & Zimt","suess warm",30,[386,13.5,70,5,2,29,.2],[["Milchreis",50],["Milch 1,5 %",300],["Apfelmus",100],["Zimt",1]],"Milch aufkochen, Milchreis einrühren, bei kleiner Hitze 25 Min unter Rühren quellen lassen. Mit Apfelmus und Zimt servieren."],
+ ["reiswaffel","Reiswaffeln mit Quark & Marmelade","suess snack",3,[209,14,35,1,.5,16,.3],[["Reiswaffeln",24,3],["Magerquark",100],["Marmelade",20]],"Quark auf die Reiswaffeln streichen, Marmelade drauf."],
+ ["shake","Bananen-Protein-Shake","suess protein snack",3,[344,34,37,6,2.5,28,.4],[["Milch 1,5 %",300],["Proteinpulver",30],["Banane",100,1]],"Alles in den Mixer oder Shaker, kurz mixen, fertig."],
+ ["bowl","Hähnchen-Reis-Bowl mit Brokkoli","herzhaft warm protein",25,[514,44,60,7,5.5,3,2.6],[["Hähnchenbrust",150],["Reis",70],["Brokkoli",150],["Sojasauce",15],["Rapsöl",5]],"Reis kochen. Brokkoli 5 Min dämpfen. Hähnchen in Streifen in Öl 6–8 Min braten, mit Sojasauce ablöschen. Alles in eine Schale."],
+ ["ruehrei","Rührei mit Vollkornbrot & Tomaten","herzhaft warm protein",10,[466,29,42,18,8,4,1.6],[["Eier",165,3],["Vollkornbrot",100,2],["Tomaten",100,1]],"Eier verquirlen, salzen, pfeffern und bei mittlerer Hitze stocken lassen. Mit Brot und Tomaten servieren."],
+ ["wrap","Thunfisch-Wrap","herzhaft protein",8,[368,33,37,8,3,4,1.5],[["Weizen-Wrap",60,1],["Thunfisch (Dose, eigener Saft)",100],["Frischkäse light",30],["Salat & Gurke",60],["Mais (Dose)",30]],"Wrap mit Frischkäse bestreichen, Thunfisch, Mais, Salat und Gurke drauf, fest einrollen."],
+ ["linsencurry","Rotes Linsen-Curry","herzhaft warm",25,[420,20,50,11,12,10,1.2],[["Rote Linsen",70],["Kokosmilch light",100],["Passierte Tomaten",150],["Zwiebel",50,1],["Spinat",50],["Currypaste",10]],"Zwiebel anschwitzen, Currypaste kurz mitrösten. Linsen, Tomaten, Kokosmilch und 150 ml Wasser dazu, 15 Min köcheln. Spinat unterheben."],
+ ["thunfischpasta","Vollkornnudeln mit Tomaten-Thunfisch-Sauce","herzhaft warm protein",20,[555,39,72,8.5,9,11,1],[["Vollkornnudeln",90],["Passierte Tomaten",200],["Thunfisch (Dose, eigener Saft)",100],["Zwiebel",50,1],["Olivenöl",5]],"Nudeln kochen. Zwiebel in Öl anschwitzen, Tomaten dazu, 10 Min köcheln, Thunfisch unterheben, würzen. Mit den Nudeln mischen."],
+ ["ofenkartoffel","Ofenkartoffel mit Kräuterquark","herzhaft warm protein",45,[361,24,51,5.5,6.5,6,.3],[["Kartoffeln",300],["Magerquark",150],["Kräuter",10],["Leinöl",5]],"Kartoffeln halbieren, bei 200 °C ca. 40 Min backen. Quark mit Kräutern, Leinöl, Salz und Pfeffer verrühren."],
+ ["chili","Chili con Carne mit Reis","herzhaft warm protein",35,[600,40,78,10,11,10,1.4],[["Rinderhack (mager)",125],["Kidneybohnen (Dose)",120],["Mais (Dose)",50],["Passierte Tomaten",150],["Zwiebel",50,1],["Reis",50]],"Hack mit Zwiebel krümelig braten, Tomaten, Bohnen, Mais und Gewürze (Chili, Kreuzkümmel, Paprika) dazu, 20 Min köcheln. Mit Reis servieren."],
+ ["omelett","Gemüse-Omelett mit Feta","herzhaft warm protein",12,[355,28,8,23,3.5,6,1.3],[["Eier",165,3],["Paprika",100,1],["Spinat",50],["Feta",30]],"Paprika anbraten, Spinat zusammenfallen lassen. Verquirlte Eier drübergießen, Feta drüberbröseln, bei kleiner Hitze stocken lassen."],
+ ["huettenbrot","Vollkornbrot mit Hüttenkäse & Gurke","herzhaft protein",3,[377,26,43,8,8,4,1.6],[["Vollkornbrot",100,2],["Hüttenkäse",150],["Gurke",100]],"Brot mit Hüttenkäse bestreichen, Gurkenscheiben drauf, pfeffern."],
+ ["lachs","Lachs mit Kartoffeln & Brokkoli","herzhaft warm protein",25,[490,34,43,18,9.5,4,.4],[["Lachsfilet",125],["Kartoffeln",250],["Brokkoli",150]],"Kartoffeln 20 Min kochen, Brokkoli die letzten 5 Min dazu. Lachs je Seite 3–4 Min braten, salzen, mit Zitrone servieren."],
+ ["putensalat","Bunter Salat mit Putenbrust","herzhaft protein",15,[375,42,8,19,4,6,1],[["Putenbrust",150],["Gemischter Salat",150],["Tomaten",100,1],["Feta",30],["Olivenöl",10]],"Pute in Streifen braten. Salat und Tomaten schneiden, Feta drüber, mit Olivenöl, Essig, Salz und Pfeffer anmachen."],
+ ["edamame","Edamame mit Meersalz","herzhaft protein snack warm",6,[180,17,13,8,8,3,.8],[["TK-Edamame",150]],"Edamame 4–5 Min in Salzwasser kochen, abgießen, mit grobem Salz bestreuen."],
+ ["hummus","Hummus mit Gemüsesticks","herzhaft snack",5,[250,6,20,14,9,10,.8],[["Hummus",60],["Karotten",100],["Paprika",100,1]],"Gemüse in Sticks schneiden und in den Hummus dippen."],
+ ["eier","2 gekochte Eier","herzhaft protein snack",10,[155,13,1,11,0,1,.3],[["Eier",110,2]],"Eier 8–9 Min kochen, abschrecken, pellen, salzen."],
+ ["kraeuterquark","Kräuterquark mit Gurke","herzhaft protein snack",5,[186,31,12.5,.6,1,10,.2],[["Magerquark",250],["Gurke",150],["Kräuter",10]],"Quark mit Kräutern, Salz und Pfeffer verrühren, Gurke in Sticks dazu."],
+ ["popcorn","Selbstgemachtes Popcorn","herzhaft snack",8,[155,3.5,20,6,4,0,.5],[["Popcorn-Mais",30],["Rapsöl",5]],"Öl im Topf erhitzen, Mais dazu, Deckel drauf, Topf rütteln, bis es nicht mehr ploppt. Leicht salzen."]
+].map(([id,name,tags,min,v,zut,anl])=>{const[kcal,p,c,f,fib,sug,salt]=v,g=zut.reduce((s,z)=>s+z[1],0);
+ return{id,name,tags:tags.split(" "),min,g,n:{kcal,p,c,f,fib,sug,salt},zutaten:zut.map(([name,g,stk])=>({name,g,...(stk?{stk}:{})})),anleitung:anl}});
+const MOODS=[["alle","✨ Alles"],["suess","🍫 Süß"],["herzhaft","🥪 Herzhaft"],["protein","💪 Protein"],["snack","⚡ Snack"],["warm","🍲 Warm"]];
+const KW_SUESS=["schoko","kakao","kuchen","pudding"," eis ","eiscreme","nicecream","muesli","porridge","oats","pfannkuchen","pancake","waffel","keks","cookie","riegel","banane","beere","apfel","obst","honig","marmelade","shake","smoothie","quarkcreme","milchreis","griess","crepe","dessert","tiramisu","nutella","kinder"];
+const KW_WARM=["nudel","pasta","spaghetti","reis","curry","suppe","eintopf","chili","pfanne","auflauf","omelett","ruehrei","spiegelei","pizza","burger","lasagne","gratin","ofen","gebraten","steak","schnitzel","kartoffel","wok","risotto","gnocchi","pfannkuchen","porridge","bolognese","gulasch"];
+/* Tags für deine Gerichte/Lebensmittel: Stichworte im Namen + Nährwerte der Portion */
+function moodTags(name,n){const t=" "+EK.norm(name)+" ",k=+n.kcal||1,T=new Set();
+ const su=KW_SUESS.some(x=>t.includes(x))||(n.sug!=null&&n.sug>=8&&4*n.sug/k>=.25);T.add(su?"suess":"herzhaft");
+ if(KW_WARM.some(x=>t.includes(x)))T.add("warm");if(k<=300)T.add("snack");if((n.p||0)>=15&&4*n.p/k>=.25)T.add("protein");return[...T]}
+let MOOD=LS.get("mood","alle"),ISEL=[],IMORE=false;
+function ideas(i){const left=i.t.kcal-i.s.kcal,pl=Math.max(0,i.m.p-i.s.p),light=left<120,cap=light?150:left*1.05+20,L=[];
+ for(const f of dishes()){const n=perPortion(f);if(n.kcal==null)continue;L.push({k:"dish",id:f.id,name:f.name,n,g:(f.portion&&f.portion.g)||100,tags:moodTags(f.name,n),zutaten:f.zutaten&&f.zutaten.length?f.zutaten:null,f})}
+ for(const f of foods()){if(f.zutaten||f.rezept||!(f.fav||isOwn(f))||f.liquid)continue;const g=(f.portion&&f.portion.g)||100,n=EK.scale(f.n,g);if(n.kcal==null||n.kcal<20)continue;
+  L.push({k:"fav",id:f.id,name:f.name+(f.marke?" ("+f.marke+")":""),n,g,tags:moodTags(f.name,n),f})}
+ for(const x of IDEEN)L.push({k:"idee",id:x.id,name:x.name,n:x.n,g:x.g,tags:x.tags,zutaten:x.zutaten,x});
+ const R=[];for(const c of L){if(MOOD!=="alle"&&!c.tags.includes(MOOD))continue;if(c.n.kcal>cap)continue;
+  const b=bewOf(c.n,c.g);if(light&&b&&b.a==="r")continue;const p=c.n.p||0,k=Math.max(1,c.n.kcal);
+  const fitP=pl>5?Math.min(p,pl)/pl:0,use=light?.5:k/Math.max(1,left);
+  c.score=(pl>10?3*fitP:0)+(use>=.25&&use<=1?1:.3)+(b?b.pt*.3:0)+(MOOD==="protein"?12*p/k:0)+(c.k==="dish"?.4:c.k==="fav"?.2:0);
+  c.b=b;c.why=[pl>5&&p>=8?`deckt ${n0(Math.min(p,pl))} g Protein`:"",light?"":`danach noch ${n0(left-k)} kcal frei`].filter(Boolean).join(" · ");R.push(c)}
+ return{left,pl,light,list:R.sort((a,b)=>b.score-a.score)}}
+function vIdeen(){const T=TODAY(),i=info(cur),r=ideas(i),show=IMORE?r.list.slice(0,30):r.list.slice(0,10);ISEL=show;
+ let o=cur!==T?`<button class="today" data-iday="1">↩ Für heute vorschlagen</button>`:"";
+ o+=`<div class="card"><div class="kp"><div><b>${n0(Math.max(0,r.left))}</b><span>kcal noch offen${cur!==T?" ("+ddm(cur)+")":""}</span></div><div><b>${n0(r.pl)}</b><span>g Protein fehlen</span></div><div><b>${n0(i.s.p)}</b><span>von ${n0(i.m.p)} g Protein</span></div></div>
+ ${r.light?`<p class="s mute centernote">${r.left<=0?"Dein Kalorienziel ist für heute erreicht.":"Fast am Ziel."} Falls doch noch Hunger: hier leichte Sachen bis 150 kcal – ein Überschuss wird automatisch über die nächsten Tage ausgeglichen.</p>`:""}</div>
+ <div class="qs mood">${MOODS.map(([k,l])=>`<button data-mood="${k}" class="${MOOD===k?"on":""}">${l}</button>`).join("")}</div>`;
+ if(!show.length)return o+`<div class="card"><p class="empty" style="margin:0">Nichts gefunden, das noch reinpasst${MOOD!=="alle"?" – probier eine andere Lust":""}.</p></div>`;
+ o+=show.map((c,k)=>{const tg=c.k==="dish"?["Dein Gericht","var(--acc)"]:c.k==="fav"?["Favorit","var(--c)"]:[`Idee${c.x.min?" · "+c.x.min+" Min":""}`,"var(--g)"];
+  return`<div class="res idea" style="--src:${tg[1]}" data-iopen="${k}"><span style="min-width:0;flex:1"><span class="nm">${h(c.name)}</span>
+  <span class="meta"><span class="tag" style="--src:${tg[1]}">${tg[0]}</span>${rateChip(c.b)}</span>
+  <span class="meta">${mc("P",c.n.p,"var(--p)")}${mc("K",c.n.c,"var(--c)")}${mc("F",c.n.f,"var(--f)")}</span>${c.why?`<span class="s mute block" style="margin-top:4px">${c.why}</span>`:""}</span>
+  <span class="kc"><b>${n0(c.n.kcal)}</b><small>kcal</small><span class="ibtns">${c.zutaten?`<button class="pl sh" data-ishop="${k}" aria-label="Zutaten auf die Einkaufsliste">🛒</button>`:""}<button class="pl" data-ilog="${k}" aria-label="Eintragen">+</button></span></span></div>`}).join("");
+ if(!IMORE&&r.list.length>show.length)o+=`<button class="btn w" data-imore="1">Mehr Vorschläge (${r.list.length-show.length})</button>`;
+ return o+`<p class="foot">Sortiert danach, was deine Proteinlücke am besten schließt und noch ins Ziel passt (Aktivkalorien und Ausgleich sind eingerechnet). Ideen-Nährwerte sind Richtwerte je Portion. ${RINFO}</p>`}
+function ideaLog(c,meal){if(c.k==="dish")return logDish(c.id,meal);if(c.k==="fav")return openAmount({food:c.f});
+ const d=cur,e={id:EK.uid(),meal:meal||mealNow(),name:c.name,src:"idee:"+c.id,g:c.g,n:{...c.n},ts:Date.now()};
+ change(pMonth(d),{t:"add",d,e});toast(`${c.name}: ${n0(e.n.kcal)} kcal eingetragen`,4000,"Rückgängig",()=>change(pMonth(d),{t:"del",d,id:e.id}))}
+function ideaShop(c){if(c.k==="dish")return dishShop(c.f,c.f.portionen||1);const n=addToShop(c.zutaten,c.name);
+ toast(`${n} Zutat${n>1?"en":""} auf der Einkaufsliste`,4000,"Ansehen",()=>{closeSheet();go("einkauf")})}
+let IDX=null;
+function openIdea(c){if(c.k==="dish")return openDish(c.id);if(c.k==="fav")return openAmount({food:c.f});IDX={c,meal:mealNow()};renderIdea()}
+function renderIdea(){const c=IDX.c,x=c.x,sh=$("sheet");sh.classList.add("on");const saved=dishes().some(f=>f.idee===x.id);
+ sh.innerHTML=`<div class="top"><button class="ib" data-close="1" aria-label="Schließen">✕</button><h1>Idee</h1><span style="min-width:42px"></span></div><main>
+ <div class="card"><b style="font-size:20px">${h(c.name)}</b><div class="s mute">${x.min?`⏱ ${x.min} Min · `:""}1 Portion ≈ ${n0(c.g)} g</div>
+ <div class="nut" style="margin-bottom:6px"><div><b>${n0(c.n.kcal)}</b><small>kcal</small></div><div><b>${n1(c.n.p)}</b><small>Protein g</small></div><div><b>${n1(c.n.c)}</b><small>KH g</small></div><div><b>${n1(c.n.f)}</b><small>Fett g</small></div></div>${rateRow(bewOf(c.n,c.g))}</div>
+ <div class="card"><h2>Eintragen <small>${ddm(cur)}</small></h2><div class="seg">${EK.MEALS.map(([k,l])=>`<button data-imeal="${k}" class="${IDX.meal===k?"on":""}">${l.replace("essen","")}</button>`).join("")}</div>
+ <button class="btn p w" style="margin-top:10px" data-ilogx="1">1 Portion eintragen</button></div>
+ <div class="card"><h2>Zutaten <small>1 Portion</small></h2>${x.zutaten.map(z=>`<div class="rcp"><span>${h(z.name)}</span><b>${z.stk?n1(z.stk)+" Stück · ":""}${n0(z.g)} g</b></div>`).join("")}
+ <button class="btn w mt10" data-ishopx="1">🛒 Zutaten auf die Einkaufsliste</button></div>
+ <div class="card"><h2>So geht's</h2><div class="s" style="line-height:1.6">${h(x.anleitung)}</div></div>
+ ${saved?`<p class="s mute centernote">Schon bei deinen Gerichten gespeichert.</p>`:`<button class="btn w" data-isave="1">📖 Als eigenes Gericht speichern</button>`}
+ <p class="foot">Nährwerte sind Richtwerte – mit deinen Produkten kann es etwas abweichen. Gespeichert kannst du das Gericht unter „Gerichte“ anpassen.</p></main>`}
+function ideaSave(){const x=IDX.c.x,id="eigen:"+EK.uid(),n={};for(const k in x.n)n[k]=x.n[k]==null?null:Math.round(x.n[k]*100/x.g*100)/100;
+ change(P_LM,{t:"food",item:{id,src:id,own:true,idee:x.id,name:x.name,n,portion:{g:x.g,label:"1 Portion"},portionen:1,zutaten:x.zutaten.map(z=>({...z})),anleitung:x.anleitung,fav:false}});
+ toast(`„${x.name}“ bei deinen Gerichten gespeichert`);renderIdea()}
 
 /* ===== Komplettes Dashboard: wird aus dem Repo (src/ + data/) direkt auf dem iPhone zusammengebaut, wie build.py ===== */
 let DASH={html:null,p:null,shown:null,url:null};
@@ -723,7 +889,7 @@ function hl(name){const w=EK.norm(S.q).split(/\s+/).filter(x=>x.length>1);if(!w.
  for(const x of w){const re=new RegExp("("+x.replace(/ae/g,"(?:ae|ä)").replace(/oe/g,"(?:oe|ö)").replace(/ue/g,"(?:ue|ü)").replace(/ss/g,"(?:ss|ß)")+")","i");if(re.test(out)){out=out.replace(re,"<mark>$1</mark>");}}return out}
 const mc=(l,v,c)=>`<span class="mc" style="--m:${c}">${l} ${n1(v)}</span>`;
 const line=f=>{const[t,c]=SRCS(f),pg=f.portion&&f.portion.g!==100?f.portion.g:null;
- return`<span style="min-width:0;flex:1"><span class="nm">${hl(f.name)}</span><span class="meta"><span class="tag" style="--src:${c}">${t}</span>${f.marke?`<span class="s mute">${h(f.marke)}</span>`:""}</span>
+ return`<span style="min-width:0;flex:1"><span class="nm">${hl(f.name)}</span><span class="meta"><span class="tag" style="--src:${c}">${t}</span>${rateChip(EK.bewertung(f.n))}${f.marke?`<span class="s mute">${h(f.marke)}</span>`:""}</span>
  <span class="meta">${mc("P",f.n&&f.n.p,"var(--p)")}${mc("K",f.n&&f.n.c,"var(--c)")}${mc("F",f.n&&f.n.f,"var(--f)")}</span></span>
  <span class="kc"><b>${n0(f.n&&f.n.kcal)}</b><small>kcal / 100 g</small>${pg?`<small>Portion ${n0(pg)} g</small>`:""}</span>`};
 let PICK=[],FF_ADD=false;
@@ -933,7 +1099,7 @@ function renderAmount(){const f=A.food,entry=A.entry,u=A.u,sh=$("sheet");sh.clas
  const quick=u.k==="pack"?[[.25,"¼"],[.5,"½"],[.75,"¾"],[1,"1"]]:u.k==="g"?[[50],[100],[150],[200],[250]]:u.k==="stk"||u.k==="por"?[1,2,3,4,5].filter(x=>!u.max||x<=u.max).map(x=>[x]).concat(u.max&&u.max>5?[[u.max,"alle "+u.max]]:[]):u.k==="smart"?[[.5,"½"],[1],[2],[3],[4]]:[[1],[2],[3]];
  const chip=x=>`<button data-unit="${x.k}" class="${x.k===u.k?"on":""}">${h(x.label)}${x.sub?`<small>${h(x.sub)}</small>`:""}</button>`;
  sh.innerHTML=`<div class="top"><button class="ib" data-back="${entry?"close":"1"}" aria-label="Zurück">‹</button><h1>${entry?"Eintrag ändern":"Wie viel?"}</h1><button class="ib" data-fav="1" aria-label="Favorit">${isFav?"★":"☆"}</button></div><main>
- <div class="card" style="padding:12px 16px"><b style="font-size:18px">${h(f.name)}</b><div class="mute s">${f.marke?h(f.marke)+" · ":""}${n0(f.n.kcal)} kcal je 100 ${f.liquid?"ml":"g"}${srcL?" · "+srcL:""}</div></div>
+ <div class="card" style="padding:12px 16px"><b style="font-size:18px">${h(f.name)}</b><div class="mute s">${f.marke?h(f.marke)+" · ":""}${n0(f.n.kcal)} kcal je 100 ${f.liquid?"ml":"g"}${srcL?" · "+srcL:""}</div>${rateRow(EK.bewertung(f.n))}</div>
  <div class="card amt"><div class="units">${A.U.filter(x=>!x.more||A.more||x.k===u.k).map(chip).join("")}${A.more?"":`<button data-umore="1">Mehr …</button>`}</div>
  <div class="qrow"><button class="qb" data-qd="-1" aria-label="weniger">−</button><div class="qv"><input id="qv" type="text" inputmode="decimal" value="${String(fq(A.q)).replace(/[¼½¾⅓⅔]/g,m=>({"¼":".25","½":".5","¾":".75","⅓":".33","⅔":".67"}[m])).replace(/^(\d+) \./,"$1.")}"><span>${h(u.label)}${u.max?` <small>von ${u.max}</small>`:""}</span></div><button class="qb" data-qd="1" aria-label="mehr">+</button></div>
  <div class="qs" style="justify-content:center">${quick.map(([v,l])=>`<button data-qset="${v}" class="${Math.abs(A.q-v)<1e-6?"on":""}">${l||v}${u.k==="g"?" "+(f.liquid?"ml":"g"):""}</button>`).join("")}</div>
@@ -1110,6 +1276,21 @@ document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x
  else if(b("[data-dishcook]")){const f=foods().find(y=>y.id===DSH.id);if(f)dishToRecipe(f,"cook")}
  else if(b("[data-dishedit]")){const f=foods().find(y=>y.id===DSH.id);if(f)dishToRecipe(f,"save")}
  else if(b("[data-dishdel]")){const id=DSH.id;if(confirm("Gericht löschen?")){closeSheet();delFood(id)}}
+ else if(b("[data-dishshop]")){const f=foods().find(y=>y.id===DSH.id);if(f)dishShop(f,DSH.n)}
+ else if(x=b("[data-shopt]"))shopToggle(x.dataset.shopt);
+ else if(x=b("[data-shopdel]"))shopDel(x.dataset.shopdel);
+ else if(b("[data-shopclr]"))shopClear();
+ else if(x=b("[data-mood]")){MOOD=x.dataset.mood;LS.set("mood",MOOD);IMORE=false;render()}
+ else if(b("[data-imore]")){IMORE=true;render()}
+ else if(b("[data-iday]")){cur=TODAY();render()}
+ else if(x=b("[data-ishop]")){ev.stopPropagation();const c=ISEL[+x.dataset.ishop];if(c)ideaShop(c)}
+ else if(x=b("[data-ilog]")){ev.stopPropagation();const c=ISEL[+x.dataset.ilog];if(c)ideaLog(c)}
+ else if(x=b("[data-iopen]")){const c=ISEL[+x.dataset.iopen];if(c)openIdea(c)}
+ else if(x=b("[data-imeal]")){IDX.meal=x.dataset.imeal;renderIdea()}
+ else if(b("[data-ilogx]")){const c=IDX.c,m=IDX.meal;closeSheet();ideaLog(c,m)}
+ else if(b("[data-ishopx]"))ideaShop(IDX.c);
+ else if(b("[data-isave]"))ideaSave();
+ else if(b("[data-rinfo]"))toast(RINFO,9000);
  else if(b("[data-micro]"))openMicro(cur);
  else if(b("[data-wizard]"))openWizard();
  else if(x=b("[data-wrate]")){W.ziel=($("wziel")||{}).value??W.ziel;W.rate=+x.dataset.wrate;renderWizard()}
@@ -1141,7 +1322,8 @@ document.addEventListener("input",ev=>{if(ev.target.id==="ranl"&&R)R.anleitung=e
 document.addEventListener("change",ev=>{if(ev.target.id==="lblfile"){const fl=ev.target.files&&ev.target.files[0];ev.target.value="";if(fl)labelPhoto(fl);return}if(W&&ev.target.id==="wjob"){W.job=ev.target.value;renderWizard();return}if(R&&ev.target.id==="rspread"){R.spread=ev.target.checked;renderRecipe();return}if(R&&ev.target.id==="rkeep"){R.keep=ev.target.checked;return}if(ev.target.name==="fixon"&&ev.target.form&&ev.target.form.id==="pf")saveProfil(ev.target.form)});
 document.addEventListener("submit",ev=>{ev.preventDefault();const f=ev.target;
  if(f.id==="pf")saveProfil(f);else if(f.id==="mf")saveManual(f);else if(f.id==="sf")setup(f);
- else if(f.id==="ff")saveFoodForm(f)});
+ else if(f.id==="ff")saveFoodForm(f);
+ else if(f.id==="shopf")shopAddText()});
 document.addEventListener("keydown",ev=>{if(ev.key==="Enter"&&ev.target.id==="ean")byBarcode(ev.target.value)});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState!=="visible")return;
  if(cur<TODAY()&&!$("sheet").classList.contains("on")&&Date.now()-C.ts>6*36e5)cur=TODAY();
@@ -1157,7 +1339,7 @@ noZoom(document);
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="8ce57a8";
+const APPV="a981d17";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;

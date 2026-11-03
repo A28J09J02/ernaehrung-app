@@ -38,9 +38,18 @@ Jede Änderung an `ernaehrung-app/` im Branch `main` des privaten Repos wird vom
 Dabei wird die Version gestempelt (`APPV` in `index.html`, `version.txt`); die App prüft das beim Öffnen
 und lädt sich bei einer neuen Version selbst neu. Nie von Hand ins öffentliche Repo schreiben.
 
+## Funktionen (Auszug)
+- **Einkaufsliste** (Seitenmenü): Freitext („500 g Hähnchen“, „3 Eier“), nach Ladenbereichen sortiert, antippen = abhaken, wischen = löschen.
+  In jedem Gericht und bei jeder Idee: „🛒 Zutaten auf die Einkaufsliste“ (mit Portionszahl).
+- **Bewertung** von Lebensmitteln und Gerichten (Top/Okay/Sparsam) – Regel in `kern.js` → `EK.bewertung`.
+- **Worauf hast du Bock?**: Vorschläge, die noch ins Tagesziel passen, nach Lust (Süß, Herzhaft, Protein, Snack, Warm) –
+  aus deinen Gerichten, Favoriten und der eingebauten Ideensammlung (`IDEEN` in `index.html`, Nährwerte Richtwerte je Portion).
+  Sortiert danach, was die Proteinlücke am besten schließt. Ideen lassen sich als eigenes Gericht speichern.
+
 ## Daten
 - `data/ernaehrung/profil.json` – Profil und Ziele
 - `data/ernaehrung/lebensmittel.json` – eigene Lebensmittel, Favoriten, gescannte Produkte
+- `data/ernaehrung/einkauf.json` – Einkaufsliste (gleiche Zutaten werden zusammengerechnet, Kategorie automatisch nach Stichworten)
 - `data/ernaehrung/JJJJ-MM.json` – Tagebuch, ein Eintrag enthält die Nährwerte der gegessenen Menge
 - `data/bls.json` – Bundeslebensmittelschlüssel (aus dem Workflow)
 

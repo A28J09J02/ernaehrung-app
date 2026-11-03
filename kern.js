@@ -124,7 +124,24 @@ const EK=(()=>{
   /* carry: zusammengefasst je Tag & Überschuss-Tag */
   for(const k in carry){const m={};for(const[d,a]of carry[k])m[d]=(m[d]||0)+a;carry[k]=Object.entries(m)}
   return{share,cheats,carry}}
+ /* Lebensmittel-Bewertung (eigene, einfache Punkteregel – keine Wissenschaft, nur Orientierung). Grundlage: Nährwerte je 100 g.
+    Punkte: Protein-Anteil an den kcal ≥ 30 % +2, ≥ 20 % +1, < 8 % −1 · leicht (≤ 100 kcal) +1, sehr kaloriendicht (≥ 400 kcal) −1 ·
+    Ballaststoffe ≥ 3 g je 100 kcal oder ≥ 6 g +1 · Zucker > 22,5 g −2, > 12,5 g −1 (Ampelgrenzen der britischen Lebensmittelbehörde FSA);
+    zusätzlich ohne Ballaststoffe (< 1 g, ab 5 g Zucker, z. B. Getränke): Zuckeranteil an den kcal > 50 % −2, > 30 % −1 ·
+    Salz > 1,5 g −1 · gesättigte Fettsäuren > 5 g −1 (nur wenn bekannt).
+    Ergebnis: ≥ 2 Punkte „Top“ (grün), 0–1 „Okay“ (orange), ≤ −1 „Sparsam“ (rot). Ohne kcal, Protein, KH und Fett (oder unter 5 kcal) keine Bewertung. */
+ function bewertung(n){
+  if(!n||n.kcal==null||n.p==null||n.c==null||n.f==null||!(+n.kcal>=5))return null;
+  const k=+n.kcal,ps=4*(+n.p||0)/k,ss=n.sug!=null?4*(+n.sug||0)/k:null,fib=n.fib!=null?+n.fib:null,why=[];let pt=0;
+  if(ps>=.3){pt+=2;why.push(["💪 Proteinreich","g"])}else if(ps>=.2){pt+=1;why.push(["💪 Gute Proteinquelle","g"])}else if(ps<.08&&k>40)pt-=1;
+  if(k<=100){pt+=1;why.push(["🪶 Leicht","g"])}else if(k>=400){pt-=1;why.push(["⚡ Kaloriendicht","r"])}
+  if(fib!=null&&(fib/k*100>=3||fib>=6)){pt+=1;why.push(["🌾 Ballaststoffreich","g"])}
+  if(ss!=null){const sg=+n.sug||0,arm=(fib||0)<1&&sg>=5,m=sg>22.5||(arm&&ss>.5)?-2:sg>12.5||(arm&&ss>.3)?-1:0;if(m){pt+=m;why.push(["🍬 Viel Zucker","r"])}}
+  if(n.salt!=null&&+n.salt>1.5){pt-=1;why.push(["🧂 Salzig","r"])}
+  if(n.fasat!=null&&+n.fasat>5){pt-=1;why.push(["🧈 Viel gesättigtes Fett","r"])}
+  const a=pt>=2?"g":pt>=0?"y":"r";
+  return{a,pt,label:{g:"Top",y:"Okay",r:"Sparsam"}[a],why}}
  const norm=s=>String(s||"").toLowerCase().replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss").replace(/[^a-z0-9 ]+/g," ");
  const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
- return{MEALS,NUTR,MICRO,JOBS,GOALS,RATES,SRC,PROFIL,prof,bmr,pal,goalAdj,trainKcal,planKcal,garminBase,bases,target,macros,sum,scale,ampel,dayGrade,weight,ausgleich,AUS,norm,uid,day,add,monday,r}
+ return{MEALS,NUTR,MICRO,JOBS,GOALS,RATES,SRC,PROFIL,prof,bmr,pal,goalAdj,trainKcal,planKcal,garminBase,bases,target,macros,sum,scale,ampel,dayGrade,weight,ausgleich,AUS,bewertung,norm,uid,day,add,monday,r}
 })();
