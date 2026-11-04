@@ -179,6 +179,7 @@ main.dragx{will-change:transform}main.snap{transition:transform .28s cubic-bezie
 .res .mc{font-size:12px;font-weight:600;padding:1px 7px;border-radius:99px;background:color-mix(in srgb,var(--m) 14%,transparent);color:color-mix(in srgb,var(--m) 85%,var(--ink))}
 .res .kc{text-align:right;flex:none;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;gap:2px}
 .res .kc b{font-size:20px;font-weight:700;display:block}.res .kc small{font-size:11px;color:var(--mute)}
+.res .rbtns{flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}.res .again{border:1px solid var(--acc);background:var(--acc-bg);color:var(--acc);border-radius:99px;padding:0 10px;min-height:44px;font-size:13px;font-weight:600;white-space:nowrap;max-width:110px;overflow:hidden;text-overflow:ellipsis}
 .res .pl{flex:none;align-self:center;width:34px;height:34px;border-radius:50%;background:var(--acc);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:500}
 .rcp{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--grid);font-size:14px}
 .rcp button{border:0;background:none;color:var(--r);font-size:18px;padding:0 4px}
@@ -187,19 +188,23 @@ main.dragx{will-change:transform}main.snap{transition:transform .28s cubic-bezie
 /* Bewertung, Einkaufsliste, Ideen */
 .rate{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin-top:8px;font-size:13px}.rate .lnk{border:1px solid var(--line);background:var(--card);color:var(--mute);border-radius:50%;width:22px;height:22px;padding:0;font-size:12px;line-height:1}
 .shopadd{display:flex;gap:8px;margin-bottom:12px}.shopadd .btn{flex:none;width:52px;font-size:22px;padding:0}
+.mt8{margin-top:8px}.mt12{margin-top:12px}.mb6{margin-bottom:6px}.mb12{margin-bottom:12px}.my10{margin:10px 0}.fhd{margin:14px 0 0}
+.amt-head{padding:12px 16px}.amt-head b{font-size:18px}.qs.c{justify-content:center}#qg{text-align:center;margin:4px 0 0}.btn.big{margin-top:14px;font-size:17px;padding:14px}.empty.pad{padding:14px 0}
 .card.list{padding:12px 16px 4px}.card.list h2{margin-bottom:2px}.card.list .sw:first-of-type{border-top:0}.card.list s{color:var(--mute)}
 .btn.idee{display:flex;justify-content:space-between;align-items:center;width:100%;margin:0 0 8px;background:color-mix(in srgb,var(--acc) 10%,var(--card));border-color:color-mix(in srgb,var(--acc) 35%,var(--line));color:var(--acc)}.btn.idee small{color:var(--mute);font-weight:500}
 .qs.mood{margin:0 0 8px}.btn.dis{text-align:left;margin-bottom:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.res.idea{cursor:pointer}.res .ibtns{display:flex;gap:6px;margin-top:6px}.res .ibtns .pl{width:38px;height:38px}.res .pl.sh{background:var(--acc-bg);font-size:17px}
 /* Dashboard */
 #dashf{position:fixed;left:0;right:0;width:100%;border:0;background:var(--bg)}
 .load{text-align:center;padding:60px 20px;color:var(--mute)}
+#ptr{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 58px);z-index:45;width:42px;height:42px;margin-left:-21px;border-radius:50%;background:var(--card);border:1px solid var(--line);box-shadow:0 2px 10px rgba(0,0,0,.15);color:var(--mute);display:flex;align-items:center;justify-content:center;font-size:22px;opacity:0;transform:translateY(-30px);pointer-events:none;transition:opacity .15s}
+#ptr.go{color:var(--acc);border-color:var(--acc)}#ptr.run{opacity:1;transform:translateY(20px);color:var(--acc);transition:transform .2s}#ptr.run i{animation:sp 1s linear infinite}#ptr i{font-style:normal;display:block}
 .spin{display:inline-block;animation:sp 1s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
 </style></head><body>
 <div id="app"></div>
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=861890f"></script>
+<script src="kern.js?v=09d7419"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -539,12 +544,22 @@ function vVerlauf(){
 /* ===== Meine Lebensmittel ===== */
 const foods=()=>(C.lm&&C.lm.items)||[];
 const isOwn=f=>f.own||String(f.src||"").startsWith("eigen");
+/* Reiter: Von dir / Favoriten / Gescannt; Suchfeld filtert den aktiven Reiter (gleiche Wortsuche wie beim Eintragen) */
+const LMTABS=[["eigen","Von dir",f=>isOwn(f)],["fav","Favoriten",f=>!!f.fav],["off","Gescannt",f=>srcOf(f).k==="off"]];
+let LMQ="";
+const lmHits=k=>{const t=LMTABS.find(x=>x[0]===k),q=LMQ.trim();return foods().filter(f=>t[2](f)&&(!q||matchWords(f.name+" "+(f.marke||""),q)))};
+function lmSeg(){return LMTABS.map(([k,l])=>`<button data-lmtab="${k}" class="${lmTab===k?"on":""}">${l} <small>(${lmHits(k).length})</small></button>`).join("")}
+function lmList(){const L=lmHits(lmTab).sort((a,b)=>a.name.localeCompare(b.name,"de"));
+ if(L.length)return L.map(f=>swRow(`data-editfood="${h(f.id)}"`,`<span>${h(f.name)}${f.fav?" ★":""}<br><small>${f.marke?h(f.marke)+" · ":""}${n0(f.n&&f.n.kcal)} kcal · P ${n1(f.n&&f.n.p)} g je 100 g${f.portion&&f.portion.g!==100?" · Portion "+n0(f.portion.g)+" g":""}${(b=>b?` · <span style="color:${COL[b.a]}">● ${b.label}</span>`:"")(EK.bewertung(f.n))}</small></span><span class="mute">›</span>`,`data-delfood="${h(f.id)}"`)).join("");
+ if(LMQ.trim()){const other=LMTABS.filter(x=>x[0]!==lmTab).map(([k,l])=>[k,l,lmHits(k).length]).filter(x=>x[2]);
+  return`<p class="empty pad">Nichts gefunden${other.length?" – in anderen Reitern:":"."}</p>${other.map(([k,l,n])=>`<button class="btn w mb6" data-lmtab="${k}">${l}: ${n} Treffer</button>`).join("")}`}
+ return`<p class="empty pad">${lmTab==="eigen"?"Lege hier Lebensmittel an, die es in keiner Datenbank gibt (z. B. Omas Lasagne). Sie erscheinen beim Suchen ganz oben als „von dir“.":lmTab==="fav"?"Markiere Lebensmittel beim Eintragen mit ☆ als Favorit.":"Gescannte Produkte werden hier gespeichert und funktionieren dann auch offline."}</p>`}
 function vLm(){
- const L=foods().filter(f=>lmTab==="eigen"?isOwn(f):lmTab==="fav"?f.fav:String(f.src).startsWith("off:")).sort((a,b)=>a.name.localeCompare(b.name,"de"));
- return`<div class="seg" style="margin-bottom:12px">${[["eigen","Von dir"],["fav","Favoriten"],["off","Gescannt"]].map(([k,l])=>`<button data-lmtab="${k}" class="${lmTab===k?"on":""}">${l}</button>`).join("")}</div>
- ${lmTab==="eigen"?`<button class="btn p w" style="margin-bottom:12px" data-newfood="1">+ Neues Lebensmittel anlegen</button>`:""}
- <div class="card" style="padding:4px 16px">${L.length?L.map(f=>swRow(`data-editfood="${h(f.id)}"`,`<span>${h(f.name)}${f.fav?" ★":""}<br><small>${f.marke?h(f.marke)+" · ":""}${n0(f.n&&f.n.kcal)} kcal · P ${n1(f.n&&f.n.p)} g je 100 g${f.portion&&f.portion.g!==100?" · Portion "+n0(f.portion.g)+" g":""}${(b=>b?` · <span style="color:${COL[b.a]}">● ${b.label}</span>`:"")(EK.bewertung(f.n))}</small></span><span class="mute">›</span>`,`data-delfood="${h(f.id)}"`)).join("").replace('<div class="sw">','<div class="sw" style="border-top:0">')
-  :`<p class="empty" style="padding:14px 0">${lmTab==="eigen"?"Lege hier Lebensmittel an, die es in keiner Datenbank gibt (z. B. Omas Lasagne). Sie erscheinen beim Suchen ganz oben als „von dir“.":lmTab==="fav"?"Markiere Lebensmittel beim Eintragen mit ☆ als Favorit.":"Gescannte Produkte werden hier gespeichert und funktionieren dann auch offline."}</p>`}</div>`}
+ return`<div class="seg mb12" id="lmseg">${lmSeg()}</div>
+ <input id="lmq" class="inp mb12" type="search" placeholder="In meinen Lebensmitteln suchen" value="${h(LMQ)}" autocomplete="off">
+ ${lmTab==="eigen"?`<button class="btn p w mb12" data-newfood="1">+ Neues Lebensmittel anlegen</button>`:""}
+ <div class="card list" id="lml">${lmList()}</div>`}
+function lmRefresh(){const a=$("lml"),b=$("lmseg");if(a)a.innerHTML=lmList();if(b)b.innerHTML=lmSeg()}
 function delFood(id){const f=foods().find(x=>x.id===id);if(!f)return;change(P_LM,{t:"fooddel",id});toast(`„${f.name}“ entfernt`,4500,"Rückgängig",()=>change(P_LM,{t:"food",item:f}))}
 function openFoodForm(f,fromAdd,o={}){FF_ADD=!!fromAdd;const sh=$("sheet");sh.classList.add("on");const isNew=!f||!f.id,x=f||{n:{},portion:{g:100}},v=k=>x.n&&x.n[k]!=null?String(x.n[k]).replace(".",","):"";
  const fl=(k,l)=>`<div><label class="f">${l}</label><input class="inp" name="${k}" type="text" inputmode="decimal" value="${v(k)}"></div>`;
@@ -554,7 +569,7 @@ function openFoodForm(f,fromAdd,o={}){FF_ADD=!!fromAdd;const sh=$("sheet");sh.cl
  ${o.ean?`<input type="hidden" name="ean" value="${h(o.ean)}">`:""}
  <label class="f">Name</label><input class="inp" name="name" required value="${h(x.name||"")}" placeholder="${o.hint?"Name des Produkts":"z. B. Omas Lasagne"}">
  <label class="f">Marke (optional)</label><input class="inp" name="marke" value="${h(x.marke||"")}">
- <p class="s mute" style="margin:14px 0 0">Nährwerte <b>je 100 g</b> (stehen auf der Packung)</p>
+ <p class="s mute fhd">Nährwerte <b>je 100 g</b> (stehen auf der Packung)</p>
  <div class="row">${fl("kcal","Kalorien")}${fl("p","Protein g")}</div><div class="row">${fl("c","KH g")}${fl("f","Fett g")}</div>
  <div class="row">${fl("fib","Ballastst. g")}${fl("sug","Zucker g")}${fl("salt","Salz g")}</div>
  <label class="f">Übliche Portion in g (optional)</label><input class="inp" name="pg" type="text" inputmode="decimal" value="${x.portion&&x.portion.g!==100?x.portion.g:""}" placeholder="z. B. 350">
@@ -562,7 +577,7 @@ function openFoodForm(f,fromAdd,o={}){FF_ADD=!!fromAdd;const sh=$("sheet");sh.cl
  <div><label class="f">Packung (g/ml, optional)</label><input class="inp" name="pkg" type="text" inputmode="decimal" value="${x.pack?x.pack.g:""}" placeholder="z. B. 420"></div></div>
  <div class="tg"><span>Favorit</span><input type="checkbox" name="fav" ${x.fav?"checked":""}></div>
  <input type="hidden" name="id" value="${h(x.id||"")}">
- <button class="btn p w" style="margin-top:12px" type="submit">Speichern</button>${f&&f.id?`<button class="btn d w" style="margin-top:8px" type="button" data-delfood="${h(f.id)}">Löschen</button>`:""}</form></main>`}
+ <button class="btn p w mt12" type="submit">Speichern</button>${f&&f.id?`<button class="btn d w mt8" type="button" data-delfood="${h(f.id)}">Löschen</button>`:""}</form></main>`}
 /* Zahlenfeld lesen: leer → null, ungültig oder negativ → false (wird abgelehnt statt als null/negativ gespeichert) */
 const numIn=el=>{const s=el?el.value.trim().replace(",","."):"";if(s==="")return null;const v=+s;return isFinite(v)&&v>=0?v:false};
 function saveFoodForm(fm){const v=k=>numIn(fm.elements[k]);
@@ -1123,35 +1138,51 @@ function fromEntry(e){const f=foods().find(x=>x.src===e.src&&(x.name===e.name||e
 const UF={"µg>mg":1e-3,"mg>µg":1e3,"mg>g":1e-3,"g>mg":1e3};
 function fromBls(r){const o={};BLSM.felder.forEach((k,i)=>{if(k==="water")return;let v=r[2+i];const mu=(EK.MICRO.find(m=>m[0]===k)||[])[2],bu=BLSM.einheiten[k];
   if(v!=null&&mu&&bu&&mu!==bu&&UF[bu+">"+mu])v=v*UF[bu+">"+mu];o[k]=v});return{id:"bls:"+r[0],name:r[1],src:"bls:"+r[0],n:o}}
-function blsSearch(q){if(!BLS)return[];const w=EK.norm(q).split(/\s+/).filter(Boolean);if(!w.length)return[];
+/* Wortsuche für alle Listen: jedes Suchwort muss vorkommen, mit oder ohne Leerzeichen („hähnchen brust“ ↔ „Hähnchenbrust“), Reihenfolge egal */
+const qWords=q=>EK.norm(q).split(/\s+/).filter(Boolean);
+const hitWords=(t,w)=>{const tc=t.replace(/ /g,"");return w.every(x=>t.includes(x)||tc.includes(x))};
+const matchWords=(text,q)=>{const w=qWords(q);return w.length>0&&hitWords(EK.norm(text),w)};
+function blsSearch(q){if(!BLS)return[];const w=qWords(q);if(!w.length)return[];
  /* BLS schreibt oft getrennt („Hafer Flocken“) – darum auch ohne Leerzeichen vergleichen */
- const ni=2+BLSM.felder.length,qj=w.join(""),L=[];for(const r of BLS){const t=r[ni],tc=t.replace(/ /g,"");if(w.every(x=>t.includes(x)||tc.includes(x))){const qs=w.join(" "),sc=(t===qs||t.startsWith(qs+" ")||(qj.length>=5&&tc.startsWith(qj))?0:tc.startsWith(qj)?1:t.startsWith(w[0])||tc.startsWith(w[0])?2:t.includes(" "+w[0])?3:4)*1000+t.length;L.push([sc,r])}}
+ const ni=2+BLSM.felder.length,qj=w.join(""),L=[];for(const r of BLS){const t=r[ni],tc=t.replace(/ /g,"");if(hitWords(t,w)){const qs=w.join(" "),sc=(t===qs||t.startsWith(qs+" ")||(qj.length>=5&&tc.startsWith(qj))?0:tc.startsWith(qj)?1:t.startsWith(w[0])||tc.startsWith(w[0])?2:t.includes(" "+w[0])?3:4)*1000+t.length;L.push([sc,r])}}
  return L.sort((a,b)=>a[0]-b[0]).slice(0,40).map(x=>x[1])}
-const SRCS=f=>f.zutaten?["Gericht","var(--acc)"]:isOwn(f)?["von dir","var(--acc)"]:String(f.src).startsWith("off")?["Marke","var(--c)"]:String(f.src).startsWith("bls")?["Grundnahrungsmittel","var(--g)"]:["gespeichert","var(--mute)"];
+/* Herkunft eines Lebensmittels – eine Stelle für Suche, Mengenansicht und „Meine Lebensmittel“.
+   k = Herkunft (eigen/off/bls/sonst), kurz = Etikett in der Trefferliste, lang = Zeile in der Mengenansicht */
+const srcOf=f=>{const s=String(f.src||""),k=isOwn(f)?"eigen":s.startsWith("off")?"off":s.startsWith("bls")?"bls":"sonst",
+ L={eigen:["von dir","von dir angelegt","var(--acc)"],off:["Marke","Open Food Facts","var(--c)"],bls:["Grundnahrungsmittel","Grundnahrungsmittel","var(--g)"],sonst:["gespeichert","","var(--mute)"]}[k];
+ return f.zutaten?{k,kurz:"Gericht",lang:L[1],c:"var(--acc)"}:{k,kurz:L[0],lang:L[1],c:L[2]}};
 /* Treffer im Namen hervorheben */
 function hl(name){const w=EK.norm(S.q).split(/\s+/).filter(x=>x.length>1);if(!w.length)return h(name);let out=h(name);
  for(const x of w){const re=new RegExp("("+x.replace(/ae/g,"(?:ae|ä)").replace(/oe/g,"(?:oe|ö)").replace(/ue/g,"(?:ue|ü)").replace(/ss/g,"(?:ss|ß)")+")","i");if(re.test(out)){out=out.replace(re,"<mark>$1</mark>");}}return out}
 const mc=(l,v,c)=>`<span class="mc" style="--m:${c}">${l} ${n1(v)}</span>`;
-const line=f=>{const[t,c]=SRCS(f),pg=f.portion&&f.portion.g!==100?f.portion.g:null;
+const line=f=>{const{kurz:t,c}=srcOf(f),pg=f.portion&&f.portion.g!==100?f.portion.g:null;
  return`<span style="min-width:0;flex:1"><span class="nm">${hl(f.name)}</span><span class="meta"><span class="tag" style="--src:${c}">${t}</span>${rateChip(EK.bewertung(f.n))}${f.marke?`<span class="s mute">${h(f.marke)}</span>`:""}</span>
  <span class="meta">${mc("P",f.n&&f.n.p,"var(--p)")}${mc("K",f.n&&f.n.c,"var(--c)")}${mc("F",f.n&&f.n.f,"var(--f)")}</span></span>
  <span class="kc"><b>${n0(f.n&&f.n.kcal)}</b><small>kcal / 100 g</small>${pg?`<small>Portion ${n0(pg)} g</small>`:""}</span>`};
-let PICK=[],FF_ADD=false;
+let PICK=[],AGAIN=[],FF_ADD=false;
+/* Eintrag mit genau der Menge/Einheit des letzten Mals in die aktuelle Mahlzeit übernehmen (1 Tipp, mit Rückgängig) */
+function logAgain(e){const d=cur,ne={...e,id:EK.uid(),meal:S.meal,ts:Date.now()};change(pMonth(d),{t:"add",d,e:ne});closeSheet();
+ toast(`${unitText(e)} · ${n0(e.n&&e.n.kcal)} kcal eingetragen`,4500,"Rückgängig",()=>change(pMonth(d),{t:"del",d,id:ne.id}))}
 function openAdd(meal){S={meal,q:"",off:null,offq:"",mode:"log"};sheetAdd();setTimeout(()=>{const i=$("q");i&&i.focus()},80)}
 function sheetAdd(){const sh=$("sheet");sh.classList.add("on");
  sh.innerHTML=`<div class="top"><button class="ib" data-close="1" aria-label="Schließen">✕</button><h1>${S.mode==="recipe"?"Zutat hinzufügen":EK.MEALS.find(m=>m[0]===S.meal)[1]}</h1><span style="min-width:42px"></span></div><main>
  <input id="q" class="inp" type="search" placeholder="Lebensmittel suchen" value="${h(S.q)}" autocomplete="off">
- <div class="row" style="margin:10px 0"><button class="btn" data-scan="1">▦ Barcode</button>${S.mode==="recipe"?"":`<button class="btn" data-manual="1">✎ Schnell eintragen</button>`}</div>${S.mode==="recipe"?"":`<button class="btn w" style="margin-bottom:6px" data-recipe="1">🍲 Gericht aus mehreren Zutaten</button>`}<div id="rl"></div></main>`;
+ <div class="row my10"><button class="btn" data-scan="1">▦ Barcode</button>${S.mode==="recipe"?"":`<button class="btn" data-manual="1">✎ Schnell eintragen</button>`}</div>${S.mode==="recipe"?"":`<button class="btn w mb6" data-recipe="1">🍲 Gericht aus mehreren Zutaten</button>`}<div id="rl"></div></main>`;
  results()}
 function results(){const el=$("rl");if(!el)return;const q=S.q.trim();PICK=[];let o="";
- const add=f=>{PICK.push(f);return`<button class="res" style="--src:${SRCS(f)[1]}" data-pick="${PICK.length-1}">${line(f)}<span class="pl">+</span></button>`};
- if(!q){const own=foods().filter(f=>isOwn(f)&&!f.fav),fav=foods().filter(f=>f.fav),rc=recent();
-  if(fav.length)o+=`<div class="sec">Favoriten</div>`+fav.map(add).join("");
-  if(rc.length)o+=`<div class="sec">Zuletzt gegessen</div>`+rc.map(e=>add(fromEntry(e))).join("");
-  if(own.length)o+=`<div class="sec">Von dir hinzugefügt</div>`+own.slice(0,20).map(add).join("");
+ const add=(f,e)=>{PICK.push(f);const i=PICK.length-1,ag=e&&S.mode!=="recipe"&&AGAIN.push(e);
+  /* „Zuletzt gegessen“: zweiter Knopf trägt die letzte Menge direkt ein; die Zeile selbst öffnet wie immer die Mengenansicht */
+  return ag?`<div class="res" role="button" tabindex="0" style="--src:${srcOf(f).c}" data-pick="${i}">${line(f)}<span class="rbtns"><span class="pl">+</span><button class="again" data-again="${ag-1}" aria-label="Wie zuletzt eintragen: ${h(unitText(e))}">↺ ${h(unitText(e))}</button></span></div>`
+   :`<button class="res" style="--src:${srcOf(f).c}" data-pick="${i}">${line(f)}<span class="pl">+</span></button>`};
+ AGAIN=[];
+ if(!q){const own=foods().filter(f=>isOwn(f)&&!f.fav),fav=foods().filter(f=>f.fav),favSrc=new Set(fav.map(f=>f.src)),
+   rc=recent().filter(e=>!favSrc.has(e.src)),RN=8,rcs=S.rmore?rc:rc.slice(0,RN);
+  if(fav.length)o+=`<div class="sec">Favoriten</div>`+fav.map(f=>add(f)).join("");
+  if(rc.length)o+=`<div class="sec">Zuletzt gegessen</div>`+rcs.map(e=>add(fromEntry(e),e)).join("")+(rc.length>rcs.length?`<button class="btn w mb6" data-rmore="1">Mehr (${rc.length-rcs.length})</button>`:"");
+  if(own.length)o+=`<div class="sec">Von dir hinzugefügt</div>`+own.slice(0,20).map(f=>add(f)).join("");
   if(!fav.length&&!rc.length&&!own.length)o=`<p class="mute s">Tippe einen Namen ein (z. B. „Haferflocken“) oder scanne einen Barcode.</p>`}
- else{const qn=EK.norm(q),mine=foods().filter(f=>EK.norm(f.name+" "+(f.marke||"")).includes(qn)).sort((a,b)=>(isOwn(b)-isOwn(a))||a.name.length-b.name.length);
-  if(mine.length)o+=`<div class="sec">Von dir & gespeichert</div>`+mine.slice(0,15).map(add).join("");
+ else{const mine=foods().filter(f=>matchWords(f.name+" "+(f.marke||""),q)).sort((a,b)=>(isOwn(b)-isOwn(a))||a.name.length-b.name.length);
+  if(mine.length)o+=`<div class="sec">Von dir & gespeichert</div>`+mine.slice(0,15).map(f=>add(f)).join("");
   const bl=blsSearch(q);
   o+=`<div class="sec">Grundnahrungsmittel (BLS)</div>`+(BLS?bl.length?bl.map(r=>add(fromBls(r))).join(""):`<p class="mute s">Nichts gefunden.</p>`:`<p class="mute s">Datenbank wird geladen …</p>`);
   o+=`<div class="sec">Markenprodukte (Open Food Facts)</div>`;
@@ -1341,19 +1372,19 @@ async function enrichOff(f){f._enr=1;try{const r=await offFetch(`https://world.o
  Object.assign(f,x);if(ex){const{_enr,...clean}={...ex,...x};change(P_LM,{t:"food",item:clean},true)}
  if(A&&A.food===f&&!A.entry){A.U=unitsFor(f);const nu=A.U.find(y=>y.k==="stk"||y.k==="por");if(nu&&A.u.k==="g"&&A.q===100){A.u=nu;A.q=1}renderAmount()}}catch(e){}}
 function renderAmount(){const f=A.food,entry=A.entry,u=A.u,sh=$("sheet");sh.classList.add("on");const isFav=foods().some(x=>x.id===f.id&&x.fav);
- const srcL=isOwn(f)?"von dir angelegt":String(f.src).startsWith("bls")?"Grundnahrungsmittel":String(f.src).startsWith("off")?"Open Food Facts":"";
+ const srcL=srcOf(f).lang;
  const quick=u.k==="pack"?[[.25,"¼"],[.5,"½"],[.75,"¾"],[1,"1"]]:u.k==="g"?[[50],[100],[150],[200],[250]]:u.k==="stk"||u.k==="por"?[1,2,3,4,5].filter(x=>!u.max||x<=u.max).map(x=>[x]).concat(u.max&&u.max>5?[[u.max,"alle "+u.max]]:[]):u.k==="smart"?[[.5,"½"],[1],[2],[3],[4]]:[[1],[2],[3]];
  const chip=x=>`<button data-unit="${x.k}" class="${x.k===u.k?"on":""}">${h(x.label)}${x.sub?`<small>${h(x.sub)}</small>`:""}</button>`;
  sh.innerHTML=`<div class="top"><button class="ib" data-back="${entry?"close":"1"}" aria-label="Zurück">‹</button><h1>${entry?"Eintrag ändern":"Wie viel?"}</h1><button class="ib" data-fav="1" aria-label="Favorit">${isFav?"★":"☆"}</button></div><main>
- <div class="card" style="padding:12px 16px"><b style="font-size:18px">${h(f.name)}</b><div class="mute s">${f.marke?h(f.marke)+" · ":""}${n0(f.n.kcal)} kcal je 100 ${f.liquid?"ml":"g"}${srcL?" · "+srcL:""}</div>${rateRow(EK.bewertung(f.n))}</div>
+ <div class="card amt-head"><b>${h(f.name)}</b><div class="mute s">${f.marke?h(f.marke)+" · ":""}${n0(f.n.kcal)} kcal je 100 ${f.liquid?"ml":"g"}${srcL?" · "+srcL:""}</div>${rateRow(EK.bewertung(f.n))}</div>
  <div class="card amt"><div class="units">${A.U.filter(x=>!x.more||A.more||x.k===u.k).map(chip).join("")}${A.more?"":`<button data-umore="1">Mehr …</button>`}</div>
  <div class="qrow"><button class="qb" data-qd="-1" aria-label="weniger">−</button><div class="qv"><input id="qv" type="text" inputmode="decimal" value="${String(fq(A.q)).replace(/[¼½¾⅓⅔]/g,m=>({"¼":".25","½":".5","¾":".75","⅓":".33","⅔":".67"}[m])).replace(/^(\d+) \./,"$1.")}"><span>${h(u.label)}${u.max?` <small>von ${u.max}</small>`:""}</span></div><button class="qb" data-qd="1" aria-label="mehr">+</button></div>
- <div class="qs" style="justify-content:center">${quick.map(([v,l])=>`<button data-qset="${v}" class="${Math.abs(A.q-v)<1e-6?"on":""}">${l||v}${u.k==="g"?" "+(f.liquid?"ml":"g"):""}</button>`).join("")}</div>
- <p class="s mute" style="text-align:center;margin:4px 0 0" id="qg"></p></div>
+ <div class="qs c">${quick.map(([v,l])=>`<button data-qset="${v}" class="${Math.abs(A.q-v)<1e-6?"on":""}">${l||v}${u.k==="g"?" "+(f.liquid?"ml":"g"):""}</button>`).join("")}</div>
+ <p class="s mute" id="qg"></p></div>
  <div class="nut" id="nut"></div>
  ${S.mode==="recipe"&&!entry?"":`<div class="seg">${EK.MEALS.map(([k,l])=>`<button data-meal="${k}" class="${A.meal===k?"on":""}">${l.replace("essen","")}</button>`).join("")}</div>`}
- <button class="btn p w" style="margin-top:14px;font-size:17px;padding:14px" data-save="1">${entry?"Speichern":S.mode==="recipe"?"Zur Zutatenliste":"Hinzufügen"}</button>
- ${entry?`<button class="btn d w" style="margin-top:8px" data-delent="${h(entry.id)}">Eintrag löschen</button>`:""}</main>`;
+ <button class="btn p w big" data-save="1">${entry?"Speichern":S.mode==="recipe"?"Zur Zutatenliste":"Hinzufügen"}</button>
+ ${entry?`<button class="btn d w mt8" data-delent="${h(entry.id)}">Eintrag löschen</button>`:""}</main>`;
  nut()}
 function readQ(){const el=$("qv");if(el){const v=+String(el.value).replace(",",".");if(isFinite(v))A.q=v}}
 function nut(){A.g=Math.round(A.q*A.u.g*10)/10;const n=EK.scale(A.food.n,A.g);
@@ -1422,6 +1453,29 @@ function saveRecipe(){R.name=($("rname")||{}).value||R.name;R.anleitung=($("ranl
 function closeSheet(){stopScan();DISL=false;const sh=$("sheet");sh.classList.remove("on");sh.innerHTML="";A=null;W=null;DSH=null;
  /* kam das Fenster aus einer geöffneten Mahlzeit (Eintragen, Ändern), dorthin zurück */
  if(MRET&&view==="tag")setTimeout(()=>{if(MRET&&!sh.classList.contains("on"))renderMeal()},0);else MRET=null}
+
+/* ===== Ziehen zum Aktualisieren (Tagebuch, Mein Tag): oben nach unten ziehen → Repo-Stand prüfen, Warteschlange hochladen,
+   bei Garmin-Werten älter als 30 Min. Cloud-Sync starten (mit der vorhandenen Sperre gegen Doppelstarts) ===== */
+const PTH=70;let PT=null,PTR=null,PTBUSY=false;
+const ptrEl=()=>{if(!PTR){PTR=document.createElement("div");PTR.id="ptr";PTR.innerHTML="<i>↻</i>";document.body.appendChild(PTR)}return PTR};
+function ptrMove(dy){const e=ptrEl(),d=Math.min(dy*.5,PTH+30);e.className=d>=PTH?"go":"";e.style.opacity=Math.min(1,d/PTH);
+ e.style.transform=`translateY(${d-30}px)`;e.firstChild.style.transform=`rotate(${d*4}deg)`}
+function ptrReset(){if(!PTR)return;PTR.className="";PTR.style.opacity="";PTR.style.transform="";PTR.firstChild.style.transform=""}
+async function ptrRefresh(){if(PTBUSY)return;PTBUSY=true;const e=ptrEl();e.className="run";e.style.opacity="";e.style.transform="";e.firstChild.style.transform="";
+ const head=C.head;let msg;
+ try{await refreshIfChanged();await flush();const sy=C.store&&C.store.synced,old=sy&&Date.now()/1000-sy>1800;
+  if(old&&CFG.token&&!syncSince()){syncGarmin(true);msg="Neu geladen · Garmin-Sync gestartet"}
+  else msg=syncSince()?"Neu geladen · Garmin-Sync läuft":C.head!==head?"Neu geladen":"Alles aktuell";
+  if(sy)msg+=` · Garmin-Stand ${wd(EK.day(new Date(sy*1000)))} ${hhmm(sy*1000)}`}
+ catch(er){msg="Keine Verbindung – Änderungen warten in der Warteschlange"}
+ PTBUSY=false;ptrReset();if(status==="offline")msg="Offline – Änderungen werden später hochgeladen";toast(msg,3000);checkUpdate()}
+document.addEventListener("touchstart",ev=>{PT=null;if(PTBUSY||!["tag","meintag"].includes(view)||window.scrollY>0||$("sheet").classList.contains("on")||$("drawer").classList.contains("on")||ev.touches.length>1)return;
+ PT={x:ev.touches[0].clientX,y:ev.touches[0].clientY,lock:null,dy:0}},{passive:true});
+document.addEventListener("touchmove",ev=>{if(!PT)return;const dx=ev.touches[0].clientX-PT.x,dy=ev.touches[0].clientY-PT.y;
+ if(PT.lock==null&&(Math.abs(dx)>10||Math.abs(dy)>10))PT.lock=dy>0&&Math.abs(dy)>Math.abs(dx)*1.3&&window.scrollY<=0?"y":"no";
+ if(PT.lock==="y"){PT.dy=dy;ptrMove(dy)}else if(PT.lock==="no")PT=null},{passive:true});
+document.addEventListener("touchend",()=>{if(!PT)return;const go=PT.lock==="y"&&PT.dy*.5>=PTH;PT=null;if(go)ptrRefresh();else ptrReset()});
+document.addEventListener("touchcancel",()=>{PT=null;ptrReset()});
 
 /* ===== Wischen zum Löschen ===== */
 let SW=null;const OPEN=-92;
@@ -1566,6 +1620,8 @@ document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x
  else if(x=b("[data-rmeal]")){R.meal=x.dataset.rmeal;renderRecipe()}
  else if(b("[data-rsave]"))saveRecipe();
  else if(x=b("[data-back]")){stopScan();if(x.dataset.back==="close")closeSheet();else sheetAdd()}
+ else if(x=b("[data-again]"))logAgain(AGAIN[+x.dataset.again]);
+ else if(b("[data-rmore]")){S.rmore=true;results()}
  else if(x=b("[data-pick]"))openAmount({food:PICK[+x.dataset.pick]});
  else if(b("[data-off]"))offSearch();
  else if(b("[data-scan]"))openScan();
@@ -1583,7 +1639,7 @@ document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x
  else if(b("[data-reload]"))loadAll();
  else if(b("[data-blsload]"))loadBls(true);
  else if(b("[data-logout]")){if(confirm("Token von diesem iPhone entfernen?")){CFG.token="";LS.set("cfg",CFG);showSetup()}}});
-document.addEventListener("input",ev=>{if(ev.target.id==="ranl"&&R)R.anleitung=ev.target.value;else if(ev.target.id==="wziel"&&W)W.ziel=ev.target.value;else if(ev.target.id==="rname"&&R)R.name=ev.target.value;else if(ev.target.id==="q"){S.q=ev.target.value;clearTimeout(results.t);results.t=setTimeout(results,120)}else if(ev.target.id==="qv"){readQ();nut()}});
+document.addEventListener("input",ev=>{if(ev.target.id==="ranl"&&R)R.anleitung=ev.target.value;else if(ev.target.id==="wziel"&&W)W.ziel=ev.target.value;else if(ev.target.id==="rname"&&R)R.name=ev.target.value;else if(ev.target.id==="lmq"){LMQ=ev.target.value;clearTimeout(lmRefresh.t);lmRefresh.t=setTimeout(lmRefresh,100)}else if(ev.target.id==="q"){S.q=ev.target.value;clearTimeout(results.t);results.t=setTimeout(results,120)}else if(ev.target.id==="qv"){readQ();nut()}});
 document.addEventListener("change",ev=>{if(ev.target.dataset&&ev.target.dataset.pushuhr){setProf({erinnerung:{...erin(),uhr:+ev.target.value}});toast("Erinnerung ab "+ev.target.value+":00 Uhr");return}if(ev.target.id==="lblfile"){const fl=ev.target.files&&ev.target.files[0];ev.target.value="";if(fl)labelPhoto(fl);return}if(W&&ev.target.id==="wjob"){W.job=ev.target.value;renderWizard();return}if(R&&ev.target.id==="rspread"){R.spread=ev.target.checked;renderRecipe();return}if(R&&ev.target.id==="rkeep"){R.keep=ev.target.checked;return}if(ev.target.name==="fixon"&&ev.target.form&&ev.target.form.id==="pf")saveProfil(ev.target.form)});
 document.addEventListener("submit",ev=>{ev.preventDefault();const f=ev.target;
  if(f.id==="pf")saveProfil(f);else if(f.id==="mf")saveManual(f);else if(f.id==="sf")setup(f);
@@ -1605,7 +1661,7 @@ noZoom(document);
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="861890f";
+const APPV="09d7419";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;

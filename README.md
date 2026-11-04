@@ -50,6 +50,9 @@ und lädt sich bei einer neuen Version selbst neu. Nie von Hand ins öffentliche
   Sortiert danach, was die Proteinlücke am besten schließt. Ideen lassen sich als eigenes Gericht speichern.
   **Mag ich nicht** (dort und unter Profil): Wörter in `profil.json` → `magNicht` filtern Vorschläge nach Name und Zutaten (Mehrzahl und Umlaute egal, Synonyme in `DISL_SYN`, Ausnahmen in `DISL_EXC`, z. B. Erbsen ≠ Kichererbsen); einzelne Ideen ausblenden → `ideeAus`.
 
+- **Suche**: Wortsuche überall gleich (Reihenfolge egal, mit/ohne Leerzeichen – `matchWords`). Leere Suche: Favoriten, „Zuletzt gegessen“ (ohne Favoriten, erst 8 + „Mehr“) mit Knopf **↺ wie zuletzt** – trägt die letzte Menge/Einheit mit einem Tipp ein.
+- **Meine Lebensmittel**: Suchfeld und Zähler je Reiter (Von dir · Favoriten · Gescannt).
+- **Ziehen zum Aktualisieren** (Tagebuch, Mein Tag): oben nach unten ziehen → Repo-Stand prüfen, Warteschlange hochladen, bei Garmin-Werten älter als 30 Min. Cloud-Sync starten.
 - **Offline-Start** (`sw.js`): Die App-Dateien werden zwischengespeichert, die App startet auch ohne Netz mit dem letzten Stand. Netz zuerst (max. 3 s), sonst Zwischenspeicher; GitHub-Anfragen und `version.txt` nie aus dem Speicher.
 - **Streak-Erinnerung** (Profil → 🔥 Streak-Erinnerung): Mitteilung am Abend, wenn heute noch nichts eingetragen ist. Nur in der App vom Homescreen (iOS 16.4+).
   Anmeldung in `data/ernaehrung/push.json`, Einstellung `profil.json` → `erinnerung:{an,uhr}`. Gesendet vom Workflow `streak-erinnerung.yml`
