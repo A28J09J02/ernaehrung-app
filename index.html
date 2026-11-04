@@ -111,6 +111,7 @@ label.f{display:block;font-size:13px;color:var(--mute);margin:10px 0 4px}
 .qb{width:52px;height:52px;border-radius:50%;border:1px solid var(--line);background:var(--grid);font-size:28px;line-height:1;color:var(--acc)}
 .qv{text-align:center;min-width:120px}.qv input{width:120px;border:0;background:none;text-align:center;font-size:40px;font-weight:700;color:var(--ink);padding:0}
 .qv input:focus{outline:none;border-bottom:2px solid var(--acc)}.qv span{display:block;font-size:14px;color:var(--mute);font-weight:600}
+.amt .qs button{min-width:44px;min-height:44px}
 .qs button.on{background:var(--acc-bg);border-color:var(--acc);color:var(--acc);font-weight:600}
 .nut{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center;margin:12px 0}.nut div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 2px}.nut b{display:block;font-size:18px}.nut small{color:var(--mute);font-size:11px}
 video{width:100%;border-radius:var(--rad);background:#000;aspect-ratio:3/4;object-fit:cover}
@@ -198,7 +199,7 @@ main.dragx{will-change:transform}main.snap{transition:transform .28s cubic-bezie
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=6f9a3af"></script>
+<script src="kern.js?v=861890f"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -562,8 +563,11 @@ function openFoodForm(f,fromAdd,o={}){FF_ADD=!!fromAdd;const sh=$("sheet");sh.cl
  <div class="tg"><span>Favorit</span><input type="checkbox" name="fav" ${x.fav?"checked":""}></div>
  <input type="hidden" name="id" value="${h(x.id||"")}">
  <button class="btn p w" style="margin-top:12px" type="submit">Speichern</button>${f&&f.id?`<button class="btn d w" style="margin-top:8px" type="button" data-delfood="${h(f.id)}">Löschen</button>`:""}</form></main>`}
-function saveFoodForm(fm){const v=k=>{const s=fm.elements[k].value.trim().replace(",",".");return s===""?null:+s};
+/* Zahlenfeld lesen: leer → null, ungültig oder negativ → false (wird abgelehnt statt als null/negativ gespeichert) */
+const numIn=el=>{const s=el?el.value.trim().replace(",","."):"";if(s==="")return null;const v=+s;return isFinite(v)&&v>=0?v:false};
+function saveFoodForm(fm){const v=k=>numIn(fm.elements[k]);
  const name=fm.elements.name.value.trim();if(!name||v("kcal")==null)return toast("Name und Kalorien angeben");
+ if(["kcal","p","c","f","fib","sug","salt","pg","stg","pkg"].some(k=>v(k)===false))return toast("Bitte nur Zahlen ab 0 eingeben");
  const old=foods().find(x=>x.id===fm.elements.id.value),id=old?old.id:"eigen:"+EK.uid(),pg=v("pg");
  const item={...(old||{}),id,src:old?old.src:id,own:old?isOwn(old):true,name,marke:fm.elements.marke.value.trim()||undefined,
   n:{kcal:Math.round(v("kcal")),p:v("p"),c:v("c"),f:v("f"),fib:v("fib"),sug:v("sug"),salt:v("salt")},portion:pg?{g:pg,label:pg+" g"}:{g:100,label:"100 g"},fav:fm.elements.fav.checked};
@@ -1167,9 +1171,11 @@ function offPack(p){const q=String(p.quantity||""),o={},num=x=>+String(x).replac
  else if(+p.product_quantity>0)o.pack={g:+p.product_quantity,label:p.product_quantity+" "+(p.product_quantity_unit||"g")};
  if(/\b(ml|cl|l)\b/i.test(q)||/ml/i.test(p.product_quantity_unit||""))o.liquid=true;
  return o}
+/* Open Food Facts: höchstens 10 s warten, sonst gilt es als nicht erreichbar (Funkloch, überlasteter Server) */
+const offFetch=u=>{const c=new AbortController(),t=setTimeout(()=>c.abort(),10000);return fetch(u,{signal:c.signal}).finally(()=>clearTimeout(t))};
 const OFF_F="code,product_name,product_name_de,brands,nutriments,serving_quantity,serving_size,quantity,product_quantity,product_quantity_unit";
 async function offSearch(){const q=S.q.trim();if(!q)return;const b=$("rl").querySelector("[data-off]");if(b)b.textContent="Suche …";
- try{const r=await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=25&lc=de&fields=${OFF_F}`);
+ try{const r=await offFetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(q)}&search_simple=1&action=process&json=1&page_size=25&lc=de&fields=${OFF_F}`);
   const j=await r.json();S.off=(j.products||[]).map(offFood).filter(Boolean);S.offq=q}
  catch(e){S.off=[];S.offq=q;toast("Open Food Facts nicht erreichbar")}
  results()}
@@ -1179,7 +1185,7 @@ async function byBarcode(code){
  code=String(code).replace(/\D/g,"");if(code.length<8)return toast("Ungültiger Barcode");
  const own=foods().find(f=>f.src==="off:"+code||f.ean===code);if(own)return openAmount({food:own});
  toast("Suche Produkt …",1500);let part=null,offline=false;
- try{const r=await fetch(`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=${OFF_F}`),j=await r.json();
+ try{const r=await offFetch(`https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=${OFF_F}`),j=await r.json();
   const p=j.status===1&&j.product?{...j.product,code}:null,f=p?offFood(p):null;
   if(f){change(P_LM,{t:"food",item:{...f,fav:false}},true);return openAmount({food:f})}
   /* Produkt bekannt, aber ohne Nährwerte: Name/Marke/Packung übernehmen */
@@ -1330,7 +1336,7 @@ function openAmount({food,entry}){
  A={food:f,entry,meal:entry?entry.meal:S.meal,U,u,q,more:!!u.more};renderAmount();
  if(String(f.src).startsWith("off:")&&!f.pack&&!f._enr)enrichOff(f)}
 /* ältere gescannte Produkte um Packung/Stück ergänzen */
-async function enrichOff(f){f._enr=1;try{const r=await fetch(`https://world.openfoodfacts.org/api/v2/product/${f.src.slice(4)}.json?fields=${OFF_F}`),j=await r.json();
+async function enrichOff(f){f._enr=1;try{const r=await offFetch(`https://world.openfoodfacts.org/api/v2/product/${f.src.slice(4)}.json?fields=${OFF_F}`),j=await r.json();
  if(j.status!==1||!j.product)return;const x=offPack(j.product);if(!x.pack&&!x.stk)return;const ex=foods().find(y=>y.id===f.id);
  Object.assign(f,x);if(ex){const{_enr,...clean}={...ex,...x};change(P_LM,{t:"food",item:clean},true)}
  if(A&&A.food===f&&!A.entry){A.U=unitsFor(f);const nu=A.U.find(y=>y.k==="stk"||y.k==="por");if(nu&&A.u.k==="g"&&A.q===100){A.u=nu;A.q=1}renderAmount()}}catch(e){}}
@@ -1376,8 +1382,9 @@ function openManual(){const sh=$("sheet");sh.classList.add("on");
  <p class="s mute">Werte für die ganze Portion bzw. die angegebene Menge.</p>
  <div class="tg"><span>Als eigenes Lebensmittel speichern</span><input type="checkbox" name="keep" checked></div>
  <button class="btn p w" style="margin-top:12px" type="submit">Eintragen</button></form></main>`}
-function saveManual(f){const v=k=>{const s=f.elements[k].value.trim().replace(",",".");return s===""?null:+s};
+function saveManual(f){const v=k=>numIn(f.elements[k]);
  const name=f.elements.name.value.trim(),kc=v("kcal");if(!name||kc==null)return toast("Name und Kalorien angeben");
+ if(["kcal","g","p","c","f"].some(k=>v(k)===false))return toast("Bitte nur Zahlen ab 0 eingeben");
  const amount=v("g"),n={kcal:Math.round(kc),p:v("p"),c:v("c"),f:v("f"),fib:null,sug:null,salt:null},src="eigen:"+EK.uid();
  if(f.elements.keep.checked){const base=amount||100,n100={};for(const k in n)n100[k]=n[k]==null?null:EK.r(n[k]*100/base,1);
   change(P_LM,{t:"food",item:{id:src,src,own:true,name,n:n100,portion:amount?{g:amount,label:amount+" g"}:{g:100,label:"1 Portion"},fav:false}},true)}
@@ -1598,7 +1605,7 @@ noZoom(document);
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="6f9a3af";
+const APPV="861890f";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
