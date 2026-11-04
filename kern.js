@@ -100,6 +100,10 @@ const EK=(()=>{
     Pro Tag höchstens 20 % des Ziels bzw. 500 kcal; reicht das nicht, wird auf bis zu 7 Tage verlängert.
     Liegt ein Ausgleichstag selbst wieder drüber, wird dessen Überschuss ebenso weiterverteilt – es geht nichts verloren.
     days = [{d, has, eaten, target, w}] für Vergangenheit UND Zukunft (w = Gewichtung aus dem Plan). */
+ /* Vollständig eingetragen: ab 50 % des Kalorienziels des Tages. Darunter zählt der Tag wie „nicht eingetragen“
+    (Streak, Kalender, Tage im Ziel, Ausgleich, Durchschnitte, Erinnerungen) – die Einträge selbst bleiben sichtbar. */
+ const VOLL=.5;
+ function voll(eaten,target){return target>0?(+eaten||0)>=VOLL*target:(+eaten||0)>0}
  const AUS={DAYS:3,MAXDAYS:7,CAP:500,PCT:.2};
  function weight(pd){if(!pd)return 1;if(pd.type==="rest")return .6;if((pd.type==="run"||pd.type==="race")&&pd.km)return Math.min(3,1+pd.km/10);
   if(pd.type==="gym")return 1.5;if(pd.type==="flex")return 1.2;return 1}
@@ -143,5 +147,5 @@ const EK=(()=>{
   return{a,pt,label:{g:"Top",y:"Okay",r:"Sparsam"}[a],why}}
  const norm=s=>String(s||"").toLowerCase().replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss").replace(/[^a-z0-9 ]+/g," ");
  const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
- return{MEALS,NUTR,MICRO,JOBS,GOALS,RATES,SRC,PROFIL,prof,bmr,pal,goalAdj,trainKcal,planKcal,garminBase,bases,target,macros,sum,scale,ampel,dayGrade,weight,ausgleich,AUS,bewertung,norm,uid,day,add,monday,r}
+ return{VOLL,voll,MEALS,NUTR,MICRO,JOBS,GOALS,RATES,SRC,PROFIL,prof,bmr,pal,goalAdj,trainKcal,planKcal,garminBase,bases,target,macros,sum,scale,ampel,dayGrade,weight,ausgleich,AUS,bewertung,norm,uid,day,add,monday,r}
 })();

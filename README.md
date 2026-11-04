@@ -50,6 +50,7 @@ und lädt sich bei einer neuen Version selbst neu. Nie von Hand ins öffentliche
   Sortiert danach, was die Proteinlücke am besten schließt. Ideen lassen sich als eigenes Gericht speichern.
   **Mag ich nicht** (dort und unter Profil): Wörter in `profil.json` → `magNicht` filtern Vorschläge nach Name und Zutaten (Mehrzahl und Umlaute egal, Synonyme in `DISL_SYN`, Ausnahmen in `DISL_EXC`, z. B. Erbsen ≠ Kichererbsen); einzelne Ideen ausblenden → `ideeAus`.
 
+- **Vollständig eingetragen**: Ein Tag zählt erst ab 50 % seines Kalorienziels (`EK.voll` in `kern.js`). Darunter gilt er als „zu wenig eingetragen“: gestrichelt im Kalender, keine Ampel, zählt nicht für Streak, „Tage im Ziel“, Ausgleich und Durchschnitte – auch nicht für Streak-Erinnerung und ntfy-Meldungen (`tools/ern_voll.py`). Die Einträge bleiben sichtbar; im Tagebuch erscheint ein Hinweis.
 - **Suche**: Wortsuche überall gleich (Reihenfolge egal, mit/ohne Leerzeichen – `matchWords`). Leere Suche: Favoriten, „Zuletzt gegessen“ (ohne Favoriten, erst 8 + „Mehr“) mit Knopf **↺ wie zuletzt** – trägt die letzte Menge/Einheit mit einem Tipp ein.
 - **Meine Lebensmittel**: Suchfeld und Zähler je Reiter (Von dir · Favoriten · Gescannt).
 - **Ziehen zum Aktualisieren** (Tagebuch, Mein Tag): oben nach unten ziehen → Repo-Stand prüfen, Warteschlange hochladen, bei Garmin-Werten älter als 30 Min. Cloud-Sync starten.
@@ -63,6 +64,7 @@ und lädt sich bei einer neuen Version selbst neu. Nie von Hand ins öffentliche
 ## Daten
 - `data/ernaehrung/profil.json` – Profil und Ziele
 - `data/ernaehrung/lebensmittel.json` – eigene Lebensmittel, Favoriten, gescannte Produkte
+- `data/ernaehrung/ziele.json` – Kalorienziel je Tag (von der App gerechnet), damit die Erinnerungen wissen, ab wann ein Tag zählt
 - `data/ernaehrung/einkauf.json` – Einkaufsliste (gleiche Zutaten werden zusammengerechnet, Kategorie automatisch nach Stichworten)
 - `data/ernaehrung/JJJJ-MM.json` – Tagebuch, ein Eintrag enthält die Nährwerte der gegessenen Menge
 - `data/bls.json` – Bundeslebensmittelschlüssel (aus dem Workflow)

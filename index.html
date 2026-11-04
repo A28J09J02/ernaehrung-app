@@ -133,7 +133,8 @@ video{width:100%;border-radius:var(--rad);background:#000;aspect-ratio:3/4;objec
 .cal button small{font-size:9px;font-weight:500;opacity:.85}
 .cal button.g{background:var(--g);color:#fff}.cal button.y{background:var(--y);color:#fff}.cal button.r{background:var(--r);color:#fff}
 .cal button.o{background:var(--acc-bg);color:var(--acc)}.cal button.fut{opacity:.35}.cal button.fut.o{opacity:.8}.cal button.t{outline:2px solid var(--acc);outline-offset:1px}
-.cal .x{visibility:hidden}
+.cal .x{visibility:hidden}.cal button.u{background:var(--card);color:var(--mute);border:2px dashed var(--line)}.leg i.lu{background:var(--card);border:1.5px dashed var(--mute)}
+.hint.part{border-left:4px solid var(--y)}
 .leg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--mute);margin-top:12px}.leg i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 .kp{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}.kp b{display:block;font-size:22px}.kp span{font-size:12px;color:var(--mute)}
 .wk{display:flex;align-items:flex-end;gap:4px;height:140px;margin:6px 0 4px;position:relative}.wk div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;position:relative}
@@ -204,7 +205,7 @@ main.dragx{will-change:transform}main.snap{transition:transform .28s cubic-bezie
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=09d7419"></script>
+<script src="kern.js?v=39534b7"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -259,7 +260,7 @@ async function put(file,data,sha,msg){const r=await gh(`/contents/${file}`,{meth
  if(r.status===409||r.status===422)return false;if(!r.ok)throw new Error("Speichern fehlgeschlagen ("+r.status+")");return true}
 
 /* ===== Änderungen: lokal sofort, dann Warteschlange und hochladen ===== */
-const P_PROF="data/ernaehrung/profil.json",P_LM="data/ernaehrung/lebensmittel.json",P_SHOP="data/ernaehrung/einkauf.json",pMonth=d=>`data/ernaehrung/${d.slice(0,7)}.json`;
+const P_ZIEL="data/ernaehrung/ziele.json",P_PROF="data/ernaehrung/profil.json",P_LM="data/ernaehrung/lebensmittel.json",P_SHOP="data/ernaehrung/einkauf.json",pMonth=d=>`data/ernaehrung/${d.slice(0,7)}.json`;
 function apply(obj,op){
  if(op.t==="profil")return op.v;
  if(op.t==="food"||op.t==="fooddel"){const o=obj||{items:[]},it=(o.items||[]).filter(x=>x.id!==(op.t==="food"?op.item.id:op.id));
@@ -271,18 +272,20 @@ function local(path,op){
  if(path===P_PROF)C.profil=apply(C.profil,op);
  else if(path===P_LM)C.lm=apply(C.lm,op);
  else if(path===P_SHOP)C.shop=apply(C.shop,op);
+ else if(path===P_ZIEL)C.ziele=apply(C.ziele,op);
  else{const m=path.slice(-12,-5);C.months[m]=apply(C.months[m]||{},op)}}
-function setFile(path,v){if(path===P_PROF)C.profil=v;else if(path===P_LM)C.lm=v||{items:[]};else if(path===P_SHOP)C.shop=v||{items:[]};else C.months[path.slice(-12,-5)]=v||{};
+function setFile(path,v){if(path===P_PROF)C.profil=v;else if(path===P_LM)C.lm=v||{items:[]};else if(path===P_SHOP)C.shop=v||{items:[]};else if(path===P_ZIEL)C.ziele=v||{tage:{}};else C.months[path.slice(-12,-5)]=v||{};
  for(const x of Q)if(x.path===path)local(path,x.op)}
 function change(path,op,noRender){
  /* Schutz: nie unter ungültigem Datum speichern (sonst landet der Eintrag in data/ernaehrung/.json und ist unsichtbar) */
  if("d" in op&&!/^\d{4}-\d\d-\d\d$/.test(op.d||"")){console.warn("Ungültiges Datum beim Speichern",op.d);const d=/^\d{4}-\d\d-\d\d$/.test(cur)?cur:TODAY();op={...op,d};path=pMonth(d)}
- local(path,op);Q.push({path,op});saveC();saveQ();if(!noRender)render();flush()}
+ local(path,op);Q.push({path,op});saveC();saveQ();if(!noRender)render();flush();
+ if(/\d{4}-\d\d\.json$/.test(path)){clearTimeout(syncZiele.t);syncZiele.t=setTimeout(syncZiele,4000)}}
 async function flush(){
  if(busy||!Q.length||!CFG.token)return;busy=true;setStatus();
  try{for(const path of [...new Set(Q.map(x=>x.path))]){const ops=Q.filter(x=>x.path===path);let ok=false;
    for(let i=0;i<4&&!ok;i++){const{data,sha}=await getJson(path);let v=data;for(const x of ops)v=apply(v,x.op);
-    const n=ops.length,msg=path===P_PROF?"Ernährung: Profil (iPhone)":path===P_LM?"Ernährung: Lebensmittel (iPhone)":path===P_SHOP?"Ernährung: Einkaufsliste (iPhone)":`Ernährung: ${n} Änderung${n>1?"en":""} (iPhone)`;
+    const n=ops.length,msg=path===P_PROF?"Ernährung: Profil (iPhone)":path===P_LM?"Ernährung: Lebensmittel (iPhone)":path===P_SHOP?"Ernährung: Einkaufsliste (iPhone)":path===P_ZIEL?"Ernährung: Tagesziele (iPhone)":`Ernährung: ${n} Änderung${n>1?"en":""} (iPhone)`;
     ok=await put(path,v,sha,msg);if(ok){Q=Q.filter(x=>!ops.includes(x));saveQ();setFile(path,v)}}
    if(!ok)throw new Error("Konflikt beim Speichern")}
   saveC();if(status==="offline")status=""}
@@ -305,15 +308,15 @@ async function loadAll(){
  try{const hd=await headSha().catch(e=>{if(e.auth)throw e;return null});
   const dir=await gh(`/contents/data/ernaehrung?ref=${CFG.branch}`);
   const ms=dir.ok?(await dir.json()).map(x=>x.name).filter(n=>/^\d{4}-\d{2}\.json$/.test(n)).map(n=>n.slice(0,7)):[];
-  const[pr,lm,sp,st,pl,an,...mm]=await Promise.all([getJson(P_PROF),getJson(P_LM),getJson(P_SHOP),getRaw("data/store.json"),getRaw("data/plan.json"),getRaw("data/anpassungen.json"),
+  const[pr,lm,sp,st,pl,an,zi,...mm]=await Promise.all([getJson(P_PROF),getJson(P_LM),getJson(P_SHOP),getRaw("data/store.json"),getRaw("data/plan.json"),getRaw("data/anpassungen.json"),getJson(P_ZIEL),
    ...ms.map(m=>getJson(`data/ernaehrung/${m}.json`))]);
-  C.profil=pr.data;C.lm=lm.data||{items:[]};C.shop=sp.data||{items:[]};C.months={};ms.forEach((m,i)=>C.months[m]=mm[i].data||{});
+  C.profil=pr.data;C.lm=lm.data||{items:[]};C.ziele=zi.data||{tage:{}};C.shop=sp.data||{items:[]};C.months={};ms.forEach((m,i)=>C.months[m]=mm[i].data||{});
   if(st){C.store=trimStore(st,60);KV.set("store_full",JSON.stringify(st))}
   C.plan=trimPlan(pl);C.anp=an;if(pl)KV.set("plan_full",JSON.stringify(pl));
   for(const x of Q)local(x.path,x.op);
   C.head=hd;C.ts=Date.now();saveC();status=""}
  catch(e){if(e.auth)return showSetup(e.message);status="offline"}
- setStatus();render();flush();loadBls();if(status!=="offline")autoSync()}
+ setStatus();render();flush();loadBls();if(status!=="offline"){autoSync();setTimeout(syncZiele,1500)}}
 /* Lebensmitteldatenbank: Zeilen [Code, Name, Werte… (Reihenfolge = BLSM.felder), norm(Name)] */
 const BLSV=2;let BLSM={felder:["kcal","p","c","f","fib","sug","salt"],einheiten:{}};
 async function loadBls(force){
@@ -338,19 +341,29 @@ const entries=d=>(C.months[d.slice(0,7)]||{})[d]||[];
 /* Ausgleich (siehe Rechenkern): Überschüsse werden auf Folgetage verteilt und senken dort das Ziel. Einmal je Darstellung berechnet. */
 let AUSR={share:{},cheats:{},carry:{}};
 function calcAus(){const p=prof(),g=G(),L=[];
- for(let k=-45;k<=14;k++){const d=EK.add(TODAY(),k),e=entries(d);L.push({d,has:e.length>0,eaten:EK.sum(e).kcal,target:EK.target(p,g,d).kcal,w:EK.weight(planDay(d))})}
+ for(let k=-45;k<=14;k++){const d=EK.add(TODAY(),k),e=entries(d),eaten=EK.sum(e).kcal,target=EK.target(p,g,d).kcal;L.push({d,has:e.length>0&&EK.voll(eaten,target),eaten,target,w:EK.weight(planDay(d))})}
  AUSR=EK.ausgleich(L,TODAY())}
 function info(d){const e=entries(d),s=EK.sum(e),p=prof(),t0=EK.target(p,G(),d),gd=C.store&&C.store.days[d],done=d<TODAY();
  const aus=Math.round(AUSR.share[d]||0),t={...t0,kcal:t0.kcal-aus,aus,orig:t0.kcal,carry:AUSR.carry[d]||null},m=EK.macros(p,t.kcal),ch=AUSR.cheats[d]||null;
- let kg=e.length&&done?EK.ampel("kcal",s.kcal,t.kcal):null,grade=e.length&&done?EK.dayGrade(s,t,m):null;
- if(ch&&ch.state==="full"){kg="g";if(grade!=="g")grade=EK.ampel("p",s.p,m.p)==="r"?"y":"g"}
- return{d,e,s,t,m,p,has:e.length>0,done,gk:gd?gd.kcal:null,ga:gd?gd.kcal_active:null,grade,kg,ch}}
+ /* full: genug eingetragen (ab 50 % des Ziels, EK.voll) – nur volle Tage bekommen eine Ampel und zählen in Streak/Statistik */
+ const full=e.length>0&&EK.voll(s.kcal,t0.kcal),part=e.length>0&&!full&&done;
+ let kg=full&&done?EK.ampel("kcal",s.kcal,t.kcal):null,grade=full&&done?EK.dayGrade(s,t,m):null;
+ if(ch&&ch.state==="full"&&full){kg="g";if(grade!=="g")grade=EK.ampel("p",s.p,m.p)==="r"?"y":"g"}
+ return{d,e,s,t,m,p,has:e.length>0,full,part,done,gk:gd?gd.kcal:null,ga:gd?gd.kcal_active:null,grade,kg,ch}}
 const liveAmp=(k,v,goal,done)=>{const a=EK.ampel(k,v,goal);if(done||!a)return a;if(k==="p"||k==="fib")return a==="g"?"g":"acc";return v>goal?a:"acc"};
 const AMPT={g:"Ziel erreicht",y:"Knapp daneben",r:"Deutlich daneben"};
-/* Streak: Tage in Folge mit mindestens einem Eintrag; heute zählt, sobald etwas eingetragen ist */
-function streaks(){const T=TODAY(),has=d=>entries(d).length>0;let d=has(T)?T:EK.add(T,-1),n=0;while(has(d)){n++;d=EK.add(d,-1)}
+/* Tagesziele für die Erinnerungen (tools/ern_voll.py): Die Workflows können den Rechenkern nicht ausführen,
+   deshalb legt die App die Kalorienziele der Tage mit Einträgen (letzte 45 Tage + heute) in data/ernaehrung/ziele.json ab.
+   Geschrieben wird nur bei Änderung (heute ab 100 kcal Unterschied, frühere Tage ab 25 kcal). */
+function syncZiele(){if(!CFG.token||!C.store)return;const T=TODAY(),p=prof(),g=G(),old=(C.ziele&&C.ziele.tage)||{},nw={};let ch=false;
+ for(let k=-45;k<=0;k++){const d=EK.add(T,k);if(d!==T&&!entries(d).length){if(old[d]!=null)nw[d]=old[d];continue}
+  const v=Math.round(EK.target(p,g,d).kcal);if(!(v>0))continue;nw[d]=v;if(old[d]==null||Math.abs(old[d]-v)>=(d===T?100:25))ch=true}
+ if(ch)change(P_ZIEL,{t:"profil",v:{info:"Kalorienziele je Tag aus KingStats – für die Erinnerungen (Tag zählt ab 50 %)",tage:nw}},true)}
+/* Streak: Tage in Folge, die vollständig eingetragen sind (ab 50 % des Tagesziels, EK.voll); heute zählt, sobald das erreicht ist */
+function streaks(){const T=TODAY(),p=prof(),g=G(),memo={},has=d=>{if(!(d in memo)){const e=entries(d);memo[d]=e.length>0&&EK.voll(EK.sum(e).kcal,EK.target(p,g,d).kcal)}return memo[d]};
+ let d=has(T)?T:EK.add(T,-1),n=0;while(has(d)){n++;d=EK.add(d,-1)}
  /* Rekord nur über Tage bis heute – vorausgeplante Tage zählen nicht */
- const all=Object.values(C.months).flatMap(m=>Object.keys(m).filter(k=>k<=T&&m[k]&&m[k].length)).sort();let best=0,run=0,prev=null;
+ const all=Object.values(C.months).flatMap(m=>Object.keys(m).filter(k=>k<=T&&m[k]&&m[k].length&&has(k))).sort();let best=0,run=0,prev=null;
  for(const k of all){run=prev&&EK.add(prev,1)===k?run+1:1;best=Math.max(best,run);prev=k}
  return{n,best:Math.max(best,n),today:has(T)}}
 
@@ -391,7 +404,7 @@ function vTag(sk=streaks()){
  const i=info(cur),t=i.t,left=t.kcal-i.s.kcal,ka=i.has?(i.done?i.kg:(i.s.kcal<=t.kcal?"g":"r")):null,T=TODAY();
  const src={formel:"Formel",yazio:"Yazio",garmin:"Garmin"}[t.src];
  let o=`${cur!==T?`<button class="today" data-day="0">↩ Zurück zu heute</button>`:""}${cur>T?`<div class="fr">Vorausplanen – Einträge zählen erst an diesem Tag</div>`:""}`;
- o+=cheatHint(i);
+ o+=partHint(i)+cheatHint(i);
  if(cur===T&&!sk.today&&sk.n>0)o+=`<div class="hint">🔥<span>Trag heute etwas ein, damit deine <b>${sk.n}-Tage-Streak</b> weiterläuft.</span></div>`;
  const mac=[["p","Protein","var(--p)"],["c","Kohlenhydrate","var(--c)"],["f","Fett","var(--f)"]].map(([k,l,c])=>{const v=i.s[k],g=i.m[k],a=i.has?liveAmp(k,v,g,i.done):null;
   return`<div><small>${l}</small><b>${n0(v)} <small>/ ${n0(g)} g</small></b><div class="bar"><i style="width:${Math.min(100,g?v/g*100:0)}%;background:${a==="r"||a==="y"?COL[a]:c}"></i></div></div>`}).join("");
@@ -454,11 +467,13 @@ function renderMeal(){const k=MRET;if(!k)return;const sh=$("sheet");sh.classList
  <p class="s mute" style="margin:8px 0 0">Ziel der Mahlzeit = ${Math.round(MSHARE[k]*100)} % deines Tagesziels.</p></div>
  <div class="mgo"><button class="btn p w" data-add="${k}">${e.length?"Weiteres hinzufügen":"Jetzt eintragen"}</button></div></main>`}
 /* Cheat Day: Überschuss und wohin er verteilt wurde */
+/* Vergangener Tag mit weniger als 50 % des Ziels: zählt wie „nicht eingetragen“ */
+function partHint(i){return i.part?`<div class="hint part"><span><b>Zu wenig eingetragen</b> – ${n0(i.s.kcal)} von ${n0(i.t.orig)} kcal (unter ${Math.round(EK.VOLL*100)} %). Der Tag zählt nicht für Streak, Kalender und Durchschnitte. Fehlt noch etwas? Einfach nachtragen.</span></div>`:""}
 function cheatHint(i){const c=i.ch;if(!c)return"";
  const list=c.carriers.map(([d,a])=>`${ddm(d)} −${n0(a)}`).join(" · ");
  const st=c.state==="full"?`<b>Ausgeglichen!</b> Die ${n0(c.need)} kcal über dem Ziel sind über die Folgetage wieder drin.`:
   c.state==="run"?`<b>${n0(c.need)} kcal über dem Ziel</b> – kein Problem: automatisch verteilt auf ${list}. Halte dort dein (etwas niedrigeres) Ziel, dann ist der Tag wieder grün.`:
-  `<b>${n0(c.need)} kcal über dem Ziel</b> – verteilt auf ${list||"–"}${c.left?`; ${n0(c.left)} kcal ließen sich nicht mehr unterbringen`:""}. Ein Ausgleichstag ohne Einträge zählt nicht.`;
+  `<b>${n0(c.need)} kcal über dem Ziel</b> – verteilt auf ${list||"–"}${c.left?`; ${n0(c.left)} kcal ließen sich nicht mehr unterbringen`:""}. Ein Ausgleichstag ohne vollständige Einträge (unter 50 % des Ziels) zählt nicht.`;
  return`<div class="hint acc">↺<span>${st}</span></div>`}
 /* Ausgleichstag: warum das Ziel niedriger ist und wie es leichter geht */
 function carrierNote(i){if(!i.t.aus)return"";const pl=planDay(i.d),rest=pl&&pl.type==="rest",from=(i.t.carry||[]).map(([d,a])=>`${n0(a)} kcal von ${ddm(d)}`).join(" und ");
@@ -467,7 +482,7 @@ function carrierNote(i){if(!i.t.aus)return"";const pl=planDay(i.d),rest=pl&&pl.t
  <div class="s mute">🚶 45 Min Spaziergang ≈ 150 kcal${rest?" (heute Ruhetag – nur locker)":" · 🚴 30 Min lockeres Rad ≈ 200 kcal · 🏋️ 15 Min länger im Gym ≈ 70 kcal"} – als Aktivität auf der Uhr aufzeichnen.</div></div>`}
 /* Woche Mo–So: Bilanz gegessen gegen Garmin-Verbrauch und gegen das Wochenziel */
 function weekCard(){const T=TODAY(),mon=EK.monday(T),p=prof(),rate=p.rate!=null?+p.rate:null;
- let bal=0,n=0,plan=0;for(let k=0;k<7;k++){const d=EK.add(mon,k);if(d>=T)break;const i=info(d);if(!i.has)continue;n++;
+ let bal=0,n=0,plan=0;for(let k=0;k<7;k++){const d=EK.add(mon,k);if(d>=T)break;const i=info(d);if(!i.full)continue;n++;
   const use=i.gk!=null?i.gk:i.t.orig-EK.goalAdj(p);bal+=i.s.kcal-use;plan+=EK.goalAdj(p)}
  if(!n)return"";const kg=bal/7700,okc=bal<=plan+200;
  return`<div class="card"><h2>Diese Woche <small>${n} Tag${n>1?"e":""} erfasst</small></h2><div class="wt">
@@ -491,7 +506,7 @@ function burnRow(i){const t=i.t;if(i.d>TODAY())return"";const grund=t.kcal-t.tra
 function weightCard(){const p=prof(),w=GW(),goal=C.profil&&C.profil.zielGewicht;if(!w&&!goal)return"";
  let est="";if(goal&&w&&Math.abs(w-goal)>=0.2){const need=w-goal,dir=need>0?-1:1,fmtW=x=>x>52?"über ein Jahr":`ca. ${Math.ceil(x)} Woche${Math.ceil(x)>1?"n":""} (bis ${new Date(Date.now()+x*7*864e5).toLocaleDateString("de-DE",{day:"numeric",month:"short"})})`;
   const lines=[];if(p.rate&&Math.sign(p.rate)===dir)lines.push(`Nach Plan (${String(Math.abs(p.rate)).replace(".",",")} kg/Woche): <b>${fmtW(Math.abs(need/p.rate))}</b>`);
-  let b=0,n=0;for(let k=1;k<=14;k++){const i=info(EK.add(TODAY(),-k));if(i.has&&i.gk!=null){b+=i.s.kcal-i.gk;n++}}
+  let b=0,n=0;for(let k=1;k<=14;k++){const i=info(EK.add(TODAY(),-k));if(i.full&&i.gk!=null){b+=i.s.kcal-i.gk;n++}}
   if(n>=5){const kgw=b/n*7/7700;lines.push(Math.sign(kgw)===dir&&Math.abs(kgw)>0.02?`Nach deinem echten Schnitt (${b/n>0?"+":"−"}${n0(Math.abs(b/n))} kcal/Tag, ${n} Tage): <b>${fmtW(Math.abs(need/kgw))}</b>`:`Nach deinem echten Schnitt der letzten ${n} Tage geht es gerade nicht Richtung Ziel.`)}
   else lines.push(`Echter Schnitt: ab 5 erfassten Tagen mit Garmin-Werten.`);
   est=`<div class="s west">${lines.map(x=>`<div>⏱ ${x}</div>`).join("")}</div>`}
@@ -513,20 +528,20 @@ function vKal(){
  let cells=["Mo","Di","Mi","Do","Fr","Sa","So"].map(x=>`<div class="h">${x}</div>`).join("")+Array(off).fill('<button class="x" tabindex="-1"></button>').join("");
  const cnt={g:0,y:0,r:0,o:0};
  for(let k=1;k<=nd;k++){const d=`${calM}-${String(k).padStart(2,"0")}`,i=info(d),fut=d>T,off=d>MAXD();let c="";
-  if(i.has){c=i.done?i.kg:"o";cnt[c]=(cnt[c]||0)+1}
+  if(i.has){c=i.part?"u":i.done?i.kg:"o";cnt[c]=(cnt[c]||0)+1}
   const au=i.ch||i.t.aus?"↺":"";if(i.ch&&i.ch.state==="full")cnt.a=(cnt.a||0)+1;
   cells+=`<button class="${c} ${fut?"fut":""} ${d===T?"t":""}" data-open="${d}" ${off?"disabled":""}>${k}${au?`<sup style="position:absolute;top:3px;right:5px;font-size:11px">${au}</sup>`:""}${i.has?`<small>${n0(i.s.kcal)}</small>`:""}</button>`}
  const pm=EK.add(calM+"-01",-1).slice(0,7),nm=EK.add(calM+"-28",5).slice(0,7);
  return`<div class="card"><div class="kp"><div><b>🔥 ${sk.n}</b><span>Streak aktuell</span></div><div><b>${sk.best}</b><span>Rekord (Tage)</span></div><div><b>${cnt.g}</b><span>Tage im Ziel</span></div></div></div>
  <div class="card"><div class="dnav" style="border:0;margin-bottom:8px"><button class="ib" data-cal="${pm}" aria-label="Vormonat">‹</button><b>${MON[m-1]} ${y}</b><button class="ib" data-cal="${nm}" aria-label="Folgemonat" ${nm>MAXD().slice(0,7)?"disabled":""}>›</button></div>
  <div class="cal">${cells}</div>
- <div class="leg"><span><i style="background:var(--g)"></i>Ziel ±10 % (${cnt.g})</span><span><i style="background:var(--y)"></i>±20 % (${cnt.y})</span><span><i style="background:var(--r)"></i>deutlich daneben (${cnt.r})</span><span><i style="background:var(--acc-bg)"></i>heute/geplant</span><span><i style="background:var(--grid)"></i>nicht erfasst</span></div></div>
+ <div class="leg"><span><i style="background:var(--g)"></i>Ziel ±10 % (${cnt.g})</span><span><i style="background:var(--y)"></i>±20 % (${cnt.y})</span><span><i style="background:var(--r)"></i>deutlich daneben (${cnt.r})</span><span><i style="background:var(--acc-bg)"></i>heute/geplant</span><span><i class="lu"></i>zu wenig eingetragen${cnt.u?` (${cnt.u})`:""}</span><span><i style="background:var(--grid)"></i>nicht erfasst</span></div></div>
  <p class="foot">Farbe = Kalorienziel des Tages erreicht? Grün bei höchstens 10 % Abweichung, orange bis 20 %, rot bei mehr – egal ob zu viel oder zu wenig gegessen. Die kleine Zahl sind die gegessenen kcal. Tag antippen öffnet das Tagebuch – auch die nächsten 14 Tage, zum Vorausplanen.<br>↺ = Ausgleich: Liegst du an einem Tag drüber, verteilt die App den Überschuss automatisch auf die nächsten Tage (Lauf- und Gym-Tage tragen mehr, höchstens 20 % bzw. 500 kcal pro Tag) und senkt dort dein Ziel. Hältst du diese Ziele, wird der Tag grün ↺.${cnt.a?` Ausgeglichen in diesem Monat: ${cnt.a}.`:""}</p>`}
 
 /* ===== Verlauf ===== */
 function vVerlauf(){
  const L=[];for(let k=range-1;k>=0;k--)L.push(info(EK.add(TODAY(),-k)));
- const got=L.filter(x=>x.has&&x.done),av=f=>got.length?got.reduce((s,x)=>s+f(x),0)/got.length:null,mx=Math.max(1500,...L.map(x=>Math.max(x.s.kcal,x.t.kcal)))*1.08;
+ const got=L.filter(x=>x.full&&x.done),av=f=>got.length?got.reduce((s,x)=>s+f(x),0)/got.length:null,mx=Math.max(1500,...L.map(x=>Math.max(x.s.kcal,x.t.kcal)))*1.08;
  const cnt={g:0,y:0,r:0};got.forEach(x=>x.grade&&cnt[x.grade]++);
  const gb=got.filter(x=>x.gk!=null),bal=gb.length?gb.reduce((s,x)=>s+x.s.kcal-x.gk,0)/gb.length:null;
  return`<div class="seg" style="margin-bottom:12px">${[7,14,30].map(n=>`<button data-range="${n}" class="${range===n?"on":""}">${n} Tage</button>`).join("")}</div>
@@ -534,12 +549,12 @@ function vVerlauf(){
   <div><span class="s mute">Ø Ziel</span><b style="display:block;font-size:20px">${n0(av(x=>x.t.kcal))} <small class="mute">kcal</small></b></div>
   <div><span class="s mute">Ø Bilanz zu Garmin</span><b style="display:block;font-size:20px" class="${bal>0?"warn":""}">${bal==null?"–":(bal>0?"+":"−")+n0(Math.abs(bal))}</b></div>
   <div><span class="s mute">Ø Protein</span><b style="display:block;font-size:20px">${n0(av(x=>x.s.p))} <small class="mute">g</small></b></div></div>
-  <div class="wk">${L.map(x=>`<div>${x.has?`<i style="height:${x.s.kcal/mx*100}%;background:${COL[x.done?x.grade||"acc":"acc"]};opacity:${x.done?1:.5}"></i>`:""}<em style="bottom:${x.t.kcal/mx*100}%"></em></div>`).join("")}</div>
+  <div class="wk">${L.map(x=>`<div>${x.has?`<i style="height:${x.s.kcal/mx*100}%;background:${x.part?"var(--mute)":COL[x.done?x.grade||"acc":"acc"]};opacity:${x.part?.35:x.done?1:.5}"></i>`:""}<em style="bottom:${x.t.kcal/mx*100}%"></em></div>`).join("")}</div>
   <div class="wkl">${L.map((x,k)=>`<span>${range<=7?wd(x.d):range<=14?(k%2?"":x.d.slice(8)):(k%5?"":x.d.slice(8))}</span>`).join("")}</div>
   <p class="s mute" style="margin:8px 0 0">Balken = gegessen · Strich = Ziel · <span style="color:var(--g)">${cnt.g} grün</span> · <span style="color:var(--y)">${cnt.y} orange</span> · <span style="color:var(--r)">${cnt.r} rot</span></p></div>
- <div class="card">${L.slice().reverse().map(x=>`<div class="drow" data-open="${x.d}"><span>${wd(x.d)} ${dm(x.d)}</span><span>${x.has?`<b>${n0(x.s.kcal)}</b> <span class="mute">/ ${n0(x.t.kcal)} kcal · P ${n0(x.s.p)} g</span>`:`<span class="mute">nicht erfasst</span>`}</span>
+ <div class="card">${L.slice().reverse().map(x=>`<div class="drow" data-open="${x.d}"><span>${wd(x.d)} ${dm(x.d)}</span><span>${x.has?`<b>${n0(x.s.kcal)}</b> <span class="mute">/ ${n0(x.t.kcal)} kcal · P ${n0(x.s.p)} g${x.part?" · zu wenig eingetragen":""}</span>`:`<span class="mute">nicht erfasst</span>`}</span>
   <span>${x.done&&x.grade?`<span class="chip" style="--c0:${COL[x.grade]}">${x.grade==="g"?"✓":x.grade==="y"?"~":"✕"}</span>`:""}</span></div>`).join("")}</div>
- <p class="foot">Ampel im Verlauf: Kalorien ±10 % und Protein ab 90 % = grün, ±20 % bzw. ab 75 % = orange, sonst rot.</p>`}
+ <p class="foot">Ampel im Verlauf: Kalorien ±10 % und Protein ab 90 % = grün, ±20 % bzw. ab 75 % = orange, sonst rot. Tage mit weniger als 50 % des Kalorienziels gelten als unvollständig eingetragen: ohne Ampel und nicht in den Durchschnitten.</p>`}
 
 /* ===== Meine Lebensmittel ===== */
 const foods=()=>(C.lm&&C.lm.items)||[];
@@ -1661,7 +1676,7 @@ noZoom(document);
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="09d7419";
+const APPV="39534b7";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
