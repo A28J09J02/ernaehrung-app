@@ -59,6 +59,7 @@ und lädt sich bei einer neuen Version selbst neu. Nie von Hand ins öffentliche
   Anmeldung in `data/ernaehrung/push.json`, Einstellung `profil.json` → `erinnerung:{an,uhr}`. Gesendet vom Workflow `streak-erinnerung.yml`
   (stündlich abends, `tools/streak_erinnerung.py`, höchstens 1× pro Tag, Zustand in `push_status.json`). Benötigt einmalig das Secret `VAPID_PRIVATE_KEY`;
   der öffentliche Gegenschlüssel steht als `VAPID` in `index.html`.
+- **Gym-Checkliste**: An Gym-Tagen zeigt „Training“ (und der Trainingsplan) die Übungen aus der Plan-Beschreibung als Checkliste – antippen = abhaken, nochmal = zurück. Sortiert nach Geräte-Reihenfolge im Studio (`GYM_ORDER` in `index.html`: Beinpresse → Rückenstrecker → weitere Beine → Bizeps → Trizeps → Schultern → Butterfly/Brust → Reverse Butterfly/Rudern/Latzug → Finisher → Rad). Gespeichert in `data/ernaehrung/gym.json`.
 - **Trainingsplan-Haken**: Lauf zählt nur mit einer Laufaktivität, Gym nur mit Krafttraining (wie im Dashboard). Kurze Radfahrten (Schulweg) zählen nie.
 
 ## Daten

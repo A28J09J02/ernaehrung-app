@@ -185,6 +185,11 @@ main.dragx{will-change:transform}main.snap{transition:transform .28s cubic-bezie
 .rcp{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--grid);font-size:14px}
 .rcp button{border:0;background:none;color:var(--r);font-size:18px;padding:0 4px}
 .step{display:flex;align-items:center;gap:12px}.step button{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:22px}.step b{font-size:22px;min-width:30px;text-align:center}
+.gl{display:grid;gap:6px;margin-top:10px}.gx{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;padding:10px 12px;min-height:52px;font:inherit}
+.gx i{flex:none;width:26px;height:26px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:15px;font-weight:700;color:#fff}
+.gx span{display:flex;flex-direction:column;gap:1px}.gx b{font-size:15px;font-weight:600}.gx small{font-size:13px;color:var(--mute)}
+.gx.on{background:color-mix(in srgb,var(--g) 10%,var(--card));border-color:color-mix(in srgb,var(--g) 40%,var(--line))}.gx.on i{background:var(--g);border-color:var(--g)}.gx.on b{text-decoration:line-through;color:var(--mute)}
+.gprog{position:relative;margin-top:10px;height:22px;border-radius:99px;background:var(--grid);overflow:hidden;font-size:12px;font-weight:600}.gprog span{position:relative;z-index:1;display:block;text-align:center;line-height:22px}.gprog i{position:absolute;left:0;top:0;bottom:0;background:color-mix(in srgb,var(--g) 45%,transparent);transition:width .2s}
 .act{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--grid);font-size:14px}
 /* Bewertung, Einkaufsliste, Ideen */
 .rate{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin-top:8px;font-size:13px}.rate .lnk{border:1px solid var(--line);background:var(--card);color:var(--mute);border-radius:50%;width:22px;height:22px;padding:0;font-size:12px;line-height:1}
@@ -205,7 +210,7 @@ main.dragx{will-change:transform}main.snap{transition:transform .28s cubic-bezie
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=39534b7"></script>
+<script src="kern.js?v=beef583"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -260,9 +265,10 @@ async function put(file,data,sha,msg){const r=await gh(`/contents/${file}`,{meth
  if(r.status===409||r.status===422)return false;if(!r.ok)throw new Error("Speichern fehlgeschlagen ("+r.status+")");return true}
 
 /* ===== Änderungen: lokal sofort, dann Warteschlange und hochladen ===== */
-const P_ZIEL="data/ernaehrung/ziele.json",P_PROF="data/ernaehrung/profil.json",P_LM="data/ernaehrung/lebensmittel.json",P_SHOP="data/ernaehrung/einkauf.json",pMonth=d=>`data/ernaehrung/${d.slice(0,7)}.json`;
+const P_ZIEL="data/ernaehrung/ziele.json",P_PROF="data/ernaehrung/profil.json",P_LM="data/ernaehrung/lebensmittel.json",P_SHOP="data/ernaehrung/einkauf.json",P_GYM="data/ernaehrung/gym.json",pMonth=d=>`data/ernaehrung/${d.slice(0,7)}.json`;
 function apply(obj,op){
  if(op.t==="profil")return op.v;
+ if(op.t==="gym"){const o={...(obj||{})},L=new Set(o[op.d]||[]);op.v?L.add(op.k):L.delete(op.k);if(L.size)o[op.d]=[...L];else delete o[op.d];return o}
  if(op.t==="food"||op.t==="fooddel"){const o=obj||{items:[]},it=(o.items||[]).filter(x=>x.id!==(op.t==="food"?op.item.id:op.id));
   if(op.t==="food")it.push(op.item);return{...o,items:it}}
  const o=obj||{},L=(o[op.d]||[]).filter(x=>x.id!==(op.e?op.e.id:op.id));
@@ -273,8 +279,9 @@ function local(path,op){
  else if(path===P_LM)C.lm=apply(C.lm,op);
  else if(path===P_SHOP)C.shop=apply(C.shop,op);
  else if(path===P_ZIEL)C.ziele=apply(C.ziele,op);
+ else if(path===P_GYM)C.gym=apply(C.gym,op);
  else{const m=path.slice(-12,-5);C.months[m]=apply(C.months[m]||{},op)}}
-function setFile(path,v){if(path===P_PROF)C.profil=v;else if(path===P_LM)C.lm=v||{items:[]};else if(path===P_SHOP)C.shop=v||{items:[]};else if(path===P_ZIEL)C.ziele=v||{tage:{}};else C.months[path.slice(-12,-5)]=v||{};
+function setFile(path,v){if(path===P_PROF)C.profil=v;else if(path===P_LM)C.lm=v||{items:[]};else if(path===P_SHOP)C.shop=v||{items:[]};else if(path===P_ZIEL)C.ziele=v||{tage:{}};else if(path===P_GYM)C.gym=v||{};else C.months[path.slice(-12,-5)]=v||{};
  for(const x of Q)if(x.path===path)local(path,x.op)}
 function change(path,op,noRender){
  /* Schutz: nie unter ungültigem Datum speichern (sonst landet der Eintrag in data/ernaehrung/.json und ist unsichtbar) */
@@ -285,7 +292,7 @@ async function flush(){
  if(busy||!Q.length||!CFG.token)return;busy=true;setStatus();
  try{for(const path of [...new Set(Q.map(x=>x.path))]){const ops=Q.filter(x=>x.path===path);let ok=false;
    for(let i=0;i<4&&!ok;i++){const{data,sha}=await getJson(path);let v=data;for(const x of ops)v=apply(v,x.op);
-    const n=ops.length,msg=path===P_PROF?"Ernährung: Profil (iPhone)":path===P_LM?"Ernährung: Lebensmittel (iPhone)":path===P_SHOP?"Ernährung: Einkaufsliste (iPhone)":path===P_ZIEL?"Ernährung: Tagesziele (iPhone)":`Ernährung: ${n} Änderung${n>1?"en":""} (iPhone)`;
+    const n=ops.length,msg=path===P_PROF?"Ernährung: Profil (iPhone)":path===P_LM?"Ernährung: Lebensmittel (iPhone)":path===P_SHOP?"Ernährung: Einkaufsliste (iPhone)":path===P_ZIEL?"Ernährung: Tagesziele (iPhone)":path===P_GYM?"Training: Gym-Checkliste (iPhone)":`Ernährung: ${n} Änderung${n>1?"en":""} (iPhone)`;
     ok=await put(path,v,sha,msg);if(ok){Q=Q.filter(x=>!ops.includes(x));saveQ();setFile(path,v)}}
    if(!ok)throw new Error("Konflikt beim Speichern")}
   saveC();if(status==="offline")status=""}
@@ -308,9 +315,9 @@ async function loadAll(){
  try{const hd=await headSha().catch(e=>{if(e.auth)throw e;return null});
   const dir=await gh(`/contents/data/ernaehrung?ref=${CFG.branch}`);
   const ms=dir.ok?(await dir.json()).map(x=>x.name).filter(n=>/^\d{4}-\d{2}\.json$/.test(n)).map(n=>n.slice(0,7)):[];
-  const[pr,lm,sp,st,pl,an,zi,...mm]=await Promise.all([getJson(P_PROF),getJson(P_LM),getJson(P_SHOP),getRaw("data/store.json"),getRaw("data/plan.json"),getRaw("data/anpassungen.json"),getJson(P_ZIEL),
+  const[pr,lm,sp,st,pl,an,zi,gy,...mm]=await Promise.all([getJson(P_PROF),getJson(P_LM),getJson(P_SHOP),getRaw("data/store.json"),getRaw("data/plan.json"),getRaw("data/anpassungen.json"),getJson(P_ZIEL),getJson(P_GYM),
    ...ms.map(m=>getJson(`data/ernaehrung/${m}.json`))]);
-  C.profil=pr.data;C.lm=lm.data||{items:[]};C.ziele=zi.data||{tage:{}};C.shop=sp.data||{items:[]};C.months={};ms.forEach((m,i)=>C.months[m]=mm[i].data||{});
+  C.profil=pr.data;C.lm=lm.data||{items:[]};C.ziele=zi.data||{tage:{}};C.shop=sp.data||{items:[]};C.gym=gy.data||{};C.months={};ms.forEach((m,i)=>C.months[m]=mm[i].data||{});
   if(st){C.store=trimStore(st,60);KV.set("store_full",JSON.stringify(st))}
   C.plan=trimPlan(pl);C.anp=an;if(pl)KV.set("plan_full",JSON.stringify(pl));
   for(const x of Q)local(x.path,x.op);
@@ -703,6 +710,35 @@ const ago=d=>d===TODAY()?"heute":d===EK.add(TODAY(),-1)?"gestern":dm(d);
 const tile=(l,v,u,sub,a,sa)=>{const sc=sa!==undefined?sa:a;return`<div class="tile" style="${a?`border-left:4px solid ${COL[a]}`:""}"><span>${l}</span><b style="${a?`color:color-mix(in srgb,${COL[a]} 75%,var(--ink))`:""}">${v}${u?` <small>${u}</small>`:""}</b><em style="color:${sc?COL[sc]:"var(--mute)"}">${sub||"&nbsp;"}</em></div>`};
 /* Fließtext → Stichpunkte (an Satzenden und Semikolons) */
 const bullets=t=>`<ul class="s" style="margin:0;padding-left:18px;display:grid;gap:4px">${String(t).split(/(?<=[.!])\s+(?=[A-ZÄÖÜ0-9])|;\s*/).map(x=>x.trim()).filter(Boolean).map(x=>`<li>${h(x)}</li>`).join("")}</ul>`;
+/* ===== Gym-Checkliste: Übungen aus der Plan-Beschreibung, sortiert nach Geräte-Reihenfolge im Studio =====
+   Gespeichert in data/ernaehrung/gym.json {"JJJJ-MM-TT":[Übungsschlüssel,…]}. Reihenfolge ändern = GYM_ORDER umstellen. */
+const GYM_ORDER=[/beinpresse/,/rückenstreck/,/beinstreck/,/beinbeug/,/adduktor/,/abduktor/,/wade/,/bizeps/,/trizeps/,/schulterpresse/,/seitheb/,/^butterfly/,/brustpresse/,/reverse butterfly/,/rudern/,/latzug/,null,/klimmz[uü]g|dead hang/,/bauch/,/rad\b|laufband|crosstrainer|ergometer/];
+const gymRank=n=>{n=n.toLowerCase();const i=GYM_ORDER.findIndex(r=>r&&r.test(n));return i<0?-1:i};
+function gymList(desc){const items=[],notes=[],CARDIO=/\b(Rad|Laufband|Crosstrainer|Ergometer)\b/;
+ const note=t=>{t=t.trim().replace(/[.;]$/,"");if(t)notes.push(t)};
+ const push=t=>{t=t.trim().replace(/[.;]$/,"").replace(/^danach\s+/i,"");if(!t)return;
+  if(CARDIO.test(t)&&/\bMin\b/.test(t)){const m=t.match(/\d+(–\d+)?\s*Min/);items.push({name:t.replace(/\d+(–\d+)?\s*Min\.?\s*/,"").trim(),sets:m?m[0]:""});return}
+  let m=t.match(/^(.*?)\s+((?:\d+(?:–\d+)?\s*×|\d+(?:–\d+)?\s+Sätze).*)$/),name=m?m[1]:t,sets=m?m[2]:"";name=name.replace(/\s+je$/,"");
+  if(gymRank(name)<0&&!m)return note(t);
+  /* „Bizeps/Trizeps je 2×12“, „Seitheben, Bizeps, Trizeps je 2×12“ → einzelne Übungen, wenn sie an verschiedenen Geräten sind */
+  const parts=name.split(/\s*\/\s*|,\s+/),rs=parts.map(gymRank);
+  if(parts.length>1&&rs.every(r=>r>=0)&&new Set(rs).size===parts.length)parts.forEach(x=>items.push({name:x,sets}));else items.push({name,sets})};
+ for(const seg of String(desc||"").split(/\s+·\s+/))for(let part of seg.split(/(?<=\.)\s+(?=[A-ZÄÖÜ0-9])/)){
+  part=part.trim();if(!part)continue;
+  if(/^(Woche|RIR|Ziel|DELOAD|Phase)\b/i.test(part)){note(part);continue}
+  let m=part.match(/^Superset\s+(.+?)\s+je\s+(.+)$/i);if(m){m[1].split(/\s*\+\s*/).forEach(x=>push(x+" "+m[2]));continue}
+  m=part.match(/^([^:]{1,40}):\s*(.+)$/);
+  if(m){if(/^(Finisher|.*Block)$/i.test(m[1]))part=m[2];else if(gymRank(m[1])<0&&gymRank(m[2])>=0)part=m[2];else{note(part);continue}}
+  if(!/×|\bMin\b|Sätze/.test(part)&&gymRank(part)<0){note(part);continue}
+  part.split(/(?<=×[^,]*),\s+(?=[A-ZÄÖÜ])|\s+\+\s+/).forEach(push)}
+ const nul=GYM_ORDER.indexOf(null);
+ items.forEach((x,i)=>{x.key=x.name.toLowerCase().replace(/\s+/g," ");const r=gymRank(x.name);x.r=r<0?nul:r;x.i=i});
+ items.sort((a,b)=>a.r-b.r||a.i-b.i);return{items,notes}}
+const gymDone=d=>new Set((C.gym||{})[d]||[]);
+function gymCheck(d,desc,open){const{items,notes}=gymList(desc);if(!items.length)return"";const D=gymDone(d),n=items.filter(x=>D.has(x.key)).length;
+ return`<div class="gprog"><span>${n===items.length?"✓ Alles erledigt":`${n} von ${items.length} erledigt`}</span><i style="width:${Math.round(n/items.length*100)}%"></i></div>
+ <div class="gl">${items.map(x=>{const on=D.has(x.key);return`<button class="gx${on?" on":""}" data-gym="${d}|${h(x.key)}"><i>${on?"✓":""}</i><span><b>${h(x.name)}</b>${x.sets?`<small>${h(x.sets)}</small>`:""}</span></button>`}).join("")}</div>
+ ${notes.length?`<details class="more"${open?" open":""}><summary>Hinweise ›</summary>${bullets(notes.join(". ")+".")}</details>`:""}`}
 function vMeinTag(){
  if(!C.store)return`<div class="card">Noch keine Garmin-Daten geladen.</div>`;
  const T=TODAY(),p=planDay(T),acts=C.store.acts.filter(a=>a.date===T),sl=lastV("sleep_score",1),ss=lastV("sleep_s",1),bb=lastV("bb_now",0)||lastV("bb_high",1),hv=lastV("hrv",1),rp=lastV("rhr",1),st=lastV("steps",0),sr=lastV("stress",1);
@@ -714,7 +750,7 @@ function vMeinTag(){
  if(!p)o+=`<p class="mute" style="margin:0">Kein Training geplant.</p>`;
  else{const t=String(p.title||"").replace(/^\S+\s/,""),meta=[p.start&&p.start+" Uhr",p.dur&&p.dur+" Min",p.km&&p.km+" km"].filter(Boolean).join(" · ");
   o+=`<b style="font-size:19px">${h(p.type==="rest"?"Ruhetag":t)}</b>${meta?`<div class="s mute">${meta}</div>`:""}${p.adj?`<div class="s" style="color:var(--acc);margin-top:4px">Angepasst: ${h(p.adj)}</div>`:""}
-  ${p.desc?`<details class="more"><summary>Details ›</summary><p class="s" style="margin:6px 0 0">${h(p.desc)}</p></details>`:""}`}
+  ${p.type==="gym"&&gymList(p.desc).items.length?gymCheck(T,p.desc):p.desc?`<details class="more"><summary>Details ›</summary><p class="s" style="margin:6px 0 0">${h(p.desc)}</p></details>`:""}`}
  o+=acts.length?`<div style="margin-top:8px">${acts.map(a=>`<div class="act"><span>${EMO[a.type]||"⚡"} ${h(a.name||a.type)}</span><span>${a.km?n1(a.km)+" km · ":""}${Math.round(a.min)} min</span></div>`).join("")}</div>`:"";
  o+=`</div><div class="tiles">
  ${tile(`Schlaf ${ss?ago(ss.d):""}`,sl?sl.v:"–","Score",ss?hm(ss.v)+(ss.v<7*3600?" · unter 7 h":""):"",sl?(sl.v>=80?"g":sl.v>=60?"y":"r"):null,ss?(ss.v<6*3600?"r":ss.v<7*3600?"y":null):null)}
@@ -750,7 +786,7 @@ function vPlan(){
    <span><span class="s mute">${ddm(d)}</span><br><b style="font-size:16px">${EMOP[pd.type]||"•"} ${h(pd.type==="rest"?"Ruhetag":title)}</b></span><span class="s" style="color:${sc};white-space:nowrap">${st}</span></div>
    ${meta?`<div class="s mute">${meta}</div>`:""}
    ${it?`<div class="s" style="margin-top:6px;padding:6px 8px;border-radius:10px;background:var(--acc-bg);color:var(--acc)">↻ Angepasst${it.vorher&&it.vorher.title?`: vorher „${h(String(it.vorher.title).replace(/^\S+\s/,""))}“`:""}${it.grund?`<br><span style="color:var(--ink)">${h(it.grund)}</span>`:""}</div>`:""}
-   ${pd.desc?`<details class="more"><summary>Details ›</summary><p class="s" style="margin:6px 0 0">${h(pd.desc)}</p></details>`:""}
+   ${pd.type==="gym"&&gymList(pd.desc).items.length?(d===T?gymCheck(d,pd.desc):`<details class="more"><summary>Übungen${gymDone(d).size?` (${gymDone(d).size} ✓)`:""} ›</summary>${gymCheck(d,pd.desc)}</details>`):pd.desc?`<details class="more"><summary>Details ›</summary><p class="s" style="margin:6px 0 0">${h(pd.desc)}</p></details>`:""}
    ${acts.length||other.length?`<div class="s mute" style="margin-top:6px">${[...acts,...other].map(a=>`<span${acts.includes(a)?"":' style="opacity:.55" title="zählt nicht als Einheit"'}>${EMO[a.type]||"⚡"} ${a.km?n1(a.km)+" km · ":""}${Math.round(a.min)} min</span>`).join(" · ")}</div>`:""}</div>`}
  return o+`<p class="foot">Der Plan selbst (data/plan.json) wird nie automatisch geändert – Anpassungen liegen als eigene Ebene darüber. Größere Änderungen besprechen wir im Chat.</p>`}
 
@@ -1572,6 +1608,7 @@ document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x
  if(b("[data-menu]"))openDrawer();
  else if(t===$("scrim"))closeDrawer();
  else if(x=b("[data-go]")){if(x.dataset.go!=="dash")hideDash();if(x.dataset.go==="ideen"&&view!=="ideen"){IMEAL=cur===TODAY()?mealNow():null;IMORE=false}go(x.dataset.go)}
+ else if(x=b("[data-gym]")){const[d,k]=x.dataset.gym.split("|");const v=!gymDone(d).has(k);if(navigator.vibrate)navigator.vibrate(10);change(P_GYM,{t:"gym",d,k,v})}
  else if(x=b("[data-day]")){const v=+x.dataset.day;shiftDay(v===0?null:v)}
  else if(x=b("[data-open]")){cur=x.dataset.open;go("tag")}
  else if(x=b("[data-cal]")){calM=x.dataset.cal;render()}
@@ -1676,7 +1713,7 @@ noZoom(document);
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="39534b7";
+const APPV="beef583";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
