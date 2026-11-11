@@ -13,7 +13,13 @@
 @media(prefers-color-scheme:dark){:root{--bg:#0c1418;--card:#151f24;--ink:#e3ebee;--mute:#8fa1a8;--line:#26343b;--grid:#1f2c33;--acc:#4fb6d6;--acc-bg:#16343f;
  --g:#4cb07f;--y:#e2a640;--r:#e0726c;--p:#a58ae6;--c:#e6a54a;--f:#5aa9e0;color-scheme:dark}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+/* pan-x pan-y: Wischen/Scrollen ja, Pinch- und Doppeltipp-Zoom nein (auch wenn die Seite gerade rollt) */
+html{touch-action:pan-x pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+/* wie eine App: Bedienelemente lassen sich nicht markieren, kein Lupen-/Kopiermenü bei langem Druck */
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea,.sel{-webkit-user-select:text;user-select:text}
+button{transition:opacity .12s,transform .12s}button:active{opacity:.6}.btn:active,.mpl:active,.mpb:active,.plus:active,.qb:active,.res:active,.gx:active{transform:scale(.97)}
+.tg{gap:12px}.tg input{flex:none}
 html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;font-variant-numeric:tabular-nums;overscroll-behavior-y:none}
 body{padding:env(safe-area-inset-top) 0 calc(78px + env(safe-area-inset-bottom))}
 button,input,select{font:inherit;color:inherit}button{cursor:pointer}
@@ -96,6 +102,12 @@ details.more{margin-top:10px;font-size:14px}details.more summary{color:var(--acc
 .drawer .ttl{font-size:22px;font-weight:700;margin:0 10px 6px}
 .sheet{position:fixed;inset:0;z-index:20;background:var(--bg);overflow-y:auto;padding:env(safe-area-inset-top) 0 calc(20px + env(safe-area-inset-bottom));display:none}
 .sheet.on{display:block}.sheet .top{background:var(--bg)}
+.sheet{overscroll-behavior:none;box-shadow:0 0 40px rgba(0,0,0,.25)}
+.sheet.on:not(.quiet){animation:shin .22s cubic-bezier(.2,.8,.3,1)}.sheet.backin{animation:shback .2s ease}
+.sheet.dragg{transition:none}.sheet.snapb{transition:transform .22s cubic-bezier(.2,.9,.3,1)}
+@keyframes shin{from{transform:translateY(28px);opacity:0}to{transform:none;opacity:1}}@keyframes shback{from{transform:translateX(-24px);opacity:.4}to{transform:none;opacity:1}}
+.drawer.dragg{transition:none}
+@media(prefers-reduced-motion:reduce){.sheet.on,.sheet.backin{animation:none}}
 .inp{width:100%;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:11px 12px;font-size:17px}
 .inp:focus{outline:2px solid var(--acc);outline-offset:-1px}
 label.f{display:block;font-size:13px;color:var(--mute);margin:10px 0 4px}
@@ -200,7 +212,7 @@ main.dragx{will-change:transform}main.snap{transition:transform .28s cubic-bezie
 .btn.idee{display:flex;justify-content:space-between;align-items:center;width:100%;margin:0 0 8px;background:color-mix(in srgb,var(--acc) 10%,var(--card));border-color:color-mix(in srgb,var(--acc) 35%,var(--line));color:var(--acc)}.btn.idee small{color:var(--mute);font-weight:500}
 .qs.mood{margin:0 0 8px}.btn.dis{text-align:left;margin-bottom:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.res.idea{cursor:pointer}.res .ibtns{display:flex;gap:6px;margin-top:6px}.res .ibtns .pl{width:38px;height:38px}.res .pl.sh{background:var(--acc-bg);font-size:17px}
 /* Dashboard */
-#dashf{position:fixed;left:0;right:0;width:100%;border:0;background:var(--bg)}
+#dashf{position:fixed;left:0;right:0;width:100%;border:0;background:var(--bg);touch-action:pan-x pan-y}
 .load{text-align:center;padding:60px 20px;color:var(--mute)}
 #ptr{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 58px);z-index:45;width:42px;height:42px;margin-left:-21px;border-radius:50%;background:var(--card);border:1px solid var(--line);box-shadow:0 2px 10px rgba(0,0,0,.15);color:var(--mute);display:flex;align-items:center;justify-content:center;font-size:22px;opacity:0;transform:translateY(-30px);pointer-events:none;transition:opacity .15s}
 #ptr.go{color:var(--acc);border-color:var(--acc)}#ptr.run{opacity:1;transform:translateY(20px);color:var(--acc);transition:transform .2s}#ptr.run i{animation:sp 1s linear infinite}#ptr i{font-style:normal;display:block}
@@ -210,7 +222,7 @@ main.dragx{will-change:transform}main.snap{transition:transform .28s cubic-bezie
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=beef583"></script>
+<script src="kern.js?v=9b1cb16"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -349,7 +361,7 @@ const entries=d=>(C.months[d.slice(0,7)]||{})[d]||[];
 let AUSR={share:{},cheats:{},carry:{}};
 function calcAus(){const p=prof(),g=G(),L=[];
  for(let k=-45;k<=14;k++){const d=EK.add(TODAY(),k),e=entries(d),eaten=EK.sum(e).kcal,target=EK.target(p,g,d).kcal;L.push({d,has:e.length>0&&EK.voll(eaten,target),eaten,target,w:EK.weight(planDay(d))})}
- AUSR=EK.ausgleich(L,TODAY())}
+ AUSR=EK.ausgleich(L,TODAY(),EK.ausSet(C.profil))}
 function info(d){const e=entries(d),s=EK.sum(e),p=prof(),t0=EK.target(p,G(),d),gd=C.store&&C.store.days[d],done=d<TODAY();
  const aus=Math.round(AUSR.share[d]||0),t={...t0,kcal:t0.kcal-aus,aus,orig:t0.kcal,carry:AUSR.carry[d]||null},m=EK.macros(p,t.kcal),ch=AUSR.cheats[d]||null;
  /* full: genug eingetragen (ab 50 % des Ziels, EK.voll) – nur volle Tage bekommen eine Ampel und zählen in Streak/Statistik */
@@ -411,7 +423,7 @@ function vTag(sk=streaks()){
  const i=info(cur),t=i.t,left=t.kcal-i.s.kcal,ka=i.has?(i.done?i.kg:(i.s.kcal<=t.kcal?"g":"r")):null,T=TODAY();
  const src={formel:"Formel",yazio:"Yazio",garmin:"Garmin"}[t.src];
  let o=`${cur!==T?`<button class="today" data-day="0">↩ Zurück zu heute</button>`:""}${cur>T?`<div class="fr">Vorausplanen – Einträge zählen erst an diesem Tag</div>`:""}`;
- o+=partHint(i)+cheatHint(i);
+ o+=partHint(i)+cheatHint(i)+cheatNote(i);
  if(cur===T&&!sk.today&&sk.n>0)o+=`<div class="hint">🔥<span>Trag heute etwas ein, damit deine <b>${sk.n}-Tage-Streak</b> weiterläuft.</span></div>`;
  const mac=[["p","Protein","var(--p)"],["c","Kohlenhydrate","var(--c)"],["f","Fett","var(--f)"]].map(([k,l,c])=>{const v=i.s[k],g=i.m[k],a=i.has?liveAmp(k,v,g,i.done):null;
   return`<div><small>${l}</small><b>${n0(v)} <small>/ ${n0(g)} g</small></b><div class="bar"><i style="width:${Math.min(100,g?v/g*100:0)}%;background:${a==="r"||a==="y"?COL[a]:c}"></i></div></div>`}).join("");
@@ -476,17 +488,30 @@ function renderMeal(){const k=MRET;if(!k)return;const sh=$("sheet");sh.classList
 /* Cheat Day: Überschuss und wohin er verteilt wurde */
 /* Vergangener Tag mit weniger als 50 % des Ziels: zählt wie „nicht eingetragen“ */
 function partHint(i){return i.part?`<div class="hint part"><span><b>Zu wenig eingetragen</b> – ${n0(i.s.kcal)} von ${n0(i.t.orig)} kcal (unter ${Math.round(EK.VOLL*100)} %). Der Tag zählt nicht für Streak, Kalender und Durchschnitte. Fehlt noch etwas? Einfach nachtragen.</span></div>`:""}
+/* Ausgleich je Tag an/aus (Ausnahme zur Profil-Einstellung) und Cheat-Day-Markierung; alte Einträge (über 60 Tage) fallen weg */
+const ausOn=()=>!(C.profil&&C.profil.ausgleich===false),cheatSet=()=>new Set((C.profil||{}).cheat||[]);
+function setAusDay(d,v){const lim=EK.add(TODAY(),-60),o={};for(const[k,x]of Object.entries((C.profil||{}).ausTage||{}))if(k>=lim&&k!==d)o[k]=x;
+ if(v!==ausOn())o[d]=v;setProf({ausTage:o});toast(v?"Überschuss wird auf die Folgetage verteilt":"Dieser Tag wird nicht ausgeglichen")}
+function setCheat(d,v){const lim=EK.add(TODAY(),-60),L=[...cheatSet()].filter(k=>k>=lim&&k!==d);if(v)L.push(d);setProf({cheat:L.sort()});
+ toast(v?"Cheat Day – dein Ziel wird an diesem Tag nicht gesenkt":"Cheat Day aufgehoben")}
 function cheatHint(i){const c=i.ch;if(!c)return"";
+ if(c.state==="off")return`<div class="hint acc">🍕<span><b>${n0(c.need)} kcal über dem Ziel</b> – wird nicht ausgeglichen, die nächsten Tage behalten ihr normales Ziel.<br><button class="btn sm mt8" data-ausday="${i.d}|1">Doch auf die Folgetage verteilen</button></span></div>`;
  const list=c.carriers.map(([d,a])=>`${ddm(d)} −${n0(a)}`).join(" · ");
  const st=c.state==="full"?`<b>Ausgeglichen!</b> Die ${n0(c.need)} kcal über dem Ziel sind über die Folgetage wieder drin.`:
   c.state==="run"?`<b>${n0(c.need)} kcal über dem Ziel</b> – kein Problem: automatisch verteilt auf ${list}. Halte dort dein (etwas niedrigeres) Ziel, dann ist der Tag wieder grün.`:
   `<b>${n0(c.need)} kcal über dem Ziel</b> – verteilt auf ${list||"–"}${c.left?`; ${n0(c.left)} kcal ließen sich nicht mehr unterbringen`:""}. Ein Ausgleichstag ohne vollständige Einträge (unter 50 % des Ziels) zählt nicht.`;
- return`<div class="hint acc">↺<span>${st}</span></div>`}
+ /* mehrere Cheat Days hintereinander: verteilt wird erst nach dem letzten */
+ const blk=c.carriers.length&&c.carriers[0][0]>EK.add(i.d,1)&&c.state==="run"?` Der Ausgleich beginnt erst nach dem letzten Cheat Day.`:"";
+ return`<div class="hint acc">↺<span>${st}${blk}${c.state!=="full"?`<br><button class="btn sm mt8" data-ausday="${i.d}|0">Nicht ausgleichen</button>`:""}</span></div>`}
+/* Markierter Cheat Day (heute/künftig): Ziel bleibt ungesenkt */
+function cheatNote(i){if(i.d<TODAY()||!cheatSet().has(i.d))return"";
+ return`<div class="hint acc">🍕<span><b>Cheat Day</b> – dein Ziel wird ${i.d===TODAY()?"heute":"an diesem Tag"} nicht gesenkt. ${ausOn()?"Was über dem Ziel liegt, wird erst nach dem letzten Cheat Day verteilt.":"Der Ausgleich ist ausgeschaltet."}<br><button class="btn sm mt8" data-cheat="${i.d}|0">Aufheben</button></span></div>`}
 /* Ausgleichstag: warum das Ziel niedriger ist und wie es leichter geht */
 function carrierNote(i){if(!i.t.aus)return"";const pl=planDay(i.d),rest=pl&&pl.type==="rest",from=(i.t.carry||[]).map(([d,a])=>`${n0(a)} kcal von ${ddm(d)}`).join(" und ");
  return`<div class="card acc"><h2>↺ Ausgleich ${i.d>=TODAY()?"geplant":""}<small>−${n0(i.t.aus)} kcal</small></h2>
  <p class="s p6">Dein Ziel ist um ${n0(i.t.aus)} kcal niedriger (${from}). Statt weniger zu essen geht auch mehr Bewegung – sie hebt dein Ziel automatisch wieder an:</p>
- <div class="s mute">🚶 45 Min Spaziergang ≈ 150 kcal${rest?" (heute Ruhetag – nur locker)":" · 🚴 30 Min lockeres Rad ≈ 200 kcal · 🏋️ 15 Min länger im Gym ≈ 70 kcal"} – als Aktivität auf der Uhr aufzeichnen.</div></div>`}
+ <div class="s mute">🚶 45 Min Spaziergang ≈ 150 kcal${rest?" (heute Ruhetag – nur locker)":" · 🚴 30 Min lockeres Rad ≈ 200 kcal · 🏋️ 15 Min länger im Gym ≈ 70 kcal"} – als Aktivität auf der Uhr aufzeichnen.</div>
+ ${i.d>=TODAY()?`<button class="btn w mt10" data-cheat="${i.d}|1">🍕 ${i.d===TODAY()?"Heute ist":"Das wird"} auch ein Cheat Day – Ziel nicht senken</button><p class="s mute" style="margin:6px 0 0">Mehrere Cheat Days hintereinander zählen zusammen: Der Ausgleich startet dann erst danach.</p>`:""}</div>`}
 /* Woche Mo–So: Bilanz gegessen gegen Garmin-Verbrauch und gegen das Wochenziel */
 function weekCard(){const T=TODAY(),mon=EK.monday(T),p=prof(),rate=p.rate!=null?+p.rate:null;
  let bal=0,n=0,plan=0;for(let k=0;k<7;k++){const d=EK.add(mon,k);if(d>=T)break;const i=info(d);if(!i.full)continue;n++;
@@ -533,17 +558,17 @@ function delEntry(id){const e=entries(cur).find(x=>x.id===id);if(!e)return;const
 function vKal(){
  const[y,m]=calM.split("-").map(Number),first=new Date(y,m-1,1),off=(first.getDay()+6)%7,nd=new Date(y,m,0).getDate(),T=TODAY(),sk=streaks();
  let cells=["Mo","Di","Mi","Do","Fr","Sa","So"].map(x=>`<div class="h">${x}</div>`).join("")+Array(off).fill('<button class="x" tabindex="-1"></button>').join("");
- const cnt={g:0,y:0,r:0,o:0};
+ const cnt={g:0,y:0,r:0,o:0},CS=cheatSet();
  for(let k=1;k<=nd;k++){const d=`${calM}-${String(k).padStart(2,"0")}`,i=info(d),fut=d>T,off=d>MAXD();let c="";
   if(i.has){c=i.part?"u":i.done?i.kg:"o";cnt[c]=(cnt[c]||0)+1}
-  const au=i.ch||i.t.aus?"↺":"";if(i.ch&&i.ch.state==="full")cnt.a=(cnt.a||0)+1;
+  const au=d>=T&&CS.has(d)?"🍕":i.ch&&i.ch.state==="off"?"":i.ch||i.t.aus?"↺":"";if(i.ch&&i.ch.state==="full")cnt.a=(cnt.a||0)+1;
   cells+=`<button class="${c} ${fut?"fut":""} ${d===T?"t":""}" data-open="${d}" ${off?"disabled":""}>${k}${au?`<sup style="position:absolute;top:3px;right:5px;font-size:11px">${au}</sup>`:""}${i.has?`<small>${n0(i.s.kcal)}</small>`:""}</button>`}
  const pm=EK.add(calM+"-01",-1).slice(0,7),nm=EK.add(calM+"-28",5).slice(0,7);
  return`<div class="card"><div class="kp"><div><b>🔥 ${sk.n}</b><span>Streak aktuell</span></div><div><b>${sk.best}</b><span>Rekord (Tage)</span></div><div><b>${cnt.g}</b><span>Tage im Ziel</span></div></div></div>
  <div class="card"><div class="dnav" style="border:0;margin-bottom:8px"><button class="ib" data-cal="${pm}" aria-label="Vormonat">‹</button><b>${MON[m-1]} ${y}</b><button class="ib" data-cal="${nm}" aria-label="Folgemonat" ${nm>MAXD().slice(0,7)?"disabled":""}>›</button></div>
  <div class="cal">${cells}</div>
  <div class="leg"><span><i style="background:var(--g)"></i>Ziel ±10 % (${cnt.g})</span><span><i style="background:var(--y)"></i>±20 % (${cnt.y})</span><span><i style="background:var(--r)"></i>deutlich daneben (${cnt.r})</span><span><i style="background:var(--acc-bg)"></i>heute/geplant</span><span><i class="lu"></i>zu wenig eingetragen${cnt.u?` (${cnt.u})`:""}</span><span><i style="background:var(--grid)"></i>nicht erfasst</span></div></div>
- <p class="foot">Farbe = Kalorienziel des Tages erreicht? Grün bei höchstens 10 % Abweichung, orange bis 20 %, rot bei mehr – egal ob zu viel oder zu wenig gegessen. Die kleine Zahl sind die gegessenen kcal. Tag antippen öffnet das Tagebuch – auch die nächsten 14 Tage, zum Vorausplanen.<br>↺ = Ausgleich: Liegst du an einem Tag drüber, verteilt die App den Überschuss automatisch auf die nächsten Tage (Lauf- und Gym-Tage tragen mehr, höchstens 20 % bzw. 500 kcal pro Tag) und senkt dort dein Ziel. Hältst du diese Ziele, wird der Tag grün ↺.${cnt.a?` Ausgeglichen in diesem Monat: ${cnt.a}.`:""}</p>`}
+ <p class="foot">Farbe = Kalorienziel des Tages erreicht? Grün bei höchstens 10 % Abweichung, orange bis 20 %, rot bei mehr – egal ob zu viel oder zu wenig gegessen. Die kleine Zahl sind die gegessenen kcal. Tag antippen öffnet das Tagebuch – auch die nächsten 14 Tage, zum Vorausplanen.<br>↺ = Ausgleich: Liegst du an einem Tag drüber, verteilt die App den Überschuss automatisch auf die nächsten Tage (Lauf- und Gym-Tage tragen mehr, höchstens 20 % bzw. 500 kcal pro Tag) und senkt dort dein Ziel. Hältst du diese Ziele, wird der Tag grün ↺. Mehrere Cheat Days hintereinander zählen als Block – verteilt wird erst danach (🍕 = als Cheat Day markiert). Ausschalten: Profil → „Überschuss ausgleichen“ oder am jeweiligen Tag.${cnt.a?` Ausgeglichen in diesem Monat: ${cnt.a}.`:""}</p>`}
 
 /* ===== Verlauf ===== */
 function vVerlauf(){
@@ -631,6 +656,7 @@ function vProfil(){
  <div class="cmp"><span>Garmin Ruheverbrauch<br><small class="mute">+ Aktivkalorien jeden Tag als Bonus</small></span><b>${b.garmin?n0(b.garmin)+" kcal"+(b.aktiv!=null?`<br><small class="mute">Ø aktiv ${n0(b.aktiv)}</small>`:""):"noch zu wenig Daten"}</b></div>
  <label class="f">Tagesziel berechnen aus</label><select class="inp" name="src">${opt(EK.SRC,p.src)}</select>
  <div class="tg"><span>Aktivkalorien als Bonus dazurechnen</span><input type="checkbox" name="train" ${p.train?"checked":""}></div>
+ <div class="tg"><span>Überschuss ausgleichen<br><small class="mute">Was du an einem Tag zu viel isst, wird auf die Folgetage verteilt. Aus = jeder Tag behält sein normales Ziel. Geht auch je Tag im Tagebuch.</small></span><input type="checkbox" name="ausgleich" ${ausOn()?"checked":""}></div>
  <h2 style="margin-top:18px">Nährwertziele</h2>
  <div class="tg"><span>Feste Makroziele (z. B. aus Yazio)</span><input type="checkbox" name="fixon" ${fx?"checked":""}></div>
  ${fx?`<div class="row"><div><label class="f">Protein g</label><input class="inp" name="fp" type="number" inputmode="numeric" value="${p.fix.p}"></div><div><label class="f">KH g</label><input class="inp" name="fc" type="number" inputmode="numeric" value="${p.fix.c}"></div><div><label class="f">Fett g</label><input class="inp" name="ff" type="number" inputmode="numeric" value="${p.fix.f}"></div></div>`:
@@ -681,7 +707,7 @@ const rateOf=p=>p.rate!=null?+p.rate:(()=>{const v=Math.round(EK.goalAdj({...p,r
 function saveProfil(f){
  const v=k=>f.elements[k]?f.elements[k].value.trim():"",nm=k=>v(k)===""?null:+v(k).replace(",",".").replace("−","-");
  const p={...(C.profil||{}),sex:v("sex"),age:nm("age"),height:nm("height"),weight:nm("weight"),zielGewicht:nm("zielGewicht"),job:v("job"),rate:nm("rate"),adj:nm("adj"),yazio:nm("yazio"),src:v("src"),
-  train:f.elements.train.checked,fib:nm("fib"),sugMax:nm("sugMax"),saltMax:nm("saltMax")};
+  train:f.elements.train.checked,ausgleich:f.elements.ausgleich.checked?null:false,fib:nm("fib"),sugMax:nm("sugMax"),saltMax:nm("saltMax")};
  if(f.elements.fixon.checked){p.fix=f.elements.fp?{p:nm("fp"),c:nm("fc"),f:nm("ff")}:(()=>{const m=EK.macros(prof(),EK.target(prof(),G(),TODAY()).kcal);return{p:m.p,c:m.c,f:m.f}})()}
  else{p.fix=null;if(f.elements.protKg){p.protKg=nm("protKg");p.fatPct=nm("fatPct")}}
  for(const k in p)if(p[k]===null&&k!=="fix")delete p[k];
@@ -852,7 +878,7 @@ function renderDish(){const f=foods().find(x=>x.id===DSH.id);if(!f)return closeS
  <button class="btn p w" style="margin-top:10px" data-dishlog="1">Eintragen</button><button class="btn w" style="margin-top:8px" data-dishcook="1">🍲 Gekocht – auf Tage verteilen</button></div>
  ${f.zutaten&&f.zutaten.length?`<div class="card"><h2>Zutaten <span class="step" style="font-size:14px"><button data-dn="-1" aria-label="weniger">−</button><b style="font-size:16px">${DSH.n}</b><button data-dn="1" aria-label="mehr">+</button></span></h2>
   <p class="s mute" style="margin:-4px 0 6px">für ${DSH.n} Portion${DSH.n>1?"en":""}</p>${f.zutaten.map(z=>`<div class="rcp"><span>${h(z.name)}</span><b>${z.stk?n1(z.stk*fac)+" Stück · ":""}${n0(z.g*fac)} g</b></div>`).join("")}<button class="btn w mt10" data-dishshop="1">🛒 Zutaten für ${DSH.n} Portion${DSH.n>1?"en":""} auf die Einkaufsliste</button></div>`:""}
- ${f.anleitung?`<div class="card"><h2>Anleitung</h2><div class="s" style="white-space:pre-wrap;line-height:1.6">${h(f.anleitung)}</div></div>`:""}
+ ${f.anleitung?`<div class="card"><h2>Anleitung</h2><div class="s sel" style="white-space:pre-wrap;line-height:1.6">${h(f.anleitung)}</div></div>`:""}
  <div class="row"><button class="btn" data-dishedit="1">Bearbeiten</button><button class="btn d" data-dishdel="1">Löschen</button></div></main>`}
 function logDish(id,meal){const f=foods().find(x=>x.id===id);if(!f)return;const g=(f.portion&&f.portion.g)||100,d=cur,e={id:EK.uid(),meal:meal||mealNow(),name:f.name,src:f.src||f.id,g,n:EK.scale(f.n,g),ts:Date.now()};
  change(pMonth(d),{t:"add",d,e});toast(`${f.name}: ${n0(e.n.kcal)} kcal eingetragen (${EK.MEALS.find(m=>m[0]===e.meal)[1]})`,4000,"Rückgängig",()=>change(pMonth(d),{t:"del",d,id:e.id}))}
@@ -1203,8 +1229,10 @@ const srcOf=f=>{const s=String(f.src||""),k=isOwn(f)?"eigen":s.startsWith("off")
  L={eigen:["von dir","von dir angelegt","var(--acc)"],off:["Marke","Open Food Facts","var(--c)"],bls:["Grundnahrungsmittel","Grundnahrungsmittel","var(--g)"],sonst:["gespeichert","","var(--mute)"]}[k];
  return f.zutaten?{k,kurz:"Gericht",lang:L[1],c:"var(--acc)"}:{k,kurz:L[0],lang:L[1],c:L[2]}};
 /* Treffer im Namen hervorheben */
-function hl(name){const w=EK.norm(S.q).split(/\s+/).filter(x=>x.length>1);if(!w.length)return h(name);let out=h(name);
- for(const x of w){const re=new RegExp("("+x.replace(/ae/g,"(?:ae|ä)").replace(/oe/g,"(?:oe|ö)").replace(/ue/g,"(?:ue|ü)").replace(/ss/g,"(?:ss|ß)")+")","i");if(re.test(out)){out=out.replace(re,"<mark>$1</mark>");}}return out}
+function hl(name){const w=EK.norm(S.q).split(/\s+/).filter(x=>x.length>1),raw=String(name??"");if(!w.length)return h(raw);const R0=[];
+ for(const x of w){const m=new RegExp(x.replace(/ae/g,"(?:ae|ä)").replace(/oe/g,"(?:oe|ö)").replace(/ue/g,"(?:ue|ü)").replace(/ss/g,"(?:ss|ß)"),"i").exec(raw);if(m)R0.push([m.index,m.index+m[0].length])}
+ R0.sort((a,b)=>a[0]-b[0]);let out="",pos=0;for(const[a,b]of R0){if(a<pos)continue;out+=h(raw.slice(pos,a))+"<mark>"+h(raw.slice(a,b))+"</mark>";pos=b}
+ return out+h(raw.slice(pos))}
 const mc=(l,v,c)=>`<span class="mc" style="--m:${c}">${l} ${n1(v)}</span>`;
 const line=f=>{const{kurz:t,c}=srcOf(f),pg=f.portion&&f.portion.g!==100?f.portion.g:null;
  return`<span style="min-width:0;flex:1"><span class="nm">${hl(f.name)}</span><span class="meta"><span class="tag" style="--src:${c}">${t}</span>${rateChip(EK.bewertung(f.n))}${f.marke?`<span class="s mute">${h(f.marke)}</span>`:""}</span>
@@ -1501,9 +1529,9 @@ function saveRecipe(){R.name=($("rname")||{}).value||R.name;R.anleitung=($("ranl
  const days=R.spread?[...Array(N)].map((_,k)=>EK.add(cur,k)):[cur];
  days.forEach((d,k)=>change(pMonth(d),{t:"add",d,e:{id:EK.uid()+k,meal:R.meal,name:`${name} (1/${N})`,src:id,g:EK.r(tg/N,0),n:{...per},ts:Date.now()}},true));
  closeSheet();R=null;S.mode="log";render();toast(days.length>1?`${name}: ${days.length} Portionen eingetragen (${dm(days[0])}–${dm(days[days.length-1])})`:`${name}: 1 Portion eingetragen`,4000)}
-function closeSheet(){stopScan();DISL=false;const sh=$("sheet");sh.classList.remove("on");sh.innerHTML="";A=null;W=null;DSH=null;
- /* kam das Fenster aus einer geöffneten Mahlzeit (Eintragen, Ändern), dorthin zurück */
- if(MRET&&view==="tag")setTimeout(()=>{if(MRET&&!sh.classList.contains("on"))renderMeal()},0);else MRET=null}
+function closeSheet(){stopScan();DISL=false;const sh=$("sheet");sh.classList.remove("on","quiet","backin","dragg","snapb");sh.style.transform="";sh.innerHTML="";A=null;W=null;DSH=null;
+ /* kam das Fenster aus einer geöffneten Mahlzeit (Eintragen, Ändern), dorthin zurück (ohne erneutes Einblenden) */
+ if(MRET&&view==="tag"){sh.classList.add("quiet");setTimeout(()=>{if(MRET&&!sh.classList.contains("on"))renderMeal();else if(!sh.classList.contains("on"))sh.classList.remove("quiet")},0)}else MRET=null}
 
 /* ===== Ziehen zum Aktualisieren (Tagebuch, Mein Tag): oben nach unten ziehen → Repo-Stand prüfen, Warteschlange hochladen,
    bei Garmin-Werten älter als 30 Min. Cloud-Sync starten (mit der vorhandenen Sperre gegen Doppelstarts) ===== */
@@ -1560,6 +1588,48 @@ document.addEventListener("touchend",ev=>{if(SD){if(SD.lock==="x"){const dx=SD.d
   c.dataset.swiped=Date.now()}
  SW=null});
 document.addEventListener("touchcancel",()=>{if(SD&&SD.lock==="x")dEnd(false);SD=null});
+
+/* ===== Wischen zum Schließen =====
+   Fenster (Mahlzeit, Suche, Menge, Formulare …): nach rechts wischen oder – ganz oben – nach unten ziehen = der Knopf oben links
+   (Zurück bzw. Schließen). Formulare mit ungespeicherten Eingaben und ein angefangenes Gericht lassen sich so nicht wegwischen.
+   Seitenmenü: nach links wischen schließt, vom linken Bildschirmrand nach rechts wischen öffnet es. */
+let SG=null;const SGX=90,SGY=110,EDGE=22;
+const sheetBack=sh=>sh.querySelector(".top [data-close],.top [data-mclose],.top [data-back]");
+/* ungespeicherte Eingaben? (Wert weicht vom Ausgangswert ab) */
+function sheetDirty(sh){const fm=sh.querySelector("#ff,#mf");
+ if(fm&&[...fm.elements].some(e=>e.tagName==="INPUT"&&e.type!=="hidden"&&e.type!=="file"&&(e.type==="checkbox"?e.checked!==e.defaultChecked:e.value!==e.defaultValue)))return true;
+ return !!(sh.querySelector("#rname")&&R&&(R.items.length||($("rname").value||"").trim()||($("ranl")&&$("ranl").value.trim())))}
+document.addEventListener("touchstart",ev=>{SG=null;if(ev.touches.length>1)return;const t=ev.touches[0],sh=$("sheet"),dr=$("drawer"),tg=ev.target;
+ if(dr.classList.contains("on")){SG={k:"drawer",x:t.clientX,y:t.clientY,t:Date.now(),lock:null,dx:0,dy:0};return}
+ if(sh.classList.contains("on")){if(!sh.contains(tg))return;const sw=tg.closest(".swc");
+  SG={k:"sheet",x:t.clientX,y:t.clientY,t:Date.now(),lock:null,dx:0,dy:0,top:sh.scrollTop<=0,
+   nox:!!tg.closest(".units,textarea,select,video")||tg===document.activeElement||!!(sw&&sw.dataset.swopen),noy:!!tg.closest("textarea,select,video"),dirty:sheetDirty(sh)};return}
+ if(t.clientX<=EDGE&&CFG.token&&$("app").contains(tg)){SD=null;SG={k:"edge",x:t.clientX,y:t.clientY,t:Date.now(),lock:null,dx:0,dy:0}}},{passive:true});
+document.addEventListener("touchmove",ev=>{if(!SG)return;if(ev.touches.length>1){sgEnd(false);return}
+ const t=ev.touches[0],dx=t.clientX-SG.x,dy=t.clientY-SG.y;SG.dx=dx;SG.dy=dy;
+ if(SG.lock==null&&(Math.abs(dx)>10||Math.abs(dy)>10)){const hor=Math.abs(dx)>Math.abs(dy)*1.3,ver=Math.abs(dy)>Math.abs(dx)*1.3;
+  SG.lock=SG.k==="sheet"?(hor&&dx>0&&!SG.nox?"x":ver&&dy>0&&SG.top&&!SG.noy&&$("sheet").scrollTop<=0?"y":"no"):SG.k==="drawer"?(hor&&dx<0?"x":"no"):(hor&&dx>0?"x":"no");
+  if(SG.lock==="no"){SG=null;return}
+  if(SG.k==="sheet"){SW=null;$("sheet").classList.remove("snapb","backin");$("sheet").classList.add("dragg")}
+  else{if(SG.k==="edge"){SD=null;PT=null;openDrawer()}$("drawer").classList.add("dragg")}}
+ if(!SG.lock)return;if(ev.cancelable)ev.preventDefault();
+ if(SG.k==="sheet"){const sh=$("sheet"),f=SG.dirty?.12:1;
+  sh.style.transform=SG.lock==="x"?`translateX(${Math.max(0,dx)*f}px)`:`translateY(${Math.max(0,dy)*.7*f}px)`}
+ else{const dr=$("drawer"),w=dr.offsetWidth;dr.style.transform=`translateX(${SG.k==="edge"?Math.min(0,-w+Math.max(0,dx)*1.2):Math.min(0,dx)}px)`;
+  $("scrim").style.opacity=String(Math.max(0,Math.min(1,SG.k==="edge"?dx*1.2/w:1+dx/w)))}},{passive:false});
+function sgEnd(done){const g=SG;SG=null;if(!g||!g.lock)return;const fast=Date.now()-g.t<260;
+ if(g.k==="sheet"){const sh=$("sheet"),x=g.lock==="x",go=done&&!g.dirty&&(x?(g.dx>SGX||(fast&&g.dx>45)):(g.dy>SGY||(fast&&g.dy>60)));
+  sh.classList.remove("dragg");sh.classList.add("snapb");
+  if(!go){sh.style.transform="";setTimeout(()=>sh.classList.remove("snapb"),240);if(done&&g.dirty&&(x?g.dx>SGX:g.dy>SGY))toast("Erst speichern oder mit ✕ verwerfen");return}
+  sh.style.transform=x?"translateX(100%)":"translateY(100%)";
+  setTimeout(()=>{sh.classList.remove("snapb");sh.classList.add("quiet");sh.style.transform="";const b=sheetBack(sh);if(b)b.click();else closeSheet();
+   /* Zurück innerhalb des Fensters (z. B. Menge → Suche): neuen Inhalt kurz von links einblenden */
+   setTimeout(()=>{if(sh.classList.contains("on")){sh.classList.add("backin");setTimeout(()=>sh.classList.remove("backin","quiet"),220)}else sh.classList.remove("quiet")},20)},190);return}
+ const dr=$("drawer"),w=dr.offsetWidth;dr.classList.remove("dragg");dr.style.transform="";$("scrim").style.opacity="";
+ if(g.k==="edge"){if(!(done&&(g.dx*1.2>w*.4||(fast&&g.dx>40))))closeDrawer()}
+ else if(done&&(g.dx<-w*.3||(fast&&g.dx<-40)))closeDrawer()}
+document.addEventListener("touchend",()=>sgEnd(true));
+document.addEventListener("touchcancel",()=>sgEnd(false));
 
 /* ===== Garmin-Sync anstoßen ===== */
 /* Automatisch beim Öffnen: Garmin-Stand älter als 2 h → Cloud-Sync anstoßen (geplante GitHub-Läufe kommen oft Stunden zu spät).
@@ -1626,7 +1696,7 @@ document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x
  else if(x=b("[data-delent]")){const id=x.dataset.delent;if($("sheet").classList.contains("on"))closeSheet();delEntry(id)}
  else if(x=b("[data-editfood]")){const f=foods().find(y=>y.id===x.dataset.editfood);if(f)openFoodForm(f)}
  else if(x=b("[data-delfood]")){const id=x.dataset.delfood;if($("sheet").classList.contains("on"))closeSheet();delFood(id)}
- else if(b("[data-newfood]")){const fromAdd=view!=="lm"||$("sheet").classList.contains("on"),q=fromAdd?S.q:"";openFoodForm(null,fromAdd);if(q&&$("ff"))$("ff").elements.name.value=q}
+ else if(b("[data-newfood]")){const fromAdd=view!=="lm"||$("sheet").classList.contains("on"),q=fromAdd?S.q:"";openFoodForm(null,fromAdd);if(q&&$("ff")){const i=$("ff").elements.name;i.value=q;i.defaultValue=q}}
  else if(b("[data-close]")){if(S.mode==="recipe"&&R&&!b("[data-rclose]")){stopScan();renderRecipe()}else{closeSheet();R=null;S.mode="log"}}
  else if(b("[data-recipe]"))openRecipe("cook");
  else if(b("[data-newdish]"))openRecipe("save");
@@ -1637,7 +1707,7 @@ document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x
  else if(b("[data-dishlog]")){const id=DSH.id,m=DSH.meal;closeSheet();logDish(id,m)}
  else if(b("[data-dishcook]")){const f=foods().find(y=>y.id===DSH.id);if(f)dishToRecipe(f,"cook")}
  else if(b("[data-dishedit]")){const f=foods().find(y=>y.id===DSH.id);if(f)dishToRecipe(f,"save")}
- else if(b("[data-dishdel]")){const id=DSH.id;if(confirm("Gericht löschen?")){closeSheet();delFood(id)}}
+ else if(b("[data-dishdel]")){const id=DSH.id;closeSheet();delFood(id)}
  else if(b("[data-dishshop]")){const f=foods().find(y=>y.id===DSH.id);if(f)dishShop(f,DSH.n)}
  else if(x=b("[data-shopt]"))shopToggle(x.dataset.shopt);
  else if(x=b("[data-shopdel]"))shopDel(x.dataset.shopdel);
@@ -1662,6 +1732,8 @@ document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x
  else if(x=b("[data-dislrm]")){const W=dislikes().slice(),w=W.splice(+x.dataset.dislrm,1)[0];setProf({magNicht:W});toast(`„${w}“ wird wieder vorgeschlagen`)}
  else if(x=b("[data-ideeon]"))setProf({ideeAus:hiddenIdeas().filter(i=>i!==x.dataset.ideeon)});
  else if(b("[data-ideeoff]")){const id=IDX.c.id,nm=IDX.c.name;closeSheet();setProf({ideeAus:[...hiddenIdeas().filter(i=>i!==id),id]});toast(`„${nm}“ ausgeblendet`,4500,"Rückgängig",()=>setProf({ideeAus:hiddenIdeas().filter(i=>i!==id)}))}
+ else if(x=b("[data-ausday]")){const[d,v]=x.dataset.ausday.split("|");setAusDay(d,v==="1")}
+ else if(x=b("[data-cheat]")){const[d,v]=x.dataset.cheat.split("|");setCheat(d,v==="1")}
  else if(b("[data-micro]"))openMicro(cur);
  else if(b("[data-wizard]"))openWizard();
  else if(x=b("[data-wrate]")){W.ziel=($("wziel")||{}).value??W.ziel;W.rate=+x.dataset.wrate;renderWizard()}
@@ -1692,12 +1764,15 @@ document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x
  else if(b("[data-blsload]"))loadBls(true);
  else if(b("[data-logout]")){if(confirm("Token von diesem iPhone entfernen?")){CFG.token="";LS.set("cfg",CFG);showSetup()}}});
 document.addEventListener("input",ev=>{if(ev.target.id==="ranl"&&R)R.anleitung=ev.target.value;else if(ev.target.id==="wziel"&&W)W.ziel=ev.target.value;else if(ev.target.id==="rname"&&R)R.name=ev.target.value;else if(ev.target.id==="lmq"){LMQ=ev.target.value;clearTimeout(lmRefresh.t);lmRefresh.t=setTimeout(lmRefresh,100)}else if(ev.target.id==="q"){S.q=ev.target.value;clearTimeout(results.t);results.t=setTimeout(results,120)}else if(ev.target.id==="qv"){readQ();nut()}});
-document.addEventListener("change",ev=>{if(ev.target.dataset&&ev.target.dataset.pushuhr){setProf({erinnerung:{...erin(),uhr:+ev.target.value}});toast("Erinnerung ab "+ev.target.value+":00 Uhr");return}if(ev.target.id==="lblfile"){const fl=ev.target.files&&ev.target.files[0];ev.target.value="";if(fl)labelPhoto(fl);return}if(W&&ev.target.id==="wjob"){W.job=ev.target.value;renderWizard();return}if(R&&ev.target.id==="rspread"){R.spread=ev.target.checked;renderRecipe();return}if(R&&ev.target.id==="rkeep"){R.keep=ev.target.checked;return}if(ev.target.name==="fixon"&&ev.target.form&&ev.target.form.id==="pf")saveProfil(ev.target.form)});
-document.addEventListener("submit",ev=>{ev.preventDefault();const f=ev.target;
- if(f.id==="pf")saveProfil(f);else if(f.id==="mf")saveManual(f);else if(f.id==="sf")setup(f);
- else if(f.id==="ff")saveFoodForm(f);
- else if(f.id==="shopf")shopAddText();
- else if(f.id==="dislf")dislikeAdd()});
+document.addEventListener("change",ev=>{if(ev.target.dataset&&ev.target.dataset.pushuhr){setProf({erinnerung:{...erin(),uhr:+ev.target.value}});toast("Erinnerung ab "+ev.target.value+":00 Uhr");return}if(ev.target.id==="lblfile"){const fl=ev.target.files&&ev.target.files[0];ev.target.value="";if(fl)labelPhoto(fl);return}if(W&&ev.target.id==="wjob"){W.job=ev.target.value;renderWizard();return}if(R&&ev.target.id==="rspread"){R.spread=ev.target.checked;renderRecipe();return}if(R&&ev.target.id==="rkeep"){R.keep=ev.target.checked;return}if(ev.target.name==="fixon"&&fid(ev.target.form)==="pf")saveProfil(ev.target.form)});
+/* Formular-Kennung immer über das Attribut lesen: Ein Feld mit name="id" (Lebensmittel-Formular) überdeckt sonst form.id –
+   genau deshalb ließ sich ein neues Lebensmittel nicht speichern. */
+const fid=f=>f&&f.getAttribute?f.getAttribute("id"):"";
+document.addEventListener("submit",ev=>{ev.preventDefault();const f=ev.target,id=fid(f);
+ if(id==="pf")saveProfil(f);else if(id==="mf")saveManual(f);else if(id==="sf")setup(f);
+ else if(id==="ff")saveFoodForm(f);
+ else if(id==="shopf")shopAddText();
+ else if(id==="dislf")dislikeAdd()});
 document.addEventListener("keydown",ev=>{if(ev.key==="Enter"&&ev.target.id==="ean")byBarcode(ev.target.value)});
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState!=="visible")return;
  if(cur<TODAY()&&!$("sheet").classList.contains("on")&&Date.now()-C.ts>6*36e5)cur=TODAY();
@@ -1706,14 +1781,21 @@ addEventListener("online",flush);
 addEventListener("resize",()=>placeDash($("dashf")));
 
 /* Kein Zoomen wie auf einer Webseite: Pinch (iOS-Gesten, Zwei-Finger-Bewegung) und Doppeltipp sperren – auch im Dashboard-Rahmen */
-function noZoom(doc){const stop=e=>e.preventDefault();["gesturestart","gesturechange","gestureend"].forEach(t=>doc.addEventListener(t,stop,{passive:false}));
- doc.addEventListener("touchmove",e=>{if(e.touches&&e.touches.length>1)e.preventDefault()},{passive:false})}
+function noZoom(doc){const stop=e=>{if(e.cancelable)e.preventDefault()},two=e=>{if(e.touches&&e.touches.length>1&&e.cancelable)e.preventDefault()};
+ ["gesturestart","gesturechange","gestureend"].forEach(t=>doc.addEventListener(t,stop,{passive:false}));
+ /* zweiter Finger: schon beim Aufsetzen abbrechen (während des Rollens lässt sich touchmove nicht mehr abbrechen) */
+ doc.addEventListener("touchstart",two,{passive:false});doc.addEventListener("touchmove",two,{passive:false});
+ try{doc.documentElement.style.touchAction="pan-x pan-y"}catch(e){}}
 noZoom(document);
+/* Sicherheitsnetz: Ist die Seite trotzdem vergrößert (z. B. Pinch mitten im Rollen, im Dashboard-Rahmen), sofort zurück auf 100 % */
+(function(){const vv=window.visualViewport,mv=document.querySelector('meta[name="viewport"]');if(!vv||!mv)return;const base=mv.content;let t=null;
+ const fix=()=>{if(vv.scale>1.01){clearTimeout(t);t=setTimeout(()=>{if(vv.scale<=1.01)return;mv.content=base+",minimum-scale=1";setTimeout(()=>{mv.content=base},50)},80)}};
+ vv.addEventListener("resize",fix);vv.addEventListener("scroll",fix)})();
 /* Tipp-Zeile im Tagebuch nur bei den ersten 5 Starts */
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="beef583";
+const APPV="9b1cb16";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;

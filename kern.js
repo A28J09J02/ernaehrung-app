@@ -19,7 +19,8 @@
    Makros: Protein g/kg Körpergewicht, Fett % der Kalorien, Kohlenhydrate = Rest – oder feste Grammwerte (z. B. aus Yazio).
    Ampel: Kalorien ±10 % grün, ±20 % orange, sonst rot. Protein/Ballaststoffe ab 90 % grün, ab 75 % orange.
    Kohlenhydrate/Fett ±15 % grün, ±30 % orange. Zucker/Salz bis zur Grenze grün, bis +20 % orange.
-   Ausgleich (Cheat Day): siehe ausgleich() – Überschuss wird auf die Folgetage verteilt und senkt dort das Tagesziel. */
+   Ausgleich (Cheat Day): siehe ausgleich() – Überschuss wird auf die Folgetage verteilt und senkt dort das Tagesziel;
+   abschaltbar (Profil: ausgleich=false, je Tag: ausTage), mehrere Cheat Days hintereinander zählen als Block (cheat). */
 const EK=(()=>{
  const pad=n=>String(n).padStart(2,"0"),day=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
  const add=(s,n)=>{const d=new Date(s+"T12:00:00");d.setDate(d.getDate()+n);return day(d)};
@@ -95,11 +96,16 @@ const EK=(()=>{
  /* Gesamtbewertung eines abgeschlossenen Tages */
  function dayGrade(s,t,m){const a=[ampel("kcal",s.kcal,t.kcal),ampel("p",s.p,m.p)].filter(Boolean);
   return a.includes("r")?"r":a.includes("y")?"y":a.length?"g":null}
- /* Ausgleich (Cheat Day): Was an einem abgeschlossenen Tag über dem (angepassten) Ziel liegt, wird automatisch auf die
+ /* Ausgleich (Cheat Day): Was an einem abgeschlossenen Tag über dem (angepassten) Ziel liegt, wird auf die
     folgenden 3 Tage verteilt und senkt dort das Ziel. Tage mit mehr Training (Plan: Lauf-km, Gym) tragen mehr.
     Pro Tag höchstens 20 % des Ziels bzw. 500 kcal; reicht das nicht, wird auf bis zu 7 Tage verlängert.
     Liegt ein Ausgleichstag selbst wieder drüber, wird dessen Überschuss ebenso weiterverteilt – es geht nichts verloren.
-    days = [{d, has, eaten, target, w}] für Vergangenheit UND Zukunft (w = Gewichtung aus dem Plan). */
+    Mehrere Cheat Days hintereinander zählen als Block: Ein Cheat Day trägt selbst nie einen Ausgleich (sein Ziel wird
+    nicht gesenkt) – verteilt wird erst auf die Tage NACH dem letzten Cheat Day. Cheat Day ist ein abgeschlossener Tag,
+    der über seinem eigenen (ungesenkten) Ziel liegt (außerhalb ±10 %), oder ein im Profil markierter Tag (auch heute/künftig).
+    days = [{d, has, eaten, target, w}] für Vergangenheit UND Zukunft (w = Gewichtung aus dem Plan).
+    set  = ausSet(profil): {on, tage, cheat} – on=false: nichts verteilen; tage[Datum]=true/false: Ausnahme für diesen Tag;
+           cheat: Menge markierter Cheat Days. Nicht verteilte Überschüsse bekommen state "off". */
  /* Vollständig eingetragen: ab 50 % des Kalorienziels des Tages. Darunter zählt der Tag wie „nicht eingetragen“
     (Streak, Kalender, Tage im Ziel, Ausgleich, Durchschnitte, Erinnerungen) – die Einträge selbst bleiben sichtbar. */
  const VOLL=.5;
@@ -107,14 +113,21 @@ const EK=(()=>{
  const AUS={DAYS:3,MAXDAYS:7,CAP:500,PCT:.2};
  function weight(pd){if(!pd)return 1;if(pd.type==="rest")return .6;if((pd.type==="run"||pd.type==="race")&&pd.km)return Math.min(3,1+pd.km/10);
   if(pd.type==="gym")return 1.5;if(pd.type==="flex")return 1.2;return 1}
- function ausgleich(days,today){
+ const ausSet=p=>({on:!(p&&p.ausgleich===false),tage:(p&&p.ausTage)||{},cheat:new Set((p&&p.cheat)||[])});
+ function ausgleich(days,today,set){
+  set=set||{};const on=set.on!==false,tage=set.tage||{},mark=set.cheat||new Set();
   const L=days.slice().sort((a,b)=>a.d<b.d?-1:1),idx=Object.fromEntries(L.map((x,i)=>[x.d,i])),share={},cheats={},carry={};
+  const isCheat=x=>mark.has(x.d)||(x.d<today&&x.has&&x.eaten>x.target&&ampel("kcal",x.eaten,x.target)!=="g");
   for(let i=0;i<L.length;i++){const x=L[i];if(x.d>=today)break;
    const adjT=x.target-(share[x.d]||0);
    if(!x.has||!(x.eaten>adjT)||ampel("kcal",x.eaten,adjT)==="g")continue;
    let rest=Math.round(x.eaten-adjT);const c={need:rest,carriers:[],left:0};cheats[x.d]=c;
+   /* verteilen? Ausnahme des Tages geht vor; ein Tag, der selbst einen Ausgleich trägt, reicht seinen Rest immer weiter */
+   const dist=tage[x.d]!=null?!!tage[x.d]:(on||(share[x.d]||0)>0);
+   if(!dist){c.state="off";c.until=x.d;continue}
+   const after=L.slice(i+1).filter(y=>y.target>0&&!isCheat(y));
    for(let span=AUS.DAYS;span<=AUS.MAXDAYS&&rest>0;span++){
-    const cand=L.slice(i+1,i+1+span).filter(y=>y.target>0);if(!cand.length)break;
+    const cand=after.slice(0,span);if(!cand.length)break;
     const room=y=>Math.max(0,Math.min(AUS.CAP,y.target*AUS.PCT)-(share[y.d]||0));
     const W=cand.reduce((a,y)=>a+(room(y)>0?y.w||1:0),0);if(!W){continue}
     let given=0;for(const y of cand){const r0=room(y);if(r0<=0)continue;const amt=Math.min(r0,Math.round(rest*(y.w||1)/W));if(amt<=0)continue;
@@ -147,5 +160,5 @@ const EK=(()=>{
   return{a,pt,label:{g:"Top",y:"Okay",r:"Sparsam"}[a],why}}
  const norm=s=>String(s||"").toLowerCase().replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss").replace(/[^a-z0-9 ]+/g," ");
  const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
- return{VOLL,voll,MEALS,NUTR,MICRO,JOBS,GOALS,RATES,SRC,PROFIL,prof,bmr,pal,goalAdj,trainKcal,planKcal,garminBase,bases,target,macros,sum,scale,ampel,dayGrade,weight,ausgleich,AUS,bewertung,norm,uid,day,add,monday,r}
+ return{VOLL,voll,MEALS,NUTR,MICRO,JOBS,GOALS,RATES,SRC,PROFIL,prof,bmr,pal,goalAdj,trainKcal,planKcal,garminBase,bases,target,macros,sum,scale,ampel,dayGrade,weight,ausgleich,ausSet,AUS,bewertung,norm,uid,day,add,monday,r}
 })();
