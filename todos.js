@@ -158,9 +158,15 @@ function tdToggle(id,d){const it=tdItems().find(x=>x.id===id);if(!it)return;
  try{if(navigator.vibrate)navigator.vibrate(8)}catch(e){}
  const op={t:"tdck",d,id,v,end:tdEnds(it)};
  /* kurz zeigen, dann einsortieren (erledigte wandern nach unten) */
- change(TD_P,op,true);clearTimeout(tdToggle.t);tdToggle.t=setTimeout(()=>{if(view==="todos"){const y=scrollY;render();scrollTo(0,y)}},650);
+ change(TD_P,op,true);clearTimeout(tdToggle.t);tdToggle.t=setTimeout(()=>{if(view==="todos")tdFlip()},550);
  if(v&&it.bis&&(it.rep||{}).k!=="einmal")toast(`„${it.t}“ erledigt – kommt nicht wieder`,4500,"Rückgängig",()=>change(TD_P,{...op,v:false}));
  else if(v&&tdOpen(d)===0&&d===TODAY())toast("Alles erledigt für heute – stark!",2600)}
+/* Neu zeichnen und die Zeilen weich an ihren neuen Platz gleiten lassen (erledigte wandern nach unten) */
+function tdFlip(){const pos=new Map([...document.querySelectorAll("[data-tdrow]")].map(e=>[e.dataset.tdrow,e.getBoundingClientRect().top])),y=scrollY;
+ render();if(scrollY!==y)scrollTo(0,y);if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+ document.querySelectorAll("[data-tdrow]").forEach(e=>{const o=pos.get(e.dataset.tdrow);if(o==null)return;const d=o-e.getBoundingClientRect().top;if(Math.abs(d)<1)return;
+  const w=e.closest(".sw")||e;w.style.transition="none";w.style.transform=`translateY(${d}px)`;w.style.position="relative";w.style.zIndex="2";
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{w.style.transition="transform .42s cubic-bezier(.2,.85,.25,1)";w.style.transform="";setTimeout(()=>{w.style.transition="";w.style.zIndex=""},450)}))})}
 function tdDel(id){const it=tdItems().find(x=>x.id===id);if(!it)return;if($("sheet").classList.contains("on"))closeSheet();
  change(TD_P,{t:"tddel",id});toast(`„${it.t}“ gelöscht`,4500,"Rückgängig",()=>change(TD_P,{t:"tdset",it}))}
 

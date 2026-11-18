@@ -36,7 +36,7 @@ function gzLine(vals,o={}){const W=300,H=o.h||84,v=vals.map(x=>x==null?null:+x),
  const band=o.lo!=null&&o.hi!=null?`<rect x="0" width="${W}" y="${Y(o.hi)}" height="${(Y(o.lo)-Y(o.hi)).toFixed(1)}" fill="var(--g)" opacity=".1"/><line x1="0" x2="${W}" y1="${Y(o.hi)}" y2="${Y(o.hi)}" stroke="var(--g)" stroke-opacity=".35" stroke-dasharray="3 4"/><line x1="0" x2="${W}" y1="${Y(o.lo)}" y2="${Y(o.lo)}" stroke="var(--g)" stroke-opacity=".35" stroke-dasharray="3 4"/>`:"";
  const li=v.length-1-[...v].reverse().findIndex(x=>x!=null);
  return`<svg class="gzc" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${c};stop-opacity:.35"/><stop offset="1" style="stop-color:${c};stop-opacity:0"/></linearGradient></defs>${band}
- <path d="${area}" fill="url(#${id})"/><path d="${line}" fill="none" stroke="${c}" stroke-width="2.4" stroke-linecap="round" vector-effect="non-scaling-stroke"/><circle cx="${X(li)}" cy="${Y(v[li])}" r="4" fill="${c}" stroke="var(--bg)" stroke-width="2"/></svg>`}
+ <path d="${line}" fill="none" stroke="${c}" stroke-width="2.4" stroke-linecap="round" vector-effect="non-scaling-stroke"/><circle cx="${X(li)}" cy="${Y(v[li])}" r="4" fill="${c}" stroke="var(--bg)" stroke-width="2"/></svg>`}
 const gzAxis=L=>`<div class="gzx"><span>${dm(L[0])}</span><span>${L.length>7?dm(L[Math.floor(L.length/2)]):""}</span><span>heute</span></div>`;
 /* Kennzahl-Kachel */
 const gzK=(l,v,u,sub,a,word)=>`<div class="gzk"><span>${l}</span><b${a?` style="color:${COL[a]}"`:""}>${v}${u?`<small> ${u}</small>`:""}</b>${a?tone(a,word):""}${sub?`<em>${sub}</em>`:""}</div>`;
