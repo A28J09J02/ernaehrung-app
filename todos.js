@@ -98,7 +98,10 @@ function tdRow(x,d){const it=x.it,done=x.done,auto=it.auto&&tdAutoOk(it,d)&&!tdM
  <div class="swc td${done?" done":""}${x.over?" over":""}" data-tdrow="${h(it.id)}"><button class="tdc" data-tdck="${h(it.id)}|${d}" aria-label="${done?"Nicht erledigt":"Erledigt"}: ${h(it.t)}"><i>${done?ic("check"):""}</i></button>
  <div class="tdt" data-tdopen="${h(it.id)}|${d}"><b>${h(it.t)}</b>${sub?`<small>${sub}</small>`:""}</div>${TDV.sort==="zeit"?`<span class="tdcat" title="${cat[2]}">${ic(cat[1])}</span>`:""}</div></div>`}
 /* offene nach Uhrzeit, dann Titel – erledigte nach unten */
-const tdSort=L=>L.slice().sort((a,b)=>(a.done-b.done)||(b.over-a.over)||((a.it.zeit||"99")>(b.it.zeit||"99")?1:(a.it.zeit||"99")<(b.it.zeit||"99")?-1:0)||a.it.t.localeCompare(b.it.t,"de"));
+/* Während du auf der Seite abhakst, bleibt jede Zeile an ihrem Platz (kein Springen, kein Rollen).
+   Einsortiert wird erst beim nächsten Öffnen der Todos. */
+const tdHeldDone=x=>TDV.hold&&TDV.hold.has(x.it.id)?TDV.hold.get(x.it.id):x.done;
+const tdSort=L=>L.slice().sort((a,b)=>(tdHeldDone(a)-tdHeldDone(b))||(b.over-a.over)||((a.it.zeit||"99")>(b.it.zeit||"99")?1:(a.it.zeit||"99")<(b.it.zeit||"99")?-1:0)||a.it.t.localeCompare(b.it.t,"de"));
 const tdHead=(c,txt,right)=>`<div class="tdh" style="--cc:${c[3]}"><span class="tdhl"><span class="cico">${ic(c[1])}</span>${txt||c[2]}</span>${right||""}</div>`;
 function tdList(d,L){if(!L.length)return"";
  if(TDV.sort==="zeit")return`<div class="card list tdl">${tdSort(L).map(x=>tdRow(x,d)).join("")}</div>`;
@@ -114,7 +117,7 @@ function tdPerfect(){const T=TODAY(),ok=d=>{const L=tdDay(d);return L.length>0&&
 /* nicht-tägliche Termine der nächsten Tage */
 function tdUpcoming(days,from){const T=from||TODAY(),out=[];
  for(let k=1;k<=days;k++){const d=EK.add(T,k);for(const x of tdDay(d)){if(TD_DAILY.includes((x.it.rep||{}).k))continue;out.push({...x,d})}}return out}
-function vTodos(){const T=TODAY(),L=tdDay(T),n=L.filter(x=>x.done).length,open=L.length-n;
+function vTodos(){if(render.lv!=="todos")TDV.hold=null;const T=TODAY(),L=tdDay(T),n=L.filter(x=>x.done).length,open=L.length-n;
  let o=`<div class="lt"><div><h2>Todos</h2><small>${new Date(T+"T12:00:00").toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long"})}</small></div></div>`;
  o+=`<div class="seg mb12" role="tablist">${[["heute","Heute"],["bald","Demnächst"],["kal","Kalender"],["alle","Alle"]].map(([k,l])=>`<button data-tdtab="${k}" class="${TDV.tab===k?"on":""}">${l}</button>`).join("")}</div>`;
  if(!tdItems().length&&!(C.todos))return o+`<div class="card"><p class="empty" style="margin:0">Todos werden geladen …</p></div>`;
@@ -154,11 +157,12 @@ function tdToggle(id,d){const it=tdItems().find(x=>x.id===id);if(!it)return;
  if(autoOk&&!was)return toast(it.auto==="kcal"?"Hakt sich automatisch ab – heute ist schon etwas eingetragen":"Hakt sich automatisch ab – für heute ist ein Gewicht da",3200);
  if(!was&&it.auto==="gewicht"&&d===TODAY())return tdWeight(id);
  const v=!was,row=document.querySelector(`[data-tdrow="${CSS.escape(id)}"]`);
- if(row){row.classList.toggle("done",v);const i=row.querySelector(".tdc i");if(i)i.innerHTML=v?ic("check"):"";if(v)burst(row.querySelector(".tdc"),tdCat(it.cat)[3])}
+ if(!TDV.hold)TDV.hold=new Map();if(!TDV.hold.has(id))TDV.hold.set(id,was||autoOk);
+ if(row){row.classList.toggle("done",v);const i=row.querySelector(".tdc i");if(i)i.innerHTML=v?ic("check"):""}
  try{if(navigator.vibrate)navigator.vibrate(8)}catch(e){}
  const op={t:"tdck",d,id,v,end:tdEnds(it)};
  /* kurz zeigen, dann einsortieren (erledigte wandern nach unten) */
- change(TD_P,op,true);clearTimeout(tdToggle.t);tdToggle.t=setTimeout(()=>{if(view==="todos")tdFlip()},550);
+ change(TD_P,op,true);clearTimeout(tdToggle.t);tdToggle.t=setTimeout(()=>{if(view==="todos"){const y=scrollY;render();if(scrollY!==y)scrollTo(0,y)}},250);
  if(v&&it.bis&&(it.rep||{}).k!=="einmal")toast(`„${it.t}“ erledigt – kommt nicht wieder`,4500,"Rückgängig",()=>change(TD_P,{...op,v:false}));
  else if(v&&tdOpen(d)===0&&d===TODAY())toast("Alles erledigt für heute – stark!",2600)}
 /* Neu zeichnen und die Zeilen weich an ihren neuen Platz gleiten lassen (erledigte wandern nach unten) */
