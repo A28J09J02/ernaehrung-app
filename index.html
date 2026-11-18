@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=cbaf9b8"></script>
+<script src="design.js?v=ff07823"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -558,17 +558,39 @@ details.more summary{color:var(--acc);font-weight:600}
 .res .kc b{font-size:19px}.res .pl{width:34px;height:34px;font-size:20px;box-shadow:none}
 .res .pl.sh{background:var(--fill);color:var(--ink)}
 .qs.mood button{font-size:13.5px}
+/* ---------- Lesbarkeit (Apple-Stil): ruhigeres Licht, satteres Glas, klare Hierarchie ---------- */
+:root[data-bg="glas"]{--mute:#aab0c2;--line:rgba(255,255,255,.1);
+ --cardbg:linear-gradient(155deg,rgba(255,255,255,.13) 0%,rgba(255,255,255,.05) 40%,rgba(255,255,255,.035) 70%,rgba(255,255,255,.07) 100%),rgba(10,13,28,.58)}
+:root[data-bg="glas"] body::before{opacity:.75}
+:root[data-bg="glas"] :is(.card,.tile,.hint,.dnav,.res,.mact button,.btn.idee,.btn.dis){-webkit-backdrop-filter:blur(34px) saturate(1.6);backdrop-filter:blur(34px) saturate(1.6)}
+:root[data-bg="matt"]{--mute:#a1a1aa;--line:rgba(255,255,255,.09)}
+.card{padding:18px;margin-bottom:14px}.card.list{padding:4px 18px}
+.card h2{font-size:18px;font-weight:700;margin-bottom:12px}.card h2 small{font-size:13px;color:var(--mute);font-weight:500}
+.sec{font-size:13px;font-weight:600;color:var(--mute);text-transform:uppercase;letter-spacing:.04em;margin:22px 8px 8px}
+.mute,.s.mute,small.mute{color:var(--mute)}
+/* Zahlen groß und klar, Beschriftung klein und leiser – wie in Apple Health */
+.hero .kv{font-size:15px}.hero .kv b{font-size:19px;font-weight:700}
+.mac b,.wt b,.kp b{font-weight:750;letter-spacing:-.02em}.mac small{font-size:12.5px}
+.mrw{padding:13px 0}.mtx b{font-size:17px;font-weight:650}.mtx small{font-size:14px;color:var(--mute)}
+.res .nm{font-size:16px;font-weight:600}
+.hint{font-size:14.5px;line-height:1.4}
+details.more summary{padding:6px 0}
+/* schneller Eintragen-Knopf auf „Heute“ */
+.fab{position:fixed;right:20px;bottom:calc(98px + env(safe-area-inset-bottom));z-index:7;width:58px;height:58px;border-radius:50%;border:1px solid rgba(255,255,255,.25);
+ display:grid;place-items:center;color:#fff;background:linear-gradient(145deg,color-mix(in srgb,var(--a1) 92%,#fff),var(--a1) 50%,color-mix(in srgb,var(--a1) 70%,var(--a2)));
+ box-shadow:0 10px 28px color-mix(in srgb,var(--a1) 45%,transparent),inset 0 1px 0 rgba(255,255,255,.4);transition:transform .15s}
+.fab .ic{width:28px;height:28px;stroke-width:2.6}.fab:active{transform:scale(.92)}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="gA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--a1)"/><stop offset="1" style="stop-color:var(--a2)"/></linearGradient></defs></svg>
 <div id="app"></div>
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=cbaf9b8"></script>
-<script src="todos.js?v=cbaf9b8"></script>
-<script src="gesund.js?v=cbaf9b8"></script>
-<script src="mitteilungen.js?v=cbaf9b8"></script>
-<script src="suche.js?v=cbaf9b8"></script>
+<script src="kern.js?v=ff07823"></script>
+<script src="todos.js?v=ff07823"></script>
+<script src="gesund.js?v=ff07823"></script>
+<script src="mitteilungen.js?v=ff07823"></script>
+<script src="suche.js?v=ff07823"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -1999,7 +2021,7 @@ addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="cbaf9b8";
+const APPV="ff07823";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
