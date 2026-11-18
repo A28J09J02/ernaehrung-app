@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=0af8eef"></script>
+<script src="design.js?v=faa33c0"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -719,7 +719,6 @@ input,select,textarea,.inp,textarea.inp{font-size:16px}
 :root:is([data-bg="classic"],[data-bg="classichell"]) .glassb{color:var(--gold);border-color:color-mix(in srgb,var(--gold) 45%,transparent)}
 :root:is([data-bg="classic"],[data-bg="classichell"]) :is(.ib,details.more summary,.lnk2){color:var(--gold)}
 /* Kreise, Haken und Fortschritt in Messing statt bunter Kategorien */
-:root:is([data-bg="classic"],[data-bg="classichell"]) .td-sw{--cc:var(--gold)!important}
 :root:is([data-bg="classic"],[data-bg="classichell"]) .tdc{border-width:1.5px;border-color:color-mix(in srgb,var(--gold) 60%,transparent)}
 :root:is([data-bg="classic"],[data-bg="classichell"]) .td.done .tdc{background:var(--gold)}
 :root:is([data-bg="classic"],[data-bg="classichell"]) .cico{background:transparent!important;color:var(--gold)!important;border:1px solid var(--edge)}
@@ -737,17 +736,38 @@ input,select,textarea,.inp,textarea.inp{font-size:16px}
 :root:is([data-bg="classic"],[data-bg="classichell"]) .streak{color:var(--gold);border:1px solid var(--edge);background:transparent}
 :root:is([data-bg="classic"],[data-bg="classichell"]) .drawer .ttl .ic{color:var(--gold);filter:none}
 :root:is([data-bg="classic"],[data-bg="classichell"]) .drawer .ttl{font-family:var(--serif);font-weight:500}
+/* Todos: keine Wisch-Zeilen mehr, kein seitliches Verschieben – Löschen im Bearbeiten-Fenster */
+main.v-todos{overflow-x:clip;touch-action:pan-y}
+.tdrw+.tdrw{border-top:1px solid var(--line)}
+.tdr{display:flex;align-items:center;gap:13px;padding:10px 0;min-height:54px;width:100%}
+.tdmore{flex:none;border:0;background:none;color:var(--mute);padding:6px 0 6px 6px;display:grid;place-items:center;opacity:.6}.tdmore .ic{width:16px;height:16px}
+.tdall{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;border:0;background:none;color:inherit;font:inherit;text-align:left;padding:12px 0}
+.tdall+.tdall{border-top:1px solid var(--line)}.tdall span{display:flex;flex-direction:column;gap:2px;font-size:16px}.tdall small{font-size:12.5px;color:var(--mute)}.tdall .ic{color:var(--mute);width:16px;height:16px}
+/* Classic kräftiger: helleres Messing, satte Bewertungen, Kategorie-Farben wieder da */
+:root[data-bg="classic"]{--gold:#ddb565;--g:#9ccf8c;--y:#ecc56a;--r:#ee8a73}
+:root[data-bg="classic"]{--mute:#aba294}
+:root[data-bg="classichell"]{--gold:#8a6a26;--g:#3f7a44;--y:#a6741a;--r:#b0402f}
+:root:is([data-bg="classic"],[data-bg="classichell"]) .tone{border:0;padding:2px 9px 2px 6px;font-weight:700}
+:root:is([data-bg="classic"],[data-bg="classichell"]) .t-g{background:color-mix(in srgb,var(--g) 22%,transparent)}
+:root:is([data-bg="classic"],[data-bg="classichell"]) .t-y{background:color-mix(in srgb,var(--y) 22%,transparent)}
+:root:is([data-bg="classic"],[data-bg="classichell"]) .t-r{background:color-mix(in srgb,var(--r) 22%,transparent)}
+:root:is([data-bg="classic"],[data-bg="classichell"]) .tdc{border-width:2px;border-color:color-mix(in srgb,var(--cc,var(--gold)) 80%,transparent)}
+:root:is([data-bg="classic"],[data-bg="classichell"]) .td.done .tdc{background:var(--cc,var(--gold))}
+:root:is([data-bg="classic"],[data-bg="classichell"]) .cico{background:color-mix(in srgb,var(--cc) 20%,transparent)!important;color:var(--cc)!important;border:0}
+:root:is([data-bg="classic"],[data-bg="classichell"]) .cbar i{background:var(--cc)!important}
+:root:is([data-bg="classic"],[data-bg="classichell"]) :is(.mpl,.res .pl,.plus){border:1.5px solid var(--gold);background:color-mix(in srgb,var(--gold) 12%,transparent)!important}
+:root:is([data-bg="classic"],[data-bg="classichell"]) .gring,:root:is([data-bg="classic"],[data-bg="classichell"]) .tdring circle+circle{stroke-width:11}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="gA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--a1)"/><stop offset="1" style="stop-color:var(--a2)"/></linearGradient></defs></svg>
 <div id="app"></div>
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=0af8eef"></script>
-<script src="todos.js?v=0af8eef"></script>
-<script src="gesund.js?v=0af8eef"></script>
-<script src="mitteilungen.js?v=0af8eef"></script>
-<script src="suche.js?v=0af8eef"></script>
+<script src="kern.js?v=faa33c0"></script>
+<script src="todos.js?v=faa33c0"></script>
+<script src="gesund.js?v=faa33c0"></script>
+<script src="mitteilungen.js?v=faa33c0"></script>
+<script src="suche.js?v=faa33c0"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -2178,7 +2198,7 @@ addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="0af8eef";
+const APPV="faa33c0";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
