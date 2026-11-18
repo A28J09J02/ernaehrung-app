@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=ff07823"></script>
+<script src="design.js?v=c19c533"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -580,17 +580,81 @@ details.more summary{padding:6px 0}
  display:grid;place-items:center;color:#fff;background:linear-gradient(145deg,color-mix(in srgb,var(--a1) 92%,#fff),var(--a1) 50%,color-mix(in srgb,var(--a1) 70%,var(--a2)));
  box-shadow:0 10px 28px color-mix(in srgb,var(--a1) 45%,transparent),inset 0 1px 0 rgba(255,255,255,.4);transition:transform .15s}
 .fab .ic{width:28px;height:28px;stroke-width:2.6}.fab:active{transform:scale(.92)}
+/* ---------- Edler & ruhiger (11/2026): dunklere matte Karten, Licht nur auf der ersten Karte, kaum Leuchten ---------- */
+:root[data-bg="glas"]{--cardbg:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.02) 45%,rgba(255,255,255,.03)),rgba(7,8,14,.8)}
+:root[data-bg="glas"] body::before{opacity:.5}
+:root[data-bg="glas"] :is(.card,.tile,.hint,.dnav,.res,.mact button,.btn.idee,.btn.dis){box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 20px 40px -24px rgba(0,0,0,.9)}
+:root[data-bg="matt"]{--cardbg:linear-gradient(180deg,#0e0e10,#08080a)}
+/* Leuchtkante und Lichtschein nur auf der ersten Karte einer Seite */
+main>.card~.card::after,main>.card~.card::before,.sheet .card~.card::after{display:none!important}
+main>.card~.card{box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 16px 32px -22px rgba(0,0,0,.9)!important}
+/* Blau dezenter: weniger Glühen an Knöpfen, Ringen und Leiste */
+.btn.p{box-shadow:0 4px 12px color-mix(in srgb,var(--a1) 22%,transparent)}
+.mpl,.plus,.res .pl{box-shadow:0 2px 8px color-mix(in srgb,var(--a1) 25%,transparent)}
+.glassb{box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+.lamp::after{opacity:.6}.tabs button.on svg{filter:none}
+.gring{filter:none!important}.tdring circle{filter:none!important}
+.toast{box-shadow:var(--gl-sh)}
+/* kleinere Zähler-Plakette */
+.tabs .bdg{min-width:15px;height:15px;line-height:15px;font-size:9.5px;padding:0 4px;top:4px;left:calc(50% + 6px);box-shadow:0 0 0 1.5px var(--bg)}
+/* Kein Hineinzoomen beim Tippen in Felder (iOS zoomt unter 16 px) und kein Springen durch versteckte Auswahlfelder */
+input,select,textarea,.inp,textarea.inp{font-size:16px}
+.chip2,.wdp label{position:relative}.chip2 input,.wdp input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;-webkit-appearance:none;appearance:none;pointer-events:none}
+/* ---------- Todos aufgeräumt ---------- */
+.tdhero{padding:16px;gap:16px}.tdhero .tdring{width:70px;height:70px}.tdhero b{font-size:19px}
+.tdhero::after{display:none}
+.tdh{margin:18px 4px 8px}.tdh .tdhl{font-size:16px;font-weight:650;gap:8px}
+.cico{width:26px;height:26px;border-radius:8px}.cico .ic{width:15px;height:15px}
+.cbar{flex-basis:44px;height:4px}.cbar i{box-shadow:none}
+.swc.td{min-height:54px;padding:10px 0}.tdc{width:26px;height:26px}.tdc .ic{width:15px;height:15px}
+.td.done .tdc{box-shadow:none}
+.tdt b{font-size:16px;font-weight:500}.tdt small{font-size:12.5px}
+.tdmeta{margin-top:4px}
+/* ---------- Gesundheit: schlicht, eine Farbe, antippbar ---------- */
+.ct>.ic{color:var(--ink)!important;background:rgba(255,255,255,.06)!important;border-color:rgba(255,255,255,.08)!important}
+.gzk b{color:var(--ink)!important}
+.gzsum .gzsi{box-shadow:none!important}
+.gztap{cursor:pointer;transition:transform .15s,opacity .15s}.gztap:active{transform:scale(.985);opacity:.9}
+.card h2 .more2{font-size:13px;font-weight:600;color:var(--mute);display:inline-flex;align-items:center;gap:2px}.card h2 .more2 .ic{width:14px;height:14px}
+.gzk.gztap{border-radius:12px;margin:-4px;padding:4px}
+/* Detail-Ansicht eines Werts */
+.mdh{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:2px 2px 14px}
+.mdh b{font-size:44px;font-weight:800;letter-spacing:-.04em;line-height:1}.mdh b small{font-size:16px;font-weight:600;color:var(--mute);margin-left:4px;letter-spacing:0}
+.mdh>div>span{display:block;font-size:13px;color:var(--mute);margin-bottom:4px}
+.ich{position:relative;height:190px;margin:8px 0 4px;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.ich svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.ich .cur{position:absolute;top:0;bottom:18px;width:1px;background:var(--ink);opacity:0;pointer-events:none;transition:opacity .15s}
+.ich .tip{position:absolute;top:-6px;transform:translateX(-50%);background:var(--card2);border:1px solid var(--edge);border-radius:10px;padding:4px 9px;font-size:12px;
+ white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;box-shadow:0 6px 16px rgba(0,0,0,.4);z-index:2}
+.ich .tip b{font-size:14px;display:block}.ich.on .cur,.ich.on .tip{opacity:1}
+.ich .ax{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;font-size:11px;color:var(--mute)}
+.ich .yl{position:absolute;right:0;font-size:10.5px;color:var(--mute);transform:translateY(-50%)}
+.sumg{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sumg div{background:rgba(255,255,255,.04);border:1px solid var(--edge);border-radius:14px;padding:10px 12px}
+.sumg span{display:block;font-size:12px;color:var(--mute)}.sumg b{font-size:19px;letter-spacing:-.02em}.sumg em{display:block;font-style:normal;font-size:12px;margin-top:2px}
+.verd{display:flex;gap:12px;align-items:flex-start}.verd p{margin:0;font-size:15px;line-height:1.45}
+.dist{display:flex;height:8px;border-radius:4px;overflow:hidden;gap:2px;margin:10px 0 6px}.dist i{display:block}
+/* Gesundheit: Kennzahl-Karten wie in Apple Health */
+.mcard{display:flex;flex-direction:column;gap:10px;width:100%;text-align:left;color:inherit;font:inherit;padding:14px 16px;margin-bottom:10px}
+.mch{display:flex;align-items:center;justify-content:space-between;gap:8px}.mch .ct{font-size:15px;font-weight:650}.mch .ct>.ic{padding:6px;width:16px;height:16px}
+.mch small{display:inline-flex;align-items:center;gap:2px;color:var(--mute);font-size:12.5px}.mch small .ic{width:14px;height:14px}
+.mcb{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}.mcb>span{display:flex;flex-direction:column;gap:6px;align-items:flex-start;min-width:0}
+.mcb b{font-size:30px;font-weight:750;letter-spacing:-.035em;line-height:1}.mcb b small{font-size:14px;font-weight:600;color:var(--mute);margin-left:3px;letter-spacing:0}
+.spk2{width:96px;height:34px;flex:none}
+.t-n{background:rgba(255,255,255,.07);color:var(--mute)}
+.gzsi.t-g{background:color-mix(in srgb,var(--g) 18%,transparent);color:var(--g)}.gzsi.t-y{background:color-mix(in srgb,var(--y) 18%,transparent);color:var(--y)}.gzsi.t-r{background:color-mix(in srgb,var(--r) 18%,transparent);color:var(--r)}
+.gzsi .ic{width:22px;height:22px;stroke-width:2.4}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="gA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--a1)"/><stop offset="1" style="stop-color:var(--a2)"/></linearGradient></defs></svg>
 <div id="app"></div>
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=ff07823"></script>
-<script src="todos.js?v=ff07823"></script>
-<script src="gesund.js?v=ff07823"></script>
-<script src="mitteilungen.js?v=ff07823"></script>
-<script src="suche.js?v=ff07823"></script>
+<script src="kern.js?v=c19c533"></script>
+<script src="todos.js?v=c19c533"></script>
+<script src="gesund.js?v=c19c533"></script>
+<script src="mitteilungen.js?v=c19c533"></script>
+<script src="suche.js?v=c19c533"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -2021,7 +2085,7 @@ addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="ff07823";
+const APPV="c19c533";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;

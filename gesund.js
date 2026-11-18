@@ -22,7 +22,7 @@ const gzTime=s=>{s=Math.round(s);return s>=3600?`${Math.floor(s/3600)}:${String(
 let GZID=0;
 function gzBars(vals,o={}){const W=300,H=o.h||84,n=vals.length,mx=Math.max(o.min||1,...vals.map(v=>v||0),o.line||0)*1.08,bw=W/n,id="gb"+(++GZID);
  const bars=vals.map((v,i)=>{if(v==null)return"";const last=i===n-1,c=o.col?o.col(v,i):null,y=(H-v/mx*H).toFixed(1),hh=(v/mx*H).toFixed(1);
-  return`<rect x="${(i*bw+bw*.2).toFixed(1)}" y="${y}" width="${(bw*.6).toFixed(1)}" height="${hh}" rx="${Math.min(5,bw*.3).toFixed(1)}" fill="${c||`url(#${id})`}" opacity="${last?1:.78}"${last?` style="filter:drop-shadow(0 0 6px ${c||"var(--a2)"})"`:""}/>`}).join("");
+  return`<rect x="${(i*bw+bw*.2).toFixed(1)}" y="${y}" width="${(bw*.6).toFixed(1)}" height="${hh}" rx="${Math.min(5,bw*.3).toFixed(1)}" fill="${c||`url(#${id})`}" opacity="${last?1:.78}"/>`}).join("");
  const ln=o.line?`<line x1="0" x2="${W}" y1="${(H-o.line/mx*H).toFixed(1)}" y2="${(H-o.line/mx*H).toFixed(1)}" stroke="var(--mute)" stroke-dasharray="3 4" stroke-width="1" opacity=".7"/>`:"";
  return`<svg class="gzc" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--a1)"/><stop offset="1" style="stop-color:var(--a2);stop-opacity:.35"/></linearGradient></defs>${ln}${bars}</svg>`}
 function gzLine(vals,o={}){const W=300,H=o.h||84,v=vals.map(x=>x==null?null:+x),ok=v.filter(x=>x!=null);if(ok.length<2)return`<p class="s mute" style="margin:6px 0">Noch zu wenige Messungen.</p>`;
@@ -36,7 +36,7 @@ function gzLine(vals,o={}){const W=300,H=o.h||84,v=vals.map(x=>x==null?null:+x),
  const band=o.lo!=null&&o.hi!=null?`<rect x="0" width="${W}" y="${Y(o.hi)}" height="${(Y(o.lo)-Y(o.hi)).toFixed(1)}" fill="var(--g)" opacity=".1"/><line x1="0" x2="${W}" y1="${Y(o.hi)}" y2="${Y(o.hi)}" stroke="var(--g)" stroke-opacity=".35" stroke-dasharray="3 4"/><line x1="0" x2="${W}" y1="${Y(o.lo)}" y2="${Y(o.lo)}" stroke="var(--g)" stroke-opacity=".35" stroke-dasharray="3 4"/>`:"";
  const li=v.length-1-[...v].reverse().findIndex(x=>x!=null);
  return`<svg class="gzc" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${c};stop-opacity:.35"/><stop offset="1" style="stop-color:${c};stop-opacity:0"/></linearGradient></defs>${band}
- <path d="${area}" fill="url(#${id})"/><path d="${line}" fill="none" stroke="${c}" stroke-width="2.4" stroke-linecap="round" vector-effect="non-scaling-stroke" style="filter:drop-shadow(0 0 4px ${c})"/><circle cx="${X(li)}" cy="${Y(v[li])}" r="4" fill="${c}" stroke="var(--bg)" stroke-width="2" style="filter:drop-shadow(0 0 6px ${c})"/></svg>`}
+ <path d="${area}" fill="url(#${id})"/><path d="${line}" fill="none" stroke="${c}" stroke-width="2.4" stroke-linecap="round" vector-effect="non-scaling-stroke"/><circle cx="${X(li)}" cy="${Y(v[li])}" r="4" fill="${c}" stroke="var(--bg)" stroke-width="2"/></svg>`}
 const gzAxis=L=>`<div class="gzx"><span>${dm(L[0])}</span><span>${L.length>7?dm(L[Math.floor(L.length/2)]):""}</span><span>heute</span></div>`;
 /* Kennzahl-Kachel */
 const gzK=(l,v,u,sub,a,word)=>`<div class="gzk"><span>${l}</span><b${a?` style="color:${COL[a]}"`:""}>${v}${u?`<small> ${u}</small>`:""}</b>${a?tone(a,word):""}${sub?`<em>${sub}</em>`:""}</div>`;
@@ -81,52 +81,141 @@ function vTraining(){if(!C.store)return`<div class="lt"><div><h2>Training</h2></
  return o+`<div class="row mb"><button class="btn" data-sync="1">↻ Garmin-Sync</button><button class="btn" data-go="plan">Trainingsplan</button></div><p class="foot">Garmin-Stand ${gzStand()}.</p>`}
 
 /* ===================== Gesundheit ===================== */
+/* Jeder Wert ist eine Karte (wie in Apple Health): Name, aktueller Wert, kurze Einordnung, Mini-Verlauf.
+   Antippen öffnet die Detailansicht mit Verlauf zum Antippen/Ziehen, Zusammenfassung und Erklärung.
+   Bewertung immer gegen feste Richtwerte oder deine eigenen Werte (Baseline) – Orientierung, keine Diagnose. */
+const gzDaysAll=()=>((GZ.full&&GZ.full.days)||(C.store&&C.store.days)||{});
+const gzBaseAt=(f,d,n=28)=>{const D=gzDaysAll(),v=[];for(let k=1;k<=n;k++){const x=(D[EK.add(d,-k)]||{})[f];if(x!=null)v.push(x)}return v.length>=7?gzAvg(v):null};
+const GZM={
+ schlaf:{t:"Schlafdauer",i:"moon",u:"h",g:r=>r.sleep_s,f:v=>gzHm(v),cv:v=>v/3600,ty:"bar",ref:7,b:1,
+  r:v=>v<6*3600?["r","zu kurz"]:v<7*3600?["y","etwas kurz"]:["g","ausreichend"],
+  info:"Wie lange du geschlafen hast (ohne Wachphasen). Für Erwachsene sind 7–9 Stunden gut, vor allem im Training. Die gestrichelte Linie zeigt 7 Stunden."},
+ score:{t:"Schlafqualität",i:"star",u:"",g:r=>r.sleep_score,f:v=>n0(v),ty:"line",b:1,
+  r:v=>v>=80?["g","gut"]:v>=60?["y","okay"]:["r","schwach"],info:"Garmin-Schlafscore (0–100) aus Dauer, Schlafphasen, Unruhe und Stress in der Nacht. Ab 80 gut, 60–79 okay, darunter schwach."},
+ hrv:{t:"HRV",i:"heart",u:"ms",g:r=>r.hrv,f:v=>n0(v),ty:"line",b:1,band:(r)=>r&&r.hrv_lo?[r.hrv_lo,r.hrv_hi]:null,
+  r:(v,d,r)=>r&&r.hrv_lo?(v<r.hrv_lo?["r","unter deinem Normalbereich"]:v>r.hrv_hi?["g","über dem Normalbereich"]:["g","im Normalbereich"]):null,
+  info:"Herzfrequenzvariabilität in der Nacht. Wichtig ist nicht die Zahl an sich, sondern ob sie in deinem persönlichen Bereich liegt (Band im Diagramm). Liegt sie mehrere Tage darunter, ist dein Körper oft noch mit Erholung beschäftigt – dann lieber lockerer trainieren."},
+ rhr:{t:"Ruhepuls",i:"pulse",u:"bpm",g:r=>r.rhr,f:v=>n0(v),ty:"line",b:-1,
+  r:(v,d)=>{const B=gzBaseAt("rhr",d);if(B==null)return null;const x=v-B;return x<=2?["g","normal für dich"]:x<=5?["y",`+${n0(x)} über deinem Schnitt`]:["r",`+${n0(x)} deutlich erhöht`]},
+  info:"Niedrigster Puls in Ruhe. Verglichen wird mit deinem Schnitt der 28 Tage davor: Mehr als 5 Schläge darüber deuten oft auf wenig Erholung, Stress, Alkohol oder einen aufziehenden Infekt hin. Langfristig sinkt er mit besserer Ausdauer."},
+ bb:{t:"Body Battery",i:"battery",u:"",g:r=>r.bb_high,f:v=>n0(v),ty:"bar",b:1,ref:75,
+  r:v=>v>=75?["g","gut aufgeladen"]:v>=50?["y","mittel"]:["r","wenig Energie"],info:"Höchster Energiestand des Tages (0–100), meist morgens nach dem Schlaf. Ab 75 bist du gut aufgeladen, unter 50 fehlt Erholung."},
+ stress:{t:"Stress",i:"brain",u:"",g:r=>r.stress,f:v=>n0(v),ty:"bar",b:-1,ref:50,
+  r:v=>v<=25?["g","ruhig"]:v<=50?["g","niedrig"]:v<=75?["y","mittel"]:["r","hoch"],info:"Durchschnittlicher Stresswert des Tages aus der Herzfrequenzvariabilität (0–100). Bis 25 ruhig, bis 50 niedrig, darüber mittel bis hoch. Training zählt nicht als Stress."},
+ schritte:{t:"Schritte",i:"steps",u:"",g:r=>r.steps,f:v=>n0(v),ty:"bar",b:1,refR:r=>r&&r.steps_goal,
+  r:(v,d,r)=>{const z=(r&&r.steps_goal)||8000;return v>=z?["g","Ziel erreicht"]:v>=z*.6?["y",Math.round(v/z*100)+" % vom Ziel"]:["r",Math.round(v/z*100)+" % vom Ziel"]},
+  info:"Schritte pro Tag. Das Ziel stellt Garmin automatisch nach deinen letzten Tagen ein (gestrichelte Linie). Heute wird erst am Abend bewertet."},
+ intens:{t:"Intensitätsminuten",i:"bolt",u:"Min",g:r=>r.int_mod!=null||r.int_vig!=null?(r.int_mod||0)+2*(r.int_vig||0):null,f:v=>n0(v),ty:"bar",b:1,
+  r:null,info:"Minuten mit mindestens mäßiger Anstrengung, intensive zählen doppelt. Die WHO empfiehlt mindestens 150 pro Woche – die Woche steht in der Zusammenfassung."},
+ atmung:{t:"Atemfrequenz",i:"lungs",u:"/min",g:r=>r.resp,f:v=>n1(v),ty:"line",b:0,
+  r:(v,d)=>{const B=gzBaseAt("resp",d);if(B==null)return null;return Math.abs(v-B)<=1.5?["g","normal für dich"]:["y","weicht ab"]},
+  info:"Atemzüge pro Minute im Schnitt. Normal sind etwa 12–20. Wichtig ist vor allem, ob der Wert deutlich von deinem üblichen abweicht."},
+ spo2:{t:"Blutsauerstoff",i:"drop",u:"%",g:r=>r.spo2,f:v=>n0(v),ty:"line",b:1,
+  r:v=>v>=95?["g","normal"]:v>=92?["y","etwas niedrig"]:["r","niedrig"],info:"Sauerstoffsättigung (SpO₂) laut Uhr. 95–100 % ist normal. Einzelne niedrige Werte sind bei Uhren häufig Messfehler (Armhaltung, Sitz der Uhr)."},
+ gewicht:{t:"Gewicht",i:"scale",u:"kg",g:(r,d)=>(tdWaage()[d])||r.weight,f:v=>n1(v),ty:"line",b:0,
+  r:null,info:"Gewicht von deiner Garmin-Waage oder selbst eingetragen. Tägliche Schwankungen von 0,5–1 kg sind normal (Wasser, Essen) – entscheidend ist die Tendenz über Wochen."}};
+const GZG=[["Erholung",["schlaf","score","hrv","rhr","bb","stress"]],["Aktivität",["schritte","intens"]],["Atmung",["atmung","spo2"]],["Körper",["gewicht"]]];
+/* Werte einer Kennzahl für eine Liste von Tagen */
+const gzSer=(k,L)=>{const M=GZM[k],D=gzDaysAll();return L.map(d=>{const r=D[d]||{},v=M.g(r,d);return v==null||!isFinite(v)?null:+v})};
+function gzLastM(k,maxAge=2){const M=GZM[k],D=gzDaysAll();for(let j=0;j<=maxAge;j++){const d=EK.add(TODAY(),-j),r=D[d]||{},v=M.g(r,d);if(v!=null)return{v,d,r}}
+ if(k==="gewicht"){const w=GW();if(w)return{v:w,d:null,r:{}}}return null}
+function gzRate(k,v,d,r){const M=GZM[k];if(!M.r||v==null)return null;if(k==="schritte"&&d===TODAY()&&new Date().getHours()<21&&v<((r&&r.steps_goal)||8000))return["n","Tag läuft noch"];return M.r(v,d,r)}
+/* Mini-Verlauf für die Karte: eine Linie, ein Punkt */
+function gzSpark(vals){const v=vals.map(x=>x==null?null:+x),ok=v.filter(x=>x!=null);if(ok.length<2)return"";const lo=Math.min(...ok),hi=Math.max(...ok),W=96,H=34,r=(hi-lo)||1;
+ let p="",pen=false,li=0;v.forEach((x,i)=>{if(x==null){pen=false;return}const X=(i/(v.length-1)*W).toFixed(1),Y=(H-3-(x-lo)/r*(H-6)).toFixed(1);p+=(pen?"L":"M")+X+" "+Y;pen=true;li=i});
+ const Y=(H-3-(v[li]-lo)/r*(H-6)).toFixed(1),X=(li/(v.length-1)*W).toFixed(1);
+ return`<svg class="spk2" viewBox="0 0 ${W} ${H}" aria-hidden="true"><path d="${p}" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${X}" cy="${Y}" r="3" fill="var(--acc)"/></svg>`}
+function gzCard(k){const M=GZM[k],l=gzLastM(k);let val="–",sub="";
+ if(k==="intens"){const T=TODAY(),mon=EK.monday(T),L=[];for(let d=mon;d<=T;d=EK.add(d,1))L.push(d);const w=gzSer(k,L).reduce((a,b)=>a+(b||0),0);
+  val=n0(w);sub=tone(w>=150?"g":w>=75?"y":"r",w>=150?"Wochenziel erreicht":`${n0(150-w)} Min bis 150 diese Woche`)}
+ else if(l){val=M.f(l.v);const rt=gzRate(k,l.v,l.d,l.r);sub=rt?rt[0]==="n"?`<span class="tone t-n">${rt[1]}</span>`:tone(rt[0],rt[1]):k==="gewicht"?gzWTrend():""}
+ const sp=gzSpark(gzSer(k,gzRange(14)));
+ return`<button class="card mcard gztap" data-gzm="${k}"><span class="mch"><span class="ct">${ic(M.i)}${M.t}</span><small>${l&&l.d?tdLong(l.d):k==="intens"?"diese Woche":""} ${ic("chev")}</small></span>
+ <span class="mcb"><span><b>${val}${M.u&&val!=="–"?`<small>${M.u==="h"?"Std.":M.u}</small>`:""}</b>${sub}</span>${sp}</span></button>`}
+function gzWTrend(){const L=gzRange(28),v=gzSer("gewicht",L).filter(x=>x!=null);if(v.length<3)return"";const d=v[v.length-1]-v[0],goal=C.profil&&C.profil.zielGewicht;
+ const good=goal?(goal<v[v.length-1]?d<0:d>0):null;return tone(Math.abs(d)<.3?"g":good?"g":"y",`${d>0?"+":""}${n1(d)} kg in 4 Wochen`)}
 function vGesund(){if(!C.store)return`<div class="lt"><div><h2>Gesundheit</h2></div></div><div class="card">Noch keine Garmin-Daten geladen.</div>`;
- const T=TODAY(),L=gzRange(GZ.r),D=d=>gzDay(d),td=D(T),HS={BALANCED:["ausgeglichen","g"],UNBALANCED:["unausgeglichen","y"],LOW:["niedrig","r"],POOR:["niedrig","r"]};
+ const T=TODAY(),D=d=>gzDay(d),td=D(T);
  let o=`<div class="lt"><div><h2>Gesundheit</h2><small>Garmin-Stand ${gzStand()}</small></div></div>`;
- /* Aktivitätsringe: Schritte, Intensitätsminuten (Woche), Etagen */
  const mon=EK.monday(T);let im=0;for(let k=0;k<7;k++){const d=EK.add(mon,k);if(d>T)break;const x=D(d);im+=(x.int_mod||0)+2*(x.int_vig||0)}
  const st=td.steps,sg=td.steps_goal||8000,fl=td.floors,fg=td.floors_goal||10;
  o+=`<div class="card gzring">${gzRings([{q:st!=null?st/sg:0,c:"#ff2d55"},{q:im/150,c:"#30d158"},{q:fl!=null?fl/fg:0,c:"#0a84ff"}])}
  <div class="gzrl"><div><i style="background:#ff2d55"></i><span>Schritte</span><b>${st!=null?n0(st):"–"}<small> / ${n0(sg)}</small></b></div>
  <div><i style="background:#30d158"></i><span>Intensität (Woche)</span><b>${n0(im)}<small> / 150 Min</small></b></div>
  <div><i style="background:#0a84ff"></i><span>Etagen</span><b>${fl!=null?n0(fl):"–"}<small> / ${n0(fg)}</small></b></div></div></div>`;
- /* Erholung auf einen Blick (eigene Normalwerte als Maßstab) */
- const hv=gzLast("hrv",1),rp=gzLast("rhr",1),sl=gzLast("sleep_s",1),ss=gzLast("sleep_score",1),rb=gzBase("rhr"),hx=hv?D(hv.d):{};
- const flags=[];if(hv&&hx.hrv_lo&&hv.v<hx.hrv_lo)flags.push("HRV unter deinem Normalbereich");if(rp&&rb&&rp.v-rb>5)flags.push("Ruhepuls deutlich über deinem Schnitt");
- if(sl&&sl.v<6*3600)flags.push("kurze Nacht");if(ss&&ss.v<60)flags.push("Schlafqualität niedrig");
- o+=`<div class="card gzsum ${flags.length>1?"r":flags.length?"y":"g"}"><span class="gzsi">${ic(flags.length?"warn":"check")}</span><div><b>${flags.length?flags.length>1?"Mehrere Werte auffällig":"Ein Wert auffällig":"Alles im üblichen Bereich"}</b><small>${flags.length?flags.join(" · ")+" – lieber locker machen und gut schlafen.":"Schlaf, HRV und Ruhepuls liegen bei deinen gewohnten Werten."}</small></div></div>`;
- o+=gzSeg("gzr",GZ.r,[[7,"7 Tage"],[14,"14 Tage"],[30,"30 Tage"]]);
- /* Schlaf */
- const sx=sl?D(sl.d):{},tot=(sx.deep_s||0)+(sx.light_s||0)+(sx.rem_s||0)+(sx.awake_s||0);
- const stg=tot?[["Tief",sx.deep_s,"#5e5ce6"],["REM",sx.rem_s,"#bf5af2"],["Leicht",sx.light_s,"#64d2ff"],["Wach",sx.awake_s,"#ff9f0a"]]:[];
- o+=`<div class="card"><h2><span class="ct" style="--mc:#a78bfa">${ic("moon")}Schlaf</span><small>${sl?tdLong(sl.d):""}</small></h2><div class="gzks">${gzK("Dauer",gzHm(sl&&sl.v),"h",sl&&sl.v<7*3600?"unter 7 h":"",sl?(sl.v<6*3600?"r":sl.v<7*3600?"y":null):null)}
-  ${gzK("Score",ss?ss.v:"–","",ss?(ss.v>=80?"gut":ss.v>=60?"okay":"schwach"):"",ss?(ss.v>=80?"g":ss.v>=60?"y":"r"):null)}
-  ${gzK("Schlafenszeit",gzClock(sx.sleep_start),"",sx.sleep_end?"auf "+gzClock(sx.sleep_end):"")}</div>
-  ${stg.length?`<div class="gzstg">${stg.map(([l,v,c])=>`<i style="flex:${v||0};background:${c}" title="${l}"></i>`).join("")}</div><div class="gzleg">${stg.map(([l,v,c])=>`<span><i style="background:${c}"></i>${l} ${gzHm(v)}</span>`).join("")}</div>`:""}
-  ${gzBars(L.map(d=>D(d).sleep_s!=null?D(d).sleep_s/3600:null),{line:7,col:v=>v<6?"var(--r)":v<7?"var(--y)":null})}${gzAxis(L)}
-  <div class="gzks small">${gzK("Ø Dauer",gzHm(gzAvg(L.map(d=>D(d).sleep_s))),"h")}${gzK("Schlaf-HF",sx.sleep_hr?n0(sx.sleep_hr):"–","bpm")}${gzK("SpO₂ Nacht",sx.sleep_spo2?n0(sx.sleep_spo2):"–","%",sx.sleep_spo2_min?"min. "+sx.sleep_spo2_min+" %":"")}</div></div>`;
- /* HRV */
- const hs=HS[hx.hrv_status];
- o+=`<div class="card"><h2><span class="ct" style="--mc:#f472b6">${ic("heart")}HRV</span><small>${hv?tdLong(hv.d):""}</small></h2><div class="gzks">${gzK("Letzte Nacht",hv?hv.v:"–","ms",hs?hs[0]:"",hs?hs[1]:null)}${gzK("Ø 7 Tage",hx.hrv_week||"–","ms")}${gzK("Normalbereich",hx.hrv_lo?`${hx.hrv_lo}–${hx.hrv_hi}`:"–","ms")}</div>
-  ${gzLine(L.map(d=>D(d).hrv),{lo:hx.hrv_lo,hi:hx.hrv_hi,c:"var(--a2)"})}${gzAxis(L)}<p class="s mute" style="margin:6px 0 0">Grünes Band = dein persönlicher Normalbereich laut Garmin. Höher ist meist entspannter.</p></div>`;
- /* Ruhepuls */
- o+=`<div class="card"><h2><span class="ct" style="--mc:#fb7185">${ic("pulse")}Ruhepuls</span></h2><div class="gzks">${gzK("Heute",rp?rp.v:"–","bpm",rp&&rb?(rp.v-rb>0?"+":"")+n1(rp.v-rb)+" ggü. Ø":"",rp&&rb?(rp.v-rb<=2?"g":rp.v-rb<=5?"y":"r"):null)}${gzK("Ø 28 Tage",rb?n1(rb):"–","bpm")}${gzK("Tiefster",(()=>{const v=L.map(d=>D(d).rhr).filter(x=>x!=null);return v.length?Math.min(...v):"–"})(),"bpm",GZ.r+" Tage")}</div>
-  ${gzLine(L.map(d=>D(d).rhr),{c:"#fb7185"})}${gzAxis(L)}</div>`;
- /* Body Battery & Stress */
- o+=`<div class="card"><h2><span class="ct" style="--mc:#34d399">${ic("battery")}Body Battery & Stress</span></h2><div class="gzks">${gzK("Jetzt",td.bb_now??"–","",td.bb_high!=null?"Hoch "+td.bb_high+" · Tief "+td.bb_low:"",td.bb_now!=null?(td.bb_now>=51?"g":td.bb_now>=26?"y":"r"):null)}
-  ${gzK("Aufgeladen",td.bb_charged??"–","",td.bb_sleep_gain!=null?"+"+td.bb_sleep_gain+" im Schlaf":"")}${gzK("Stress Ø",td.stress??"–","",td.stress!=null?(td.stress<=25?"ruhig":td.stress<=50?"niedrig":td.stress<=75?"mittel":"hoch"):"",td.stress!=null?(td.stress<=50?"g":td.stress<=75?"y":"r"):null)}</div>
-  ${gzBars(L.map(d=>D(d).bb_high),{col:v=>v>=50?null:v>=26?"var(--y)":"var(--r)"})}${gzAxis(L)}<p class="s mute" style="margin:6px 0 0">Balken = höchster Body-Battery-Wert des Tages.</p></div>`;
- /* Aktivität */
- o+=`<div class="card"><h2><span class="ct" style="--mc:#fb923c">${ic("steps")}Aktivität</span></h2><div class="gzks">${gzK("Ø Schritte",n0(gzAvg(L.map(d=>D(d).steps))),"",GZ.r+" Tage")}${gzK("Aktiv-kcal",td.kcal_active!=null?n0(td.kcal_active):"–","kcal","heute")}${gzK("Verbrauch",td.kcal!=null?n0(td.kcal):"–","kcal","heute gesamt")}</div>
-  ${gzBars(L.map(d=>D(d).steps),{line:sg,col:(v)=>v>=sg?"var(--g)":null})}${gzAxis(L)}</div>`;
- /* Atmung & Sauerstoff */
- o+=`<div class="card"><h2><span class="ct" style="--mc:#22d3ee">${ic("lungs")}Atmung & Sauerstoff</span></h2><div class="gzks">${gzK("Atmung",td.resp??(sx.sleep_resp??"–"),"/min","Ø "+n1(gzAvg(L.map(d=>D(d).resp)))+" in "+GZ.r+" T")}${gzK("SpO₂",td.spo2??"–","%",gzAvg(L.map(d=>D(d).spo2))?"Ø "+n0(gzAvg(L.map(d=>D(d).spo2)))+" %":"")}${gzK("Schlafstress",sx.sleep_stress!=null?n0(sx.sleep_stress):"–","")}</div></div>`;
- /* Körper */
- const W=GW(),WL=L.map(d=>tdWaage()[d]||D(d).weight||null),fit=C.store.fitness||{},w0=WL.find(x=>x!=null),goal=C.profil&&C.profil.zielGewicht;
- o+=`<div class="card"><h2><span class="ct" style="--mc:#60a5fa">${ic("scale")}Körper</span><button class="btn sm" data-tdweight="1">Eintragen</button></h2><div class="gzks">${gzK("Gewicht",W?n1(W):"–","kg",w0&&W&&w0!==W?(W-w0>0?"+":"")+n1(W-w0)+" kg in "+GZ.r+" T":"")}${gzK("Ziel",goal?n1(goal):"–","kg",goal&&W?n1(Math.abs(W-goal))+" kg "+(W>goal?"noch runter":"noch rauf"):"")}${gzK("Fitnessalter",fit.age!=null?n0(fit.age):"–","",fit.chrono?"echt "+fit.chrono:"")}</div>
-  ${gzLine(WL,{c:"var(--acc)"})}${gzAxis(L)}${fit.bmi?`<p class="s mute" style="margin:6px 0 0">BMI ${n1(fit.bmi)} (Garmin) – bei viel Muskelmasse nur grob aussagekräftig.</p>`:""}</div>`;
- return o+`<p class="foot">Alle Werte von deiner Garmin-Uhr. Einordnung im Vergleich zu deinen eigenen Werten – Orientierung, keine Diagnose.</p>`}
+ /* Zusammenfassung: was heute auffällt, in einem Satz */
+ const R=["schlaf","hrv","rhr","bb"].map(k=>{const l=gzLastM(k,1);return l?[k,gzRate(k,l.v,l.d,l.r)]:null}).filter(x=>x&&x[1]);
+ const bad=R.filter(x=>x[1][0]==="r"),mid=R.filter(x=>x[1][0]==="y"),lvl=bad.length?"r":mid.length?"y":"g";
+ const txt=lvl==="g"?"Schlaf, HRV, Ruhepuls und Energie liegen in deinem gewohnten Bereich. Gute Voraussetzungen fürs Training.":
+  [...bad,...mid].map(([k,r])=>`${GZM[k].t}: ${r[1]}`).join(" · ")+(lvl==="r"?" – heute lieber locker machen und früh schlafen.":".");
+ o+=`<div class="card gzsum ${lvl}"><span class="gzsi">${ic(lvl==="g"?"check":"warn")}</span><div><b>${lvl==="g"?"Gut erholt":lvl==="y"?"Leicht angeschlagen":"Erholung fehlt"}</b><small>${txt}</small></div></div>`;
+ for(const[g,K]of GZG)o+=`<div class="sec">${g}</div>`+K.map(gzCard).join("");
+ return o+`<p class="foot">Antippen zeigt Verlauf, Zusammenfassung und Erklärung. Werte von deiner Garmin-Uhr – Orientierung, keine Diagnose.</p>`}
+
+/* ---------- Detailansicht ---------- */
+let GZD={k:null,r:30};
+function gzOpen(k){GZD.k=k;if(!GZ.full)gzFull().then(()=>{if(GZD.k===k&&$("sheet").classList.contains("on"))gzDetail()});gzDetail()}
+function gzDetail(){const k=GZD.k,M=GZM[k],sh=$("sheet");if(!M)return;sh.classList.add("on");
+ const L=gzRange(GZD.r),V=gzSer(k,L),P=gzSer(k,gzRange(GZD.r*2).slice(0,GZD.r)),ok=V.filter(x=>x!=null),D=gzDaysAll(),l=gzLastM(k,3);
+ const avg=gzAvg(ok),pav=gzAvg(P.filter(x=>x!=null)),mn=ok.length?Math.min(...ok):null,mx=ok.length?Math.max(...ok):null;
+ /* Trend: Steigung der Ausgleichsgeraden über den Zeitraum */
+ const pts=V.map((v,i)=>v==null?null:[i,v]).filter(Boolean);let slope=0;if(pts.length>=4){const n=pts.length,sx=pts.reduce((a,p)=>a+p[0],0)/n,sy=pts.reduce((a,p)=>a+p[1],0)/n;
+  slope=pts.reduce((a,p)=>a+(p[0]-sx)*(p[1]-sy),0)/Math.max(1e-9,pts.reduce((a,p)=>a+(p[0]-sx)**2,0))}
+ const change=slope*(L.length-1),rel=avg?Math.abs(change)/Math.abs(avg):0,flat=rel<.03;
+ const fmtD=x=>k==="schlaf"?(x>=0?"+":"−")+gzHm(Math.abs(x)):(x>=0?"+":"−")+(Math.abs(x)<10?n1(Math.abs(x)):n0(Math.abs(x)));
+ const dirTone=x=>M.b===0||Math.abs(x)<1e-9?"n":(x*M.b>0?"g":"r");
+ const trendTxt=flat?"stabil":(change>0?"steigend":"fallend");
+ /* Tage im guten Bereich */
+ const rates=L.map((d,i)=>V[i]==null?null:gzRate(k,V[i],d,D[d]||{})).filter(x=>x&&x[0]!=="n"),cnt={g:0,y:0,r:0};rates.forEach(x=>cnt[x[0]]++);
+ /* Gesamturteil */
+ const cur=l?gzRate(k,l.v,l.d,l.r):null;
+ let verdict;if(k==="intens"){const T=TODAY(),mon=EK.monday(T),wk=[];for(let d=mon;d<=T;d=EK.add(d,1))wk.push(d);const w=gzSer(k,wk).reduce((a,b)=>a+(b||0),0);
+  verdict=[w>=150?"g":"y",`Diese Woche ${n0(w)} von 150 Minuten. ${avg!=null?`Im Schnitt ${n0(avg*7)} Minuten pro Woche.`:""}`]}
+ else if(k==="gewicht"){const goal=C.profil&&C.profil.zielGewicht,good=goal&&ok.length>1?(goal<ok[ok.length-1]?change<0:change>0):null;
+  verdict=[flat?"n":good?"g":"y",flat?`Dein Gewicht ist in den letzten ${GZD.r} Tagen stabil (${fmtD(change)} kg).`:`In den letzten ${GZD.r} Tagen ${change<0?"runter":"rauf"}: ${fmtD(change)} kg${goal?good?" – in Richtung deines Ziels.":" – weg von deinem Ziel.":"."}`]}
+ else if(ok.length<3)verdict=["n","Noch zu wenige Messungen für eine Einordnung."];
+ else{const share=rates.length?cnt.g/rates.length:null,tt=flat?"n":dirTone(change);
+  verdict=[share==null?(flat?"g":tt==="r"?"y":"g"):share>=.7&&tt!=="r"?"g":share>=.4?"y":"r",
+   `${share!=null?`An ${cnt.g} von ${rates.length} Tagen im guten Bereich. `:""}Tendenz ${trendTxt}${flat?"":` (${fmtD(change)}${M.u&&M.u!=="h"?" "+M.u:""} über ${GZD.r} Tage)`}${flat?".":tt==="g"?" – das ist gut.":tt==="r"?" – eher ungünstig, im Auge behalten.":"."}`]}
+ const vT=x=>x==null?"–":M.f(k==="schlaf"?x:x);
+ sh.innerHTML=`<div class="top"><button class="ib" data-close="1" aria-label="Schließen">${ic("x")}</button><h1>${M.t}</h1><span style="min-width:44px"></span></div><main>
+ <div class="mdh"><div><span>${l&&l.d?tdLong(l.d)[0].toUpperCase()+tdLong(l.d).slice(1):"Zuletzt"}</span><b>${l?M.f(l.v):"–"}${M.u?`<small>${M.u==="h"?"Std.":M.u}</small>`:""}</b></div>${cur&&cur[0]!=="n"?tone(cur[0],cur[1]):""}</div>
+ ${gzSeg("gzdr",GZD.r,[[7,"7 T"],[30,"30 T"],[90,"90 T"],[180,"6 M"]])}
+ <div class="card">${gzICh(k,L,V)}</div>
+ <div class="card"><div class="verd">${verdict[0]==="n"?`<span class="gbub" style="--mc:var(--mute)">${ic("info")}</span>`:`<span class="gzsi t-${verdict[0]}" style="flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center">${ic(verdict[0]==="g"?"check":"warn")}</span>`}<p>${verdict[1]}</p></div>
+  ${rates.length?`<div class="dist">${["g","y","r"].map(x=>cnt[x]?`<i style="flex:${cnt[x]};background:var(--${x})"></i>`:"").join("")}</div><div class="gzleg"><span><i style="background:var(--g)"></i>gut ${cnt.g}</span><span><i style="background:var(--y)"></i>mittel ${cnt.y}</span><span><i style="background:var(--r)"></i>ungünstig ${cnt.r}</span></div>`:""}</div>
+ <div class="sumg"><div><span>Durchschnitt</span><b>${vT(avg)}</b>${pav!=null&&avg!=null?`<em class="${dirTone(avg-pav)==="g"?"up good":dirTone(avg-pav)==="r"?"dn bad":""}">${fmtD(avg-pav)} ggü. davor</em>`:""}</div>
+  <div><span>Tendenz</span><b>${ok.length>=4?trendTxt[0].toUpperCase()+trendTxt.slice(1):"–"}</b>${ok.length>=4&&!flat?`<em class="${dirTone(change)==="g"?"up good":dirTone(change)==="r"?"dn bad":""}">${fmtD(change)} im Zeitraum</em>`:""}</div>
+  <div><span>Niedrigster</span><b>${vT(mn)}</b></div><div><span>Höchster</span><b>${vT(mx)}</b></div></div>
+ <div class="card mt12"><h2><span class="ct">${ic("info")}Was bedeutet das?</span></h2><p class="s" style="margin:0;line-height:1.5;color:var(--mute)">${M.info}</p></div></main>`;
+ gzBind()}
+/* Verlauf zum Antippen: Finger ziehen zeigt Datum und Wert */
+function gzICh(k,L,V){const M=GZM[k],cv=v=>v==null?null:M.cv?M.cv(v):v,W=300,H=170,ok=V.filter(x=>x!=null).map(cv);if(ok.length<2)return`<p class="s mute">Noch zu wenige Messungen in diesem Zeitraum.</p>`;
+ const D=gzDaysAll(),last=D[L[L.length-1]]||D[L[L.length-2]]||{},band=M.band?M.band(last):null,ref=M.ref!=null?M.ref:M.refR?M.refR(last):null;
+ let lo=M.ty==="bar"?0:Math.min(...ok,band?band[0]:Infinity),hi=Math.max(...ok,band?band[1]:-Infinity,ref||-Infinity);const pad=(hi-lo)*.12||1;hi+=pad;if(M.ty!=="bar")lo-=pad;
+ const n=L.length,X=i=>n===1?W/2:(i+.5)/n*W,Y=v=>(H-(v-lo)/(hi-lo)*H);
+ let g="";
+ if(band)g+=`<rect x="0" width="${W}" y="${Y(band[1]).toFixed(1)}" height="${(Y(band[0])-Y(band[1])).toFixed(1)}" fill="rgba(255,255,255,.06)"/>`;
+ if(ref!=null)g+=`<line x1="0" x2="${W}" y1="${Y(ref).toFixed(1)}" y2="${Y(ref).toFixed(1)}" stroke="rgba(255,255,255,.35)" stroke-dasharray="3 4" vector-effect="non-scaling-stroke"/>`;
+ if(M.ty==="bar"){const bw=W/n*.62;V.forEach((v,i)=>{if(v==null)return;const y=Y(cv(v));g+=`<rect x="${(X(i)-bw/2).toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${(H-y).toFixed(1)}" rx="${Math.min(4,bw/3).toFixed(1)}" fill="var(--acc)" opacity="${i===n-1?1:.55}"/>`})}
+ else{let p="",pen=false;V.forEach((v,i)=>{if(v==null){pen=false;return}p+=(pen?"L":"M")+X(i).toFixed(1)+" "+Y(cv(v)).toFixed(1);pen=true});
+  g+=`<path d="${p}" fill="none" stroke="var(--acc)" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`;
+  if(n<=31)V.forEach((v,i)=>{if(v!=null)g+=`<circle cx="${X(i).toFixed(1)}" cy="${Y(cv(v)).toFixed(1)}" r="2.6" fill="var(--acc)"/>`})}
+ const yl=[hi-pad,(hi+lo)/2].map(v=>`<span class="yl" style="top:${(Y(v)/H*(100-10.6)).toFixed(1)}%">${M.u==="h"?n1(v)+" h":Math.abs(v)<10?n1(v):n0(v)}</span>`).join("");
+ GZD.data={L,V,n};
+ return`<div class="ich" id="ich"><svg viewBox="0 0 ${W} ${H+20}" preserveAspectRatio="none" aria-hidden="true"><g>${g}</g></svg>${yl}<i class="cur"></i><div class="tip"></div>
+ <div class="ax"><span>${dm(L[0])}</span><span>${dm(L[Math.floor(n/2)])}</span><span>heute</span></div></div>`}
+function gzBind(){const el=$("ich");if(!el||!GZD.data)return;const{L,V,n}=GZD.data,cur=el.querySelector(".cur"),tip=el.querySelector(".tip"),M=GZM[GZD.k],D=gzDaysAll();
+ const show=x=>{const r=el.getBoundingClientRect();let i=Math.floor((x-r.left)/r.width*n);i=Math.max(0,Math.min(n-1,i));
+  /* nächster Tag mit Wert */let j=i;for(let s=0;s<n&&V[j]==null;s++){j=i+((s%2?1:-1)*Math.ceil((s+1)/2));if(j<0||j>=n)j=i}
+  const px=(j+.5)/n*r.width,v=V[j],rt=v!=null?gzRate(GZD.k,v,L[j],D[L[j]]||{}):null;
+  cur.style.left=px+"px";tip.style.left=Math.max(54,Math.min(r.width-54,px))+"px";
+  tip.innerHTML=`<b>${v==null?"–":M.f(v)}${M.u&&v!=null?" "+(M.u==="h"?"Std.":M.u):""}</b>${wd(L[j])} ${dm(L[j])}${rt&&rt[0]!=="n"?` · <span style="color:var(--${rt[0]})">${rt[1]}</span>`:""}`;el.classList.add("on")};
+ el.addEventListener("pointerdown",e=>show(e.clientX));el.addEventListener("pointermove",e=>{if(e.pointerType==="mouse"||e.buttons)show(e.clientX)});
+ el.addEventListener("pointerleave",()=>el.classList.remove("on"));
+ el.addEventListener("touchstart",e=>show(e.touches[0].clientX),{passive:true});el.addEventListener("touchmove",e=>show(e.touches[0].clientX),{passive:true});
+ el.addEventListener("touchend",()=>setTimeout(()=>el.classList.remove("on"),1800))}
+document.addEventListener("click",ev=>{let x;if(x=ev.target.closest("[data-gzm]"))gzOpen(x.dataset.gzm);else if(x=ev.target.closest("[data-gzdr]")){GZD.r=+x.dataset.gzdr;gzDetail()}});
 
 /* ===================== Statistik ===================== */
 async function gzFull(){if(GZ.full||GZ.loading)return;GZ.loading=true;try{const s=await KV.get("store_full"),p=await KV.get("plan_full");if(s)GZ.full=JSON.parse(s);if(p)GZ.plan=JSON.parse(p)}catch(e){}GZ.loading=false;if(GZ.full&&view==="stat")render()}

@@ -129,7 +129,7 @@ function vTodos(){const T=TODAY(),L=tdDay(T),n=L.filter(x=>x.done).length,open=L
   o+=tdList(T,rest)||(over.length?"":`<div class="card"><p class="empty" style="margin:0">Für heute steht nichts an. Tippe oben auf Plus, um etwas anzulegen.</p></div>`);
   const up=tdUpcoming(14).slice(0,4);
   if(up.length)o+=tdHead(["","cal","Demnächst","var(--a1)"],null,`<button class="lnk2" data-tdtab="bald">Alle ›</button>`)+`<div class="card list">${up.map(x=>`<div class="tdup" data-tdopen="${h(x.it.id)}|${x.d}"><span class="tdd"><b>${+x.d.slice(8)}</b><small>${TD_WD[(tdDate(x.d).getDay()+6)%7]}</small></span><span><b>${h(x.it.t)}</b><small>${tdLong(x.d)}${x.it.zeit?" · "+h(x.it.zeit):""}${x.it.bis?" · bis erledigt":""}</small></span></div>`).join("")}</div>`;
-  return o+`<p class="foot">Kreis antippen = erledigt. Antippen = ändern, nach links wischen = löschen. Ist bis 20:00 Uhr (Sa/So 21:30) noch etwas offen, kommt eine Mitteilung.</p>`}
+  return o}
  if(TDV.tab==="bald"){const up=tdUpcoming(60);if(!up.length)return o+`<div class="card"><p class="empty" style="margin:0">In den nächsten 60 Tagen steht nichts mit Datum an. Termine legst du über Plus an – z. B. „Abo kündigen“ am 18., monatlich bis erledigt.</p></div>`;
   let last="";for(const x of up){if(x.d!==last){if(last)o+=`</div>`;o+=`<div class="tdh"><span class="tdhl">${tdLong(x.d)[0].toUpperCase()+tdLong(x.d).slice(1)}</span><small>${new Date(x.d+"T12:00:00").toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long"})}</small></div><div class="card list tdl">`;last=x.d}
    o+=tdRow(x,x.d)}return o+`</div>`}
