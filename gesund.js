@@ -100,7 +100,7 @@ function vGesund(){if(!C.store)return`<div class="lt"><div><h2>Gesundheit</h2></
  /* Schlaf */
  const sx=sl?D(sl.d):{},tot=(sx.deep_s||0)+(sx.light_s||0)+(sx.rem_s||0)+(sx.awake_s||0);
  const stg=tot?[["Tief",sx.deep_s,"#5e5ce6"],["REM",sx.rem_s,"#bf5af2"],["Leicht",sx.light_s,"#64d2ff"],["Wach",sx.awake_s,"#ff9f0a"]]:[];
- o+=`<div class="card"><h2><span class="ct">${ic("moon")}Schlaf</span><small>${sl?tdLong(sl.d):""}</small></h2><div class="gzks">${gzK("Dauer",gzHm(sl&&sl.v),"h",sl&&sl.v<7*3600?"unter 7 h":"",sl?(sl.v<6*3600?"r":sl.v<7*3600?"y":null):null)}
+ o+=`<div class="card"><h2><span class="ct" style="--mc:#a78bfa">${ic("moon")}Schlaf</span><small>${sl?tdLong(sl.d):""}</small></h2><div class="gzks">${gzK("Dauer",gzHm(sl&&sl.v),"h",sl&&sl.v<7*3600?"unter 7 h":"",sl?(sl.v<6*3600?"r":sl.v<7*3600?"y":null):null)}
   ${gzK("Score",ss?ss.v:"–","",ss?(ss.v>=80?"gut":ss.v>=60?"okay":"schwach"):"",ss?(ss.v>=80?"g":ss.v>=60?"y":"r"):null)}
   ${gzK("Schlafenszeit",gzClock(sx.sleep_start),"",sx.sleep_end?"auf "+gzClock(sx.sleep_end):"")}</div>
   ${stg.length?`<div class="gzstg">${stg.map(([l,v,c])=>`<i style="flex:${v||0};background:${c}" title="${l}"></i>`).join("")}</div><div class="gzleg">${stg.map(([l,v,c])=>`<span><i style="background:${c}"></i>${l} ${gzHm(v)}</span>`).join("")}</div>`:""}
@@ -108,23 +108,23 @@ function vGesund(){if(!C.store)return`<div class="lt"><div><h2>Gesundheit</h2></
   <div class="gzks small">${gzK("Ø Dauer",gzHm(gzAvg(L.map(d=>D(d).sleep_s))),"h")}${gzK("Schlaf-HF",sx.sleep_hr?n0(sx.sleep_hr):"–","bpm")}${gzK("SpO₂ Nacht",sx.sleep_spo2?n0(sx.sleep_spo2):"–","%",sx.sleep_spo2_min?"min. "+sx.sleep_spo2_min+" %":"")}</div></div>`;
  /* HRV */
  const hs=HS[hx.hrv_status];
- o+=`<div class="card"><h2><span class="ct">${ic("heart")}HRV</span><small>${hv?tdLong(hv.d):""}</small></h2><div class="gzks">${gzK("Letzte Nacht",hv?hv.v:"–","ms",hs?hs[0]:"",hs?hs[1]:null)}${gzK("Ø 7 Tage",hx.hrv_week||"–","ms")}${gzK("Normalbereich",hx.hrv_lo?`${hx.hrv_lo}–${hx.hrv_hi}`:"–","ms")}</div>
+ o+=`<div class="card"><h2><span class="ct" style="--mc:#f472b6">${ic("heart")}HRV</span><small>${hv?tdLong(hv.d):""}</small></h2><div class="gzks">${gzK("Letzte Nacht",hv?hv.v:"–","ms",hs?hs[0]:"",hs?hs[1]:null)}${gzK("Ø 7 Tage",hx.hrv_week||"–","ms")}${gzK("Normalbereich",hx.hrv_lo?`${hx.hrv_lo}–${hx.hrv_hi}`:"–","ms")}</div>
   ${gzLine(L.map(d=>D(d).hrv),{lo:hx.hrv_lo,hi:hx.hrv_hi,c:"var(--a2)"})}${gzAxis(L)}<p class="s mute" style="margin:6px 0 0">Grünes Band = dein persönlicher Normalbereich laut Garmin. Höher ist meist entspannter.</p></div>`;
  /* Ruhepuls */
- o+=`<div class="card"><h2><span class="ct">${ic("pulse")}Ruhepuls</span></h2><div class="gzks">${gzK("Heute",rp?rp.v:"–","bpm",rp&&rb?(rp.v-rb>0?"+":"")+n1(rp.v-rb)+" ggü. Ø":"",rp&&rb?(rp.v-rb<=2?"g":rp.v-rb<=5?"y":"r"):null)}${gzK("Ø 28 Tage",rb?n1(rb):"–","bpm")}${gzK("Tiefster",(()=>{const v=L.map(d=>D(d).rhr).filter(x=>x!=null);return v.length?Math.min(...v):"–"})(),"bpm",GZ.r+" Tage")}</div>
+ o+=`<div class="card"><h2><span class="ct" style="--mc:#fb7185">${ic("pulse")}Ruhepuls</span></h2><div class="gzks">${gzK("Heute",rp?rp.v:"–","bpm",rp&&rb?(rp.v-rb>0?"+":"")+n1(rp.v-rb)+" ggü. Ø":"",rp&&rb?(rp.v-rb<=2?"g":rp.v-rb<=5?"y":"r"):null)}${gzK("Ø 28 Tage",rb?n1(rb):"–","bpm")}${gzK("Tiefster",(()=>{const v=L.map(d=>D(d).rhr).filter(x=>x!=null);return v.length?Math.min(...v):"–"})(),"bpm",GZ.r+" Tage")}</div>
   ${gzLine(L.map(d=>D(d).rhr),{c:"#fb7185"})}${gzAxis(L)}</div>`;
  /* Body Battery & Stress */
- o+=`<div class="card"><h2><span class="ct">${ic("battery")}Body Battery & Stress</span></h2><div class="gzks">${gzK("Jetzt",td.bb_now??"–","",td.bb_high!=null?"Hoch "+td.bb_high+" · Tief "+td.bb_low:"",td.bb_now!=null?(td.bb_now>=51?"g":td.bb_now>=26?"y":"r"):null)}
+ o+=`<div class="card"><h2><span class="ct" style="--mc:#34d399">${ic("battery")}Body Battery & Stress</span></h2><div class="gzks">${gzK("Jetzt",td.bb_now??"–","",td.bb_high!=null?"Hoch "+td.bb_high+" · Tief "+td.bb_low:"",td.bb_now!=null?(td.bb_now>=51?"g":td.bb_now>=26?"y":"r"):null)}
   ${gzK("Aufgeladen",td.bb_charged??"–","",td.bb_sleep_gain!=null?"+"+td.bb_sleep_gain+" im Schlaf":"")}${gzK("Stress Ø",td.stress??"–","",td.stress!=null?(td.stress<=25?"ruhig":td.stress<=50?"niedrig":td.stress<=75?"mittel":"hoch"):"",td.stress!=null?(td.stress<=50?"g":td.stress<=75?"y":"r"):null)}</div>
   ${gzBars(L.map(d=>D(d).bb_high),{col:v=>v>=50?null:v>=26?"var(--y)":"var(--r)"})}${gzAxis(L)}<p class="s mute" style="margin:6px 0 0">Balken = höchster Body-Battery-Wert des Tages.</p></div>`;
  /* Aktivität */
- o+=`<div class="card"><h2><span class="ct">${ic("steps")}Aktivität</span></h2><div class="gzks">${gzK("Ø Schritte",n0(gzAvg(L.map(d=>D(d).steps))),"",GZ.r+" Tage")}${gzK("Aktiv-kcal",td.kcal_active!=null?n0(td.kcal_active):"–","kcal","heute")}${gzK("Verbrauch",td.kcal!=null?n0(td.kcal):"–","kcal","heute gesamt")}</div>
+ o+=`<div class="card"><h2><span class="ct" style="--mc:#fb923c">${ic("steps")}Aktivität</span></h2><div class="gzks">${gzK("Ø Schritte",n0(gzAvg(L.map(d=>D(d).steps))),"",GZ.r+" Tage")}${gzK("Aktiv-kcal",td.kcal_active!=null?n0(td.kcal_active):"–","kcal","heute")}${gzK("Verbrauch",td.kcal!=null?n0(td.kcal):"–","kcal","heute gesamt")}</div>
   ${gzBars(L.map(d=>D(d).steps),{line:sg,col:(v)=>v>=sg?"var(--g)":null})}${gzAxis(L)}</div>`;
  /* Atmung & Sauerstoff */
- o+=`<div class="card"><h2><span class="ct">${ic("lungs")}Atmung & Sauerstoff</span></h2><div class="gzks">${gzK("Atmung",td.resp??(sx.sleep_resp??"–"),"/min","Ø "+n1(gzAvg(L.map(d=>D(d).resp)))+" in "+GZ.r+" T")}${gzK("SpO₂",td.spo2??"–","%",gzAvg(L.map(d=>D(d).spo2))?"Ø "+n0(gzAvg(L.map(d=>D(d).spo2)))+" %":"")}${gzK("Schlafstress",sx.sleep_stress!=null?n0(sx.sleep_stress):"–","")}</div></div>`;
+ o+=`<div class="card"><h2><span class="ct" style="--mc:#22d3ee">${ic("lungs")}Atmung & Sauerstoff</span></h2><div class="gzks">${gzK("Atmung",td.resp??(sx.sleep_resp??"–"),"/min","Ø "+n1(gzAvg(L.map(d=>D(d).resp)))+" in "+GZ.r+" T")}${gzK("SpO₂",td.spo2??"–","%",gzAvg(L.map(d=>D(d).spo2))?"Ø "+n0(gzAvg(L.map(d=>D(d).spo2)))+" %":"")}${gzK("Schlafstress",sx.sleep_stress!=null?n0(sx.sleep_stress):"–","")}</div></div>`;
  /* Körper */
  const W=GW(),WL=L.map(d=>tdWaage()[d]||D(d).weight||null),fit=C.store.fitness||{},w0=WL.find(x=>x!=null),goal=C.profil&&C.profil.zielGewicht;
- o+=`<div class="card"><h2><span class="ct">${ic("scale")}Körper</span><button class="btn sm" data-tdweight="1">Eintragen</button></h2><div class="gzks">${gzK("Gewicht",W?n1(W):"–","kg",w0&&W&&w0!==W?(W-w0>0?"+":"")+n1(W-w0)+" kg in "+GZ.r+" T":"")}${gzK("Ziel",goal?n1(goal):"–","kg",goal&&W?n1(Math.abs(W-goal))+" kg "+(W>goal?"noch runter":"noch rauf"):"")}${gzK("Fitnessalter",fit.age!=null?n0(fit.age):"–","",fit.chrono?"echt "+fit.chrono:"")}</div>
+ o+=`<div class="card"><h2><span class="ct" style="--mc:#60a5fa">${ic("scale")}Körper</span><button class="btn sm" data-tdweight="1">Eintragen</button></h2><div class="gzks">${gzK("Gewicht",W?n1(W):"–","kg",w0&&W&&w0!==W?(W-w0>0?"+":"")+n1(W-w0)+" kg in "+GZ.r+" T":"")}${gzK("Ziel",goal?n1(goal):"–","kg",goal&&W?n1(Math.abs(W-goal))+" kg "+(W>goal?"noch runter":"noch rauf"):"")}${gzK("Fitnessalter",fit.age!=null?n0(fit.age):"–","",fit.chrono?"echt "+fit.chrono:"")}</div>
   ${gzLine(WL,{c:"var(--acc)"})}${gzAxis(L)}${fit.bmi?`<p class="s mute" style="margin:6px 0 0">BMI ${n1(fit.bmi)} (Garmin) – bei viel Muskelmasse nur grob aussagekräftig.</p>`:""}</div>`;
  return o+`<p class="foot">Alle Werte von deiner Garmin-Uhr. Einordnung im Vergleich zu deinen eigenen Werten – Orientierung, keine Diagnose.</p>`}
 
@@ -143,25 +143,25 @@ function vStat(){const all=GZ.full||C.store;if(!all)return`<div class="lt"><div>
  /* Wochen-km */
  const weeks=[];for(let m=EK.monday(from);m<=T;m=EK.add(m,7))weeks.push(m);
  const wk=weeks.map(m=>run(acts).filter(a=>a.date>=m&&a.date<EK.add(m,7)).reduce((s,a)=>s+(a.km||0),0));
- o+=`<div class="card"><h2><span class="ct">${ic("run")}Laufen</span></h2><div class="gzks">${gzK("Kilometer",n1(km(cur2)),"km",delta(km(cur2),km(prev)," km",1))}${gzK("Läufe",R.length,"",delta(R.length,run(prev).length,"",0))}${gzK("Ø Pace",pace||"–","/km")}</div>
+ o+=`<div class="card"><h2><span class="ct" style="--mc:#34d399">${ic("run")}Laufen</span></h2><div class="gzks">${gzK("Kilometer",n1(km(cur2)),"km",delta(km(cur2),km(prev)," km",1))}${gzK("Läufe",R.length,"",delta(R.length,run(prev).length,"",0))}${gzK("Ø Pace",pace||"–","/km")}</div>
   ${gzBars(wk)}<div class="gzx"><span>KW ${gzKw(weeks[0])}</span><span>km pro Woche</span><span>diese</span></div>
   <div class="cmp"><span>Längster Lauf</span><b>${longest?n1(longest)+" km":"–"}</b></div></div>`;
  /* Bestzeiten (alle Daten) */
  const allR=(Array.isArray(all.acts)?all.acts:Object.values(all.acts||{})).filter(a=>/running/.test(a.type)),best=f=>allR.filter(a=>a[f]).sort((a,b)=>a[f]-b[f])[0];
  const b5=best("f5k"),b10=best("f10k"),bl=allR.slice().sort((a,b)=>(b.km||0)-(a.km||0))[0];
- o+=`<div class="card"><h2><span class="ct">${ic("trophy")}Bestwerte</span><small>alle Daten</small></h2><div class="cmp"><span>Schnellste 5 km</span><b>${b5?gzTime(b5.f5k)+` <small class="mute">${dm(b5.date)}</small>`:"–"}</b></div>
+ o+=`<div class="card"><h2><span class="ct" style="--mc:#fbbf24">${ic("trophy")}Bestwerte</span><small>alle Daten</small></h2><div class="cmp"><span>Schnellste 5 km</span><b>${b5?gzTime(b5.f5k)+` <small class="mute">${dm(b5.date)}</small>`:"–"}</b></div>
   <div class="cmp"><span>Schnellste 10 km</span><b>${b10?gzTime(b10.f10k)+` <small class="mute">${dm(b10.date)}</small>`:"–"}</b></div><div class="cmp"><span>Längster Lauf</span><b>${bl&&bl.km?n1(bl.km)+` km <small class="mute">${dm(bl.date)}</small>`:"–"}</b></div></div>`;
  /* Training gesamt */
- o+=`<div class="card"><h2><span class="ct">${ic("gym")}Training</span></h2><div class="gzks">${gzK("Einheiten",cur2.filter(a=>isSportA(a)).length,"",delta(cur2.filter(isSportA).length,prev.filter(isSportA).length,"",0))}${gzK("Gym",gym(cur2).length,"")}${gzK("Zeit",gzHm(mins(cur2.filter(isSportA))*60),"h")}</div>${gzTreue(from,T)}</div>`;
+ o+=`<div class="card"><h2><span class="ct" style="--mc:#a78bfa">${ic("gym")}Training</span></h2><div class="gzks">${gzK("Einheiten",cur2.filter(a=>isSportA(a)).length,"",delta(cur2.filter(isSportA).length,prev.filter(isSportA).length,"",0))}${gzK("Gym",gym(cur2).length,"")}${gzK("Zeit",gzHm(mins(cur2.filter(isSportA))*60),"h")}</div>${gzTreue(from,T)}</div>`;
  /* Ernährung */
  const I=[];for(let d=from;d<=T;d=EK.add(d,1))I.push(info(d));const full=I.filter(x=>x.full&&x.done),sk=streaks();
- o+=`<div class="card"><h2><span class="ct">${ic("apple")}Ernährung</span></h2><div class="gzks">${gzK("Ø gegessen",n0(gzAvg(full.map(x=>x.s.kcal))),"kcal")}${gzK("Im Ziel",full.filter(x=>x.kg==="g").length,"Tage","von "+full.length+" erfasst")}${gzK("Ø Protein",n0(gzAvg(full.map(x=>x.s.p))),"g")}</div>
+ o+=`<div class="card"><h2><span class="ct" style="--mc:#34d399">${ic("apple")}Ernährung</span></h2><div class="gzks">${gzK("Ø gegessen",n0(gzAvg(full.map(x=>x.s.kcal))),"kcal")}${gzK("Im Ziel",full.filter(x=>x.kg==="g").length,"Tage","von "+full.length+" erfasst")}${gzK("Ø Protein",n0(gzAvg(full.map(x=>x.s.p))),"g")}</div>
   <div class="cmp"><span>Streak · Rekord</span><b class="ct">${ic("flame")}${sk.n} · ${sk.best} Tage</b></div></div>`;
  /* Erholung & Körper im Vergleich */
  const avgF=(f,a,b)=>{const v=[];for(let d=a;d<=b;d=EK.add(d,1)){const x=(days[d]||{})[f];if(x!=null)v.push(x)}return gzAvg(v)};
  const sN=avgF("sleep_s",from,T),sP=avgF("sleep_s",pf,EK.add(from,-1)),hN=avgF("hrv",from,T),hP=avgF("hrv",pf,EK.add(from,-1)),rN=avgF("rhr",from,T),rP=avgF("rhr",pf,EK.add(from,-1));
  const ws=[];for(let d=from;d<=T;d=EK.add(d,1))ws.push(tdWaage()[d]||(days[d]||{}).weight||null);const wv=ws.filter(x=>x!=null);
- o+=`<div class="card"><h2><span class="ct">${ic("moonz")}Erholung & Körper</span></h2><div class="gzks">${gzK("Ø Schlaf",gzHm(sN),"h",sP?cmpTxt(sN,sP,1,v=>gzHm(v)+" h"):"")}${gzK("Ø HRV",hN?n0(hN):"–","ms",hP&&hN?cmpTxt(hN,hP,1,v=>n0(v)+" ms"):"")}${gzK("Ø Ruhepuls",rN?n1(rN):"–","bpm",rP&&rN?cmpTxt(rN,rP,-1,v=>n1(v)):"")}</div>
+ o+=`<div class="card"><h2><span class="ct" style="--mc:#a78bfa">${ic("moonz")}Erholung & Körper</span></h2><div class="gzks">${gzK("Ø Schlaf",gzHm(sN),"h",sP?cmpTxt(sN,sP,1,v=>gzHm(v)+" h"):"")}${gzK("Ø HRV",hN?n0(hN):"–","ms",hP&&hN?cmpTxt(hN,hP,1,v=>n0(v)+" ms"):"")}${gzK("Ø Ruhepuls",rN?n1(rN):"–","bpm",rP&&rN?cmpTxt(rN,rP,-1,v=>n1(v)):"")}</div>
   ${wv.length>=2?`<div class="cmp"><span>Gewicht</span><b>${n1(wv[0])} → ${n1(wv[wv.length-1])} kg <small class="mute">(${wv[wv.length-1]-wv[0]>0?"+":""}${n1(wv[wv.length-1]-wv[0])})</small></b></div>${gzLine(ws,{c:"var(--acc)"})}`:""}</div>`;
  return o+`<p class="foot">Pfeile vergleichen mit dem gleich langen Zeitraum davor. ${GZ.full?"":"Lädt die ganze Historie …"}</p>`}
 const cmpTxt=(a,b,dir,f)=>`<span class="${a>=b?"up":"dn"} ${(a-b)*dir>=0?"good":"bad"}">${ic(a>=b?"up":"down")} ${f(Math.abs(a-b))}</span>`;

@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=a172cde"></script>
+<script src="design.js?v=9ab4322"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -441,17 +441,83 @@ select.inp{color:var(--ink)}
 .swt i{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--s1),var(--s2));box-shadow:0 0 14px color-mix(in srgb,var(--s1) 40%,transparent);transition:transform .2s}
 .swt.on i{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--s1),0 0 20px var(--s1);transform:scale(1.04)}
 @media(prefers-reduced-motion:reduce){main,.toast,.tdc,.tabs svg,.lamp{animation:none!important;transition:none!important}}
+/* ===================================================================================================
+   Soft Glass (Standard): Nachtblau, transparente Karten mit feinen Lichtreflexen.
+   Blaues Licht nur an ausgewählten Stellen: Knöpfe, Fortschritte, aktiver Reiter.
+   =================================================================================================== */
+:root[data-bg="nacht"]{--bg:#070918;--card:rgba(255,255,255,.035);--card2:#12152c;--ink:#f3f4fb;--mute:#8d92ad;--line:rgba(255,255,255,.07);
+ --fill:rgba(255,255,255,.06);--edge:rgba(255,255,255,.09);--gl-bg:rgba(20,23,48,.55);--gl-brd:rgba(255,255,255,.12);
+ --cardbg:linear-gradient(155deg,rgba(255,255,255,.075),rgba(255,255,255,.018) 48%,rgba(255,255,255,.035))}
+:root{--trk:rgba(255,255,255,.07)}:root[data-bg="hell"]{--trk:rgba(0,0,0,.07)}
+:root[data-bg="nacht"] body{background:linear-gradient(165deg,#0c1030 0%,#070918 38%,#05060f 70%,#0b0e2a 100%) fixed}
+:root[data-bg="nacht"] body::before{background:radial-gradient(45% 40% at 10% 0%,color-mix(in srgb,var(--a1) 20%,transparent),transparent 70%),radial-gradient(40% 35% at 100% 25%,color-mix(in srgb,var(--a2) 12%,transparent),transparent 70%);opacity:.85}
+/* Karten: Glas mit Lichtkante und weichem Reflex oben links – ohne Leuchten */
+.card,.tile,.res,.hint,.dnav,.mact button,.btn.idee,.btn.dis,.mtile{position:relative;overflow:hidden;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.09),inset 0 0 0 1px rgba(255,255,255,.02),0 18px 40px -24px rgba(0,0,0,.8)}
+.card::before,.mtile::before,.tile::before{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+ background:radial-gradient(120% 70% at 0% 0%,rgba(255,255,255,.07),transparent 45%),radial-gradient(80% 60% at 100% 100%,rgba(255,255,255,.025),transparent 60%)}
+:root[data-bg="hell"] .card::before,:root[data-bg="hell"] .mtile::before{opacity:.4}
+.card>*,.mtile>*{position:relative}
+.cico,.gzpi,.gzsum .gzsi,.gzok{box-shadow:none!important}
+.hint.acc{background:var(--cardbg),var(--card);border-color:var(--edge)}.hint.acc>.ic{color:var(--acc)}
+/* runde Glas-Bläschen für Symbole */
+.gbub{flex:none;display:inline-grid;place-items:center;width:40px;height:40px;border-radius:50%;color:var(--mc,var(--acc));
+ background:radial-gradient(70% 70% at 30% 25%,rgba(255,255,255,.16),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
+.gbub .ic{width:20px;height:20px}
+.ct{gap:10px}.ct>.ic{box-sizing:content-box;padding:8px;border-radius:50%;width:18px;height:18px;color:var(--mc,var(--acc));
+ background:radial-gradient(70% 70% at 30% 25%,rgba(255,255,255,.15),rgba(255,255,255,.035));border:1px solid rgba(255,255,255,.12)}
+.card h2{margin-bottom:12px}
+/* Fortschritt-Karte mit Bogen */
+.prog{padding:16px 16px 14px;text-align:center}
+.prog .ph{display:flex;align-items:center;gap:10px;text-align:left}.prog .ph b{flex:1;font-size:16px}.prog .ph small{color:var(--mute);font-size:13px}
+.arc{display:block;width:min(270px,82%);margin:-2px auto -70px}
+.arc .aon{animation:aon .5s ease both}@keyframes aon{from{opacity:0}to{opacity:1}}
+.arcc{position:relative;display:flex;flex-direction:column;align-items:center;margin-bottom:12px}
+.arcc b{font-size:46px;font-weight:800;letter-spacing:-.04em;line-height:1}.arcc span{font-size:14px;color:var(--mute);margin-top:2px}
+.arcf{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:12px;border-top:1px solid var(--line)}
+.arcf small{display:block;font-size:12px;color:var(--mute)}.arcf b{font-size:18px;letter-spacing:-.02em}.arcf .cact{color:var(--c)}
+.arcs{margin-top:10px}
+.mtiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.mtile{background:var(--cardbg),var(--card);border:1px solid var(--edge);border-radius:22px;padding:12px;display:flex;flex-direction:column;gap:3px}
+.mtile .gbub{width:36px;height:36px;margin-bottom:6px}.mtile .gbub .ic{width:18px;height:18px}
+.mtile small{font-size:12px;color:var(--mute)}.mtile>b{font-size:18px;letter-spacing:-.02em;white-space:nowrap}.mtile>b small{font-size:12px;font-weight:500}
+.mtile .bar{height:5px;margin-top:6px}.mtile .bar i{box-shadow:none}
+.mdet2{padding:4px 16px 12px}.mdet2 details.more{margin-top:10px}
+details.more summary{color:var(--acc);font-weight:600}
+/* Mahlzeiten-Zeilen ruhiger */
+.mic{width:50px;height:50px}.mic svg:not(.ic){width:50px;height:50px}.mtx b{font-size:16.5px}.mtx small{font-size:13px}
+.mpl{width:40px;height:40px;font-size:24px}
+/* Licht nur, wo es zählt */
+.gzr .rg{filter:none}.tdcal .tdcd.sel{box-shadow:none}.glassb{box-shadow:var(--gl-sh)}
+.bar i{box-shadow:none}
+.sw8{grid-template-columns:repeat(5,1fr);gap:8px}.swt i{width:40px;height:40px}.swt{font-size:11px}
+/* Kalender, Verlauf & Co. an das Glas anpassen */
+.cal button{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.05)}.cal .h{color:var(--mute)}
+.kp b{font-size:24px;letter-spacing:-.02em}.kp b.ct{display:inline-flex;justify-content:center}.kp .ct>.ic{padding:0;border:0;background:none;color:var(--c)}
+.wk i{border-radius:6px 6px 2px 2px}.drow{border-top:1px solid var(--line)}
+.leg i{border-radius:50%}
+.res .kc b{letter-spacing:-.02em}.res{border-left-width:3px}
+.amt .units button{background:var(--fill);border:1px solid var(--edge);color:var(--ink)}.amt .units button.on{background:var(--acc);color:#06080c;border-color:var(--acc)}
+.qb{background:var(--fill);border:1px solid var(--edge)}.nut div{background:var(--fill);border:1px solid var(--edge)}
+.mgrid{background:var(--cardbg),var(--card);border:1px solid var(--edge)}.mgrid div{border-color:var(--line)!important}
+.mft{border-top:1px solid var(--line)}.mft button+button{border-left:1px solid var(--line)}
+.cpy{background:var(--fill);border:1px dashed color-mix(in srgb,var(--acc) 45%,transparent)}
+.lblhint{background:var(--fill);border:1px solid var(--edge)}
+.burn{border-top:1px solid var(--line)}
+.tdhero{background:var(--cardbg),var(--card)}.tdhero::after{background:radial-gradient(closest-side,color-mix(in srgb,var(--a1) 18%,transparent),transparent)}
+.tdring{width:88px;height:88px}
+.kp b.ct{display:flex;justify-content:center;align-items:center;gap:2px}.btn.dis{justify-content:flex-start}.pgrp{margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}.pgrp summary{font-size:16px}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="gA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--a1)"/><stop offset="1" style="stop-color:var(--a2)"/></linearGradient></defs></svg>
 <div id="app"></div>
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=a172cde"></script>
-<script src="todos.js?v=a172cde"></script>
-<script src="gesund.js?v=a172cde"></script>
-<script src="mitteilungen.js?v=a172cde"></script>
-<script src="suche.js?v=a172cde"></script>
+<script src="kern.js?v=9ab4322"></script>
+<script src="todos.js?v=9ab4322"></script>
+<script src="gesund.js?v=9ab4322"></script>
+<script src="mitteilungen.js?v=9ab4322"></script>
+<script src="suche.js?v=9ab4322"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -658,6 +724,12 @@ function render(){
  <div class="stat" id="st"></div><main class="v-${view}">${({tag:()=>vTag(sk),kal:vKal,verlauf:vVerlauf,rezepte:vRezepte,ideen:vIdeen,lm:vLm,profil:vProfil,meintag:vTraining,plan:vPlan,todos:vTodos,gesund:vGesund,stat:vStat})[view]()}</main>
  <nav class="tabs"><i class="lamp" aria-hidden="true"></i>${TABS.map(([k,i,l])=>`<button ${k==="mehr"?'data-menu="1"':`data-go="${k}"`} class="${on===k?"on":""}" aria-label="${l}">${svg(i)}<span>${l}</span>${k==="todos"&&open?`<i class="bdg">${open}</i>`:""}</button>`).join("")}</nav>`;
  setStatus();placeLamp()}
+/* Bogen-Anzeige aus Segmenten (240°), Fortschritt in der Akzentfarbe mit Leuchten */
+function arcSvg(q,col){const N=12,R=86,cx=110,cy=104,A0=150,SW=240,gap=9,P=(a,r)=>[cx+r*Math.cos(a*Math.PI/180),cy+r*Math.sin(a*Math.PI/180)],Q=Math.max(0,Math.min(1,q))*N;
+ const seg=(a1,a2,st,cls)=>{const[x1,y1]=P(a1,R),[x2,y2]=P(a2,R);return`<path d="M${x1.toFixed(1)} ${y1.toFixed(1)}A${R} ${R} 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)}" stroke="${st}"${cls||""}/>`};
+ let t="",o="";for(let j=0;j<N;j++){const a1=A0+j*SW/N+gap/2,a2=A0+(j+1)*SW/N-gap/2,f=Math.max(0,Math.min(1,Q-j));t+=seg(a1,a2,"var(--trk)");
+  if(f>0)o+=seg(a1,a1+(a2-a1)*f,col||"url(#gA)",` class="aon" style="animation-delay:${j*40}ms"`)}
+ return`<svg class="arc" viewBox="0 0 220 170" aria-hidden="true"><g fill="none" stroke-width="13" stroke-linecap="round">${t}</g><g fill="none" stroke-width="13" stroke-linecap="round" style="filter:drop-shadow(0 0 8px ${col||"var(--a1)"})">${o}</g></svg>`}
 function ringSvg(f,c,big,small){const r=50,C2=2*Math.PI*r,q=Math.max(0,Math.min(1,f||0));
  return`<svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--fill)" stroke-width="10"/><circle class="gring" cx="60" cy="60" r="${r}" fill="none" stroke="${q<=0?"transparent":c==="var(--acc)"?"url(#gA)":c}" stroke-width="10" stroke-linecap="round" stroke-dasharray="${q*C2} ${C2}" transform="rotate(-90 60 60)" style="filter:drop-shadow(0 0 5px ${c==="var(--acc)"?"var(--a1)":c==="transparent"?"transparent":c})"/>
  <text x="60" y="58" text-anchor="middle" font-size="25" font-weight="700" fill="var(--ink)">${big}</text><text x="60" y="78" text-anchor="middle" font-size="11.5" fill="var(--mute)">${small}</text></svg>`}
@@ -670,18 +742,21 @@ function vTag(sk=streaks()){
  let o=`${cur!==T?`<button class="today" data-day="0">↩ Zurück zu heute</button>`:""}${cur>T?`<div class="fr">Vorausplanen – Einträge zählen erst an diesem Tag</div>`:""}`;
  o+=partHint(i)+cheatHint(i)+cheatNote(i);
  if(cur===T&&!sk.today&&sk.n>0)o+=`<div class="hint">${ic("flame")}<span>Trag heute etwas ein, damit deine <b>${sk.n}-Tage-Streak</b> weiterläuft.</span></div>`;
- const mac=[["p","Protein","var(--p)"],["c","Kohlenhydrate","var(--c)"],["f","Fett","var(--f)"]].map(([k,l,c])=>{const v=i.s[k],g=i.m[k],a=i.has?liveAmp(k,v,g,i.done):null;
-  return`<div><small>${l}</small><b>${n0(v)} <small>/ ${n0(g)} g</small></b><div class="bar"><i style="width:${Math.min(100,g?v/g*100:0)}%;background:${a==="r"||a==="y"?COL[a]:c}"></i></div></div>`}).join("");
+ /* Makros als Glas-Kacheln mit Symbol (wie im Soft-Glass-Entwurf) */
+ const MAC=[["p","Protein","layers","#60a5fa"],["c","Kohlenhydrate","leaf","#34d399"],["f","Fett","drop","#fbbf24"]];
+ const mac=MAC.map(([k,l,icn,col])=>{const v=i.s[k],g=i.m[k],a=i.has?liveAmp(k,v,g,i.done):null,q=g?Math.min(1,v/g):0;
+  return`<div class="mtile" style="--mc:${col}"><span class="gbub">${ic(icn)}</span><small>${l}</small><b>${n0(v)}<small>/${n0(g)} g</small></b><div class="bar"><i style="width:${q*100}%;background:${a==="r"||a==="y"?COL[a]:col}"></i></div></div>`}).join("");
  const more=[["fib","Ballaststoffe"],["sug","Zucker"],["salt","Salz"]].map(([k,l])=>{const v=i.s[k],g=i.m[k],a=i.has?liveAmp(k,v,g,i.done):null,lim=k!=="fib";
   return`<div class="mrow"><div class="t"><span>${l}</span><span><b>${n1(v)}</b> ${lim?"/ max. ":"/ "}${n1(g)} g</span></div><div class="bar"><i style="width:${Math.min(100,g?v/g*100:0)}%;background:${a?COL[a]:"var(--grid)"}"></i></div></div>`}).join("");
- const zl=i.d>T&&t.aus?`Ausgleich −${n0(t.aus)}`:"";
- o+=`<div class="card"><div class="hero">${ringSvg(t.kcal?i.s.kcal/t.kcal:0,ka?COL[ka]:"var(--grid)",n0(Math.abs(left)),left>=0?"kcal übrig":"kcal zu viel")}
-  <div class="kv"><div><span class="mute">Ziel${noGarmin(i)?" (vorläufig)":""}</span><b>${n0(t.kcal)}</b></div>${i.d<=T&&t.train?`<div class="s"><span class="mute">davon aktiv</span><span style="color:var(--c)">+ ${ic("flame")} ${n0(t.train)}</span></div>`:""}<div><span class="mute">Gegessen</span><b>${n0(i.s.kcal)}</b></div>
-  ${zl?`<div class="s mute block">${zl}</div>`:""}
-  ${i.done&&i.kg?`<div><span class="chip" style="--c0:${COL[i.kg]}">${i.ch&&i.ch.state==="full"?"Ausgeglichen ↺":AMPT[i.kg]}</span></div>`:""}</div></div>
-  ${i.d>T?`<p class="s mute ringnote">Aktivkalorien kommen am Tag selbst dazu.</p>`:""}
-  <div class="mac">${mac}</div>
-  ${i.d<=T?`<details class="more"><summary>So entsteht dein Ziel ›</summary>${burnRow(i)}<p class="s mute" style="margin:8px 0 0">Basis: ${src}${t.aus?` · Ausgleich −${n0(t.aus)} kcal`:""}. Im Ring steht Ziel − gegessen.</p></details>`:""}
+ const zl=i.d>T&&t.aus?`Ausgleich −${n0(t.aus)} kcal`:"",q=t.kcal?i.s.kcal/t.kcal:0,over=left<0;
+ o+=`<div class="card prog"><div class="ph"><span class="gbub">${ic("target")}</span><b>Dein Fortschritt</b><small>${cur===T?"heute":ddm(cur)}</small></div>
+  ${arcSvg(q,over?"var(--r)":null)}
+  <div class="arcc"><b>${n0(Math.abs(left))}</b><span>${over?"kcal zu viel":"kcal übrig"}</span></div>
+  <div class="arcf"><div><small>Gegessen</small><b>${n0(i.s.kcal)}</b></div><div><small>Ziel${noGarmin(i)?" (vorläufig)":""}</small><b>${n0(t.kcal)}</b></div><div><small>Aktiv</small><b class="cact">${i.d<=T?"+"+n0(t.train||0):"–"}</b></div></div>
+  ${i.done&&i.kg?`<div class="arcs">${tone(i.kg,i.ch&&i.ch.state==="full"?"ausgeglichen":AMPT[i.kg])}</div>`:""}${zl?`<p class="s mute ringnote">${zl}</p>`:""}
+  ${i.d>T?`<p class="s mute ringnote">Aktivkalorien kommen am Tag selbst dazu.</p>`:""}</div>
+  <div class="mtiles">${mac}</div>
+  <div class="card slim mdet2">${i.d<=T?`<details class="more"><summary>So entsteht dein Ziel ›</summary>${burnRow(i)}<p class="s mute" style="margin:8px 0 0">Basis: ${src}${t.aus?` · Ausgleich −${n0(t.aus)} kcal`:""}.</p></details>`:""}
   <details class="more"><summary>Weitere Nährwerte ›</summary>${more}<button class="btn w mt10" data-micro="1">Vitamine & Mineralstoffe ›</button></details></div>`;
  /* Mahlzeiten direkt unter der Ring-Karte (häufigste Aktion), Wochen-/Gewichtskarten darunter */
  /* Mahlzeiten wie bei Yazio: kompakte Zeilen mit Ring (gegessen / Anteil am Tagesziel), Antippen öffnet die Mahlzeit einzeln */
@@ -895,19 +970,19 @@ function vProfil(){
  <label class="f">Alltag (ohne Sport)</label><select class="inp" name="job">${opt(EK.JOBS,p.job)}</select>
  <label class="f">Ziel-Tempo</label><select class="inp" name="rate">${EK.RATES.map(([v,l])=>`<option value="${v}" ${v===rateOf(p)?"selected":""}>${l}</option>`).join("")}</select>
  <label class="f">Eigene Zielanpassung in kcal (optional, ersetzt das Ziel)</label><input class="inp" name="adj" type="number" inputmode="numeric" value="${pr.adj??""}" placeholder="z. B. −300">
- <h2 style="margin-top:18px">Verbrauch & Quelle</h2>
+ <details class="more pgrp"><summary>Verbrauch & Quelle ›</summary>
  <label class="f">Yazio-Kalorienwert (kcal pro Tag, ohne Aktivitäten)</label><input class="inp" name="yazio" type="number" inputmode="numeric" value="${pr.yazio??""}" placeholder="aus Yazio übernehmen">
  <div class="cmp"><span>Formel (inkl. Alltag)</span><b>${n0(b.formel)} kcal</b></div><div class="cmp"><span>Yazio</span><b>${b.yazio?n0(b.yazio)+" kcal":"–"}</b></div>
  <div class="cmp"><span>Garmin Ruheverbrauch<br><small class="mute">+ Aktivkalorien jeden Tag als Bonus</small></span><b>${b.garmin?n0(b.garmin)+" kcal"+(b.aktiv!=null?`<br><small class="mute">Ø aktiv ${n0(b.aktiv)}</small>`:""):"noch zu wenig Daten"}</b></div>
  <label class="f">Tagesziel berechnen aus</label><select class="inp" name="src">${opt(EK.SRC,p.src)}</select>
  <div class="tg"><span>Aktivkalorien als Bonus dazurechnen</span><input type="checkbox" name="train" ${p.train?"checked":""}></div>
  <div class="tg"><span>Überschuss ausgleichen<br><small class="mute">Was du an einem Tag zu viel isst, wird auf die Folgetage verteilt. Aus = jeder Tag behält sein normales Ziel. Geht auch je Tag im Tagebuch.</small></span><input type="checkbox" name="ausgleich" ${ausOn()?"checked":""}></div>
- <h2 style="margin-top:18px">Nährwertziele</h2>
+ </details><details class="more pgrp"><summary>Nährwertziele ›</summary>
  <div class="tg"><span>Feste Makroziele (z. B. aus Yazio)</span><input type="checkbox" name="fixon" ${fx?"checked":""}></div>
  ${fx?`<div class="row"><div><label class="f">Protein g</label><input class="inp" name="fp" type="number" inputmode="numeric" value="${p.fix.p}"></div><div><label class="f">KH g</label><input class="inp" name="fc" type="number" inputmode="numeric" value="${p.fix.c}"></div><div><label class="f">Fett g</label><input class="inp" name="ff" type="number" inputmode="numeric" value="${p.fix.f}"></div></div>`:
  `<div class="row"><div><label class="f">Protein g je kg</label><input class="inp" name="protKg" type="text" inputmode="decimal" value="${dz(p.protKg)}"></div><div><label class="f">Fett % der kcal</label><input class="inp" name="fatPct" type="number" inputmode="numeric" value="${p.fatPct}"></div></div>`}
  <div class="row"><div><label class="f">Ballastst. ab g</label><input class="inp" name="fib" type="number" inputmode="numeric" value="${p.fib}"></div><div><label class="f">Zucker max g</label><input class="inp" name="sugMax" type="number" inputmode="numeric" value="${p.sugMax}"></div><div><label class="f">Salz max g</label><input class="inp" name="saltMax" type="text" inputmode="decimal" value="${dz(p.saltMax)}"></div></div>
- <button class="btn p w" style="margin-top:16px" type="submit">Profil speichern</button></form>
+ </details><button class="btn p w" style="margin-top:16px" type="submit">Profil speichern</button></form>
  ${designCard()}${pnCard()}
  <div class="card"><h2>Verbindung</h2><p class="s mute" style="margin:0 0 10px">Repo ${h(CFG.repo)} · ${Q.length?Q.length+" Änderung(en) warten":"alles gespeichert"}</p>
  <div class="row"><button class="btn" data-reload="1">Neu laden</button><button class="btn" data-blsload="1">Datenbank aktualisieren</button></div>
@@ -1882,7 +1957,7 @@ addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="a172cde";
+const APPV="9ab4322";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;

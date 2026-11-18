@@ -3,13 +3,13 @@
    Farben je Gerät in localStorage „ern_theme“ {acc, bg}. Einstellbar unter Mehr → Design. */
 "use strict";
 /* Akzentfarben: a1 = Hauptfarbe (Knöpfe, Licht, Ringe), a2 = zweite Farbe für Verläufe in Diagrammen */
-const THEMES={eis:["Eisblau","#4fb6d6","#8b7bff"],violett:["Violett","#a78bfa","#f472b6"],neon:["Neon","#34d399","#22d3ee"],
+const THEMES={indigo:["Indigo","#6d74ff","#4f9dff"],eis:["Eisblau","#4fb6d6","#8b7bff"],violett:["Violett","#a78bfa","#f472b6"],neon:["Neon","#34d399","#22d3ee"],
  pink:["Pink","#f472b6","#a78bfa"],orange:["Orange","#fb923c","#f472b6"],gold:["Gold","#fbbf24","#fb7185"],rot:["Rot","#fb7185","#f59e0b"],weiss:["Weiß","#e5e7eb","#8b7bff"]};
-const BGS={schwarz:"Schwarz",grafit:"Grafit",hell:"Hell"};
-const themeGet=()=>{try{return{acc:"eis",bg:"schwarz",...(JSON.parse(localStorage.getItem("ern_theme")||"{}")||{})}}catch(e){return{acc:"eis",bg:"schwarz"}}};
-function themeApply(t){t=t||themeGet();const a=THEMES[t.acc]||THEMES.eis,r=document.documentElement;
- r.style.setProperty("--a1",a[1]);r.style.setProperty("--a2",a[2]);r.dataset.bg=BGS[t.bg]?t.bg:"schwarz";
- const m=document.querySelectorAll('meta[name="theme-color"]');m.forEach(x=>x.setAttribute("content",r.dataset.bg==="hell"?"#f2f2f7":r.dataset.bg==="grafit"?"#0b0d12":"#000000"))}
+const BGS={nacht:"Nachtblau",schwarz:"Schwarz",grafit:"Grafit",hell:"Hell"};
+const themeGet=()=>{try{return{acc:"indigo",bg:"nacht",...(JSON.parse(localStorage.getItem("ern_theme")||"{}")||{})}}catch(e){return{acc:"indigo",bg:"nacht"}}};
+function themeApply(t){t=t||themeGet();const a=THEMES[t.acc]||THEMES.indigo,r=document.documentElement;
+ r.style.setProperty("--a1",a[1]);r.style.setProperty("--a2",a[2]);r.dataset.bg=BGS[t.bg]?t.bg:"nacht";
+ const m=document.querySelectorAll('meta[name="theme-color"]');m.forEach(x=>x.setAttribute("content",r.dataset.bg==="hell"?"#f2f2f7":r.dataset.bg==="grafit"?"#0b0d12":r.dataset.bg==="nacht"?"#070918":"#000000"))}
 function themeSet(p){const t={...themeGet(),...p};try{localStorage.setItem("ern_theme",JSON.stringify(t))}catch(e){}themeApply(t)}
 themeApply();
 
@@ -57,7 +57,7 @@ const ICN={
  trophy:'<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4"/>',
  party:'<path d="M4 20l4-12 8 8z"/><path d="M14 4c.5 1.5 0 2.5-1 3.2M19 6c-1.5.3-2.5 1.2-2.5 2.5M20 13c-1.3-.5-2.6-.2-3.5.8"/><circle cx="17.5" cy="3.5" r=".8"/><circle cx="21" cy="9.5" r=".8"/>',
  moonz:'<path d="M18 14.5A7 7 0 1 1 9.5 6a5.5 5.5 0 0 0 8.5 8.5z"/><path d="M15 4h4l-4 4h4"/>',
- drop:'<path d="M12 3s6 6.4 6 11a6 6 0 0 1-12 0c0-4.6 6-11 6-11z"/>',steps:'<path d="M8 4c2 0 3 2 3 5s-1 4-2.5 4S6 12 6 9s0-5 2-5zM8.5 15.5c1.2 0 2 .8 2 2s-.8 2-2 2-2-.8-2-2 .8-2 2-2zM16 7c2 0 2.5 2 2.5 4.5S17.5 16 16 16s-2.5-2-2.5-4.5S14 7 16 7z"/>',
+ drop:'<path d="M12 3s6 6.4 6 11a6 6 0 0 1-12 0c0-4.6 6-11 6-11z"/>',layers:'<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 12.5l9 5 9-5M3 16.5l9 5 9-5"/>',steps:'<path d="M8 4c2 0 3 2 3 5s-1 4-2.5 4S6 12 6 9s0-5 2-5zM8.5 15.5c1.2 0 2 .8 2 2s-.8 2-2 2-2-.8-2-2 .8-2 2-2zM16 7c2 0 2.5 2 2.5 4.5S17.5 16 16 16s-2.5-2-2.5-4.5S14 7 16 7z"/>',
  stairs:'<path d="M3 20h5v-5h5v-5h5V5h3"/>',brain:'<path d="M9 4.5a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3.5 3.5 0 0 0 3 5.5 3 3 0 0 0 5 1V4.5a3 3 0 0 0-3 0zM15 4.5a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3.5 3.5 0 0 1-3 5.5 3 3 0 0 1-5 1"/>',
  palette:'<path d="M12 3.5a8.5 8.5 0 0 0 0 17c1.5 0 2-1 1.5-2.2-.6-1.4.2-2.8 1.8-2.8H18a3 3 0 0 0 3-3c0-5-4-9-9-9z"/><circle cx="7.5" cy="11" r="1.2"/><circle cx="10.5" cy="7.5" r="1.2"/><circle cx="15" cy="8" r="1.2"/>',
  crown:'<path d="M3.5 8l4.5 4 4-7 4 7 4.5-4-2 11h-13z"/><path d="M11 13.5l-1.5 3h3L11 19"/>',
