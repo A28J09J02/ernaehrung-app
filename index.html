@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=faa33c0"></script>
+<script src="design.js?v=a5ae281"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -757,17 +757,34 @@ main.v-todos{overflow-x:clip;touch-action:pan-y}
 :root:is([data-bg="classic"],[data-bg="classichell"]) .cbar i{background:var(--cc)!important}
 :root:is([data-bg="classic"],[data-bg="classichell"]) :is(.mpl,.res .pl,.plus){border:1.5px solid var(--gold);background:color-mix(in srgb,var(--gold) 12%,transparent)!important}
 :root:is([data-bg="classic"],[data-bg="classichell"]) .gring,:root:is([data-bg="classic"],[data-bg="classichell"]) .tdring circle+circle{stroke-width:11}
+/* Classic – ausgewogen: Messing warm, Bewertungen und Kategorien gedeckt statt knallig */
+:root[data-bg="classic"]{--gold:#d2b071;--g:#97c08a;--y:#e2bf72;--r:#e0907c}
+:root[data-bg="classichell"]{--gold:#8f6f2c;--g:#467a49;--y:#a27420;--r:#a8473a}
+:root:is([data-bg="classic"],[data-bg="classichell"]) .tone{font-weight:650}
+:root:is([data-bg="classic"],[data-bg="classichell"]) .t-g{background:color-mix(in srgb,var(--g) 15%,transparent)}
+:root:is([data-bg="classic"],[data-bg="classichell"]) .t-y{background:color-mix(in srgb,var(--y) 15%,transparent)}
+:root:is([data-bg="classic"],[data-bg="classichell"]) .t-r{background:color-mix(in srgb,var(--r) 15%,transparent)}
+/* Kategorie-Farben behalten, aber mit Messing/Creme abgemischt */
+:root[data-bg="classic"] .td-sw,:root[data-bg="classic"] .tdh{--cm:color-mix(in srgb,var(--cc) 62%,#cfc3ab)}
+:root[data-bg="classichell"] .td-sw,:root[data-bg="classichell"] .tdh{--cm:color-mix(in srgb,var(--cc) 65%,#6b5c44)}
+:root:is([data-bg="classic"],[data-bg="classichell"]) .tdc{border-color:color-mix(in srgb,var(--cm,var(--gold)) 75%,transparent)}
+:root:is([data-bg="classic"],[data-bg="classichell"]) .td.done .tdc{background:var(--cm,var(--gold))}
+:root:is([data-bg="classic"],[data-bg="classichell"]) .cico{background:color-mix(in srgb,var(--cm) 14%,transparent)!important;color:var(--cm)!important}
+:root:is([data-bg="classic"],[data-bg="classichell"]) .cbar i{background:var(--cm)!important}
+:root:is([data-bg="classic"],[data-bg="classichell"]) :is(.mpl,.res .pl,.plus){border:1.2px solid color-mix(in srgb,var(--gold) 75%,transparent);background:color-mix(in srgb,var(--gold) 7%,transparent)!important}
+:root:is([data-bg="classic"],[data-bg="classichell"]) .gring,:root:is([data-bg="classic"],[data-bg="classichell"]) .tdring circle+circle{stroke-width:10}
+:root:is([data-bg="classic"],[data-bg="classichell"]) .lt small{color:color-mix(in srgb,var(--gold) 85%,var(--mute))}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="gA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--a1)"/><stop offset="1" style="stop-color:var(--a2)"/></linearGradient></defs></svg>
 <div id="app"></div>
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=faa33c0"></script>
-<script src="todos.js?v=faa33c0"></script>
-<script src="gesund.js?v=faa33c0"></script>
-<script src="mitteilungen.js?v=faa33c0"></script>
-<script src="suche.js?v=faa33c0"></script>
+<script src="kern.js?v=a5ae281"></script>
+<script src="todos.js?v=a5ae281"></script>
+<script src="gesund.js?v=a5ae281"></script>
+<script src="mitteilungen.js?v=a5ae281"></script>
+<script src="suche.js?v=a5ae281"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -2198,7 +2215,7 @@ addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="faa33c0";
+const APPV="a5ae281";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
