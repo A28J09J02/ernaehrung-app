@@ -10,7 +10,9 @@
    Läuft vor dem Hauptskript; greift erst beim Aufruf auf dessen Variablen zu (C, change, render …). */
 "use strict";
 const TD_P="data/ernaehrung/todos.json",TD_W="data/ernaehrung/gewicht.json";
-const TD_CATS=[["termine","📅","Termine & Fristen"],["essen","🍽️","Ernährung"],["koerper","💪","Körper & Training"],["haushalt","🏠","Haushalt"],["einkauf","🛒","Einkaufen"],["sonst","📌","Sonstiges"]];
+/* [Schlüssel, Symbol, Name, Farbe] */
+const TD_CATS=[["termine","cal","Termine & Fristen","#fb7185"],["essen","apple","Ernährung","#34d399"],["koerper","gym","Körper & Training","#a78bfa"],["haushalt","home","Haushalt","#38bdf8"],["einkauf","cart","Einkaufen","#fb923c"],["sonst","pin","Sonstiges","#94a3b8"]];
+const tdCat=k=>TD_CATS.find(c=>c[0]===k)||TD_CATS[5];
 const TD_REPS=[["einmal","Einmalig"],["tag","Täglich"],["werktag","Werktags"],["wochenende","Wochenende"],["woche","Wöchentlich"],["intervall","Alle x Tage"],["monat","Monatlich"],["jahr","Jährlich"]];
 const TD_WD=["Mo","Di","Mi","Do","Fr","Sa","So"];
 const TD_DAILY=["tag","werktag","wochenende"];
@@ -89,21 +91,26 @@ const tdLong=d=>{const T=TODAY();return d===T?"heute":d===EK.add(T,1)?"morgen":d
 /* ---------- Ansicht ---------- */
 const tdLs=(k,d)=>{try{const v=localStorage.getItem("ern_"+k);return v==null?d:JSON.parse(v)}catch(e){return d}};
 let TDV={tab:"heute",sort:tdLs("td_sort","cat"),calM:null,sel:null,fx:null};
-function tdRow(x,d){const it=x.it,done=x.done,auto=it.auto&&tdAutoOk(it,d)&&!tdManual(it,d),cat=TD_CATS.find(c=>c[0]===it.cat)||TD_CATS[5];
- const sub=[it.zeit?`🕒 ${h(it.zeit)}`:"",x.over?`<span class="tdover">fällig ${tdLong(it.start)}</span>`:TD_DAILY.includes((it.rep||{}).k)?"":h(tdRepText(it)),
-  it.auto?(auto?"automatisch erledigt":it.auto==="kcal"?"hakt sich ab, sobald du etwas einträgst":"hakt sich ab, sobald du dich wiegst"):"",it.notiz?h(it.notiz):""].filter(Boolean).join(" · ");
- return`<div class="sw td-sw"><div class="bg"><button data-tddel="${h(it.id)}">Löschen</button></div>
- <div class="swc td${done?" done":""}${x.over?" over":""}" data-tdrow="${h(it.id)}"><button class="tdc" data-tdck="${h(it.id)}|${d}" aria-label="${done?"Nicht erledigt":"Erledigt"}: ${h(it.t)}"><i>${done?svg("check"):""}</i></button>
- <div class="tdt" data-tdopen="${h(it.id)}|${d}"><b>${h(it.t)}</b>${sub?`<small>${sub}</small>`:""}</div>${TDV.sort==="zeit"?`<span class="tdcat" title="${cat[2]}">${cat[1]}</span>`:""}</div></div>`}
+function tdRow(x,d){const it=x.it,done=x.done,auto=it.auto&&tdAutoOk(it,d)&&!tdManual(it,d),cat=tdCat(it.cat);
+ const sub=[it.zeit?`${ic("clock")}${h(it.zeit)}`:"",x.over?`<span class="tdover">${ic("warn")}fällig ${tdLong(it.start)}</span>`:TD_DAILY.includes((it.rep||{}).k)?"":`${ic(it.bis?"repeat":"cal")}${h(tdRepText(it))}`,
+  it.auto?(auto?`<span class="tdauto">${ic("check")}automatisch erledigt</span>`:`${ic("bolt")}${it.auto==="kcal"?"hakt sich ab, sobald du etwas einträgst":"hakt sich ab, sobald du dich wiegst"}`):"",it.notiz?`${ic("note")}${h(it.notiz)}`:""].filter(Boolean).join("<span>·</span>");
+ return`<div class="sw td-sw" style="--cc:${cat[3]}"><div class="bg"><button data-tddel="${h(it.id)}">Löschen</button></div>
+ <div class="swc td${done?" done":""}${x.over?" over":""}" data-tdrow="${h(it.id)}"><button class="tdc" data-tdck="${h(it.id)}|${d}" aria-label="${done?"Nicht erledigt":"Erledigt"}: ${h(it.t)}"><i>${done?ic("check"):""}</i></button>
+ <div class="tdt" data-tdopen="${h(it.id)}|${d}"><b>${h(it.t)}</b>${sub?`<small>${sub}</small>`:""}</div>${TDV.sort==="zeit"?`<span class="tdcat" title="${cat[2]}">${ic(cat[1])}</span>`:""}</div></div>`}
 /* offene nach Uhrzeit, dann Titel – erledigte nach unten */
 const tdSort=L=>L.slice().sort((a,b)=>(a.done-b.done)||(b.over-a.over)||((a.it.zeit||"99")>(b.it.zeit||"99")?1:(a.it.zeit||"99")<(b.it.zeit||"99")?-1:0)||a.it.t.localeCompare(b.it.t,"de"));
+const tdHead=(c,txt,right)=>`<div class="tdh" style="--cc:${c[3]}"><span class="tdhl"><span class="cico">${ic(c[1])}</span>${txt||c[2]}</span>${right||""}</div>`;
 function tdList(d,L){if(!L.length)return"";
  if(TDV.sort==="zeit")return`<div class="card list tdl">${tdSort(L).map(x=>tdRow(x,d)).join("")}</div>`;
- return TD_CATS.map(([k,e,l])=>{const I=L.filter(x=>(x.it.cat||"sonst")===k||(k==="sonst"&&!TD_CATS.some(c=>c[0]===x.it.cat)));if(!I.length)return"";
-  const open=I.filter(x=>!x.done).length;
-  return`<div class="tdh"><span>${e} ${l}</span><small>${open?open+" offen":"✓ erledigt"}</small></div><div class="card list tdl">${tdSort(I).map(x=>tdRow(x,d)).join("")}</div>`}).join("")}
-function tdRing(n,tot){const q=tot?n/tot:0,r=26,c=2*Math.PI*r;
- return`<svg viewBox="0 0 64 64" class="tdring"><circle cx="32" cy="32" r="${r}" fill="none" stroke="var(--grid)" stroke-width="7"/><circle cx="32" cy="32" r="${r}" fill="none" stroke="${q>=1?"var(--g)":"var(--acc)"}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${q*c} ${c}" transform="rotate(-90 32 32)"/><text x="32" y="37" text-anchor="middle" font-size="15" font-weight="700" fill="var(--ink)">${q>=1?"✓":Math.round(q*100)+"%"}</text></svg>`}
+ return TD_CATS.map(c=>{const k=c[0],I=L.filter(x=>(x.it.cat||"sonst")===k||(k==="sonst"&&!TD_CATS.some(z=>z[0]===x.it.cat)));if(!I.length)return"";
+  const dn=I.filter(x=>x.done).length;
+  return tdHead(c,null,`<span style="display:flex;align-items:center;gap:8px"><small>${dn}/${I.length}</small><span class="cbar"><i style="width:${dn/I.length*100}%"></i></span></span>`)+`<div class="card list tdl">${tdSort(I).map(x=>tdRow(x,d)).join("")}</div>`}).join("")}
+function tdRing(n,tot){const q=tot?n/tot:0,r=40,c=2*Math.PI*r,all=tot&&q>=1;
+ return`<svg viewBox="0 0 100 100" class="tdring"><circle cx="50" cy="50" r="${r}" fill="none" stroke="var(--fill)" stroke-width="10"/><circle cx="50" cy="50" r="${r}" fill="none" stroke="${all?"var(--g)":"url(#gA)"}" stroke-width="10" stroke-linecap="round" stroke-dasharray="${q*c} ${c}" transform="rotate(-90 50 50)" style="filter:drop-shadow(0 0 6px ${all?"var(--g)":"var(--a1)"});transition:stroke-dasharray .5s"/>
+ <text x="50" y="${all?58:56}" text-anchor="middle" font-size="${all?26:23}" font-weight="800" fill="var(--ink)">${all?"✓":`${n}/${tot}`}</text></svg>`}
+/* „Perfekte Tage“: Tage in Folge, an denen alles abgehakt war (heute zählt, sobald alles erledigt ist) */
+function tdPerfect(){const T=TODAY(),ok=d=>{const L=tdDay(d);return L.length>0&&L.every(x=>x.done)};let d=ok(T)?T:EK.add(T,-1),n=0;
+ while(n<366&&ok(d)){n++;d=EK.add(d,-1)}return n}
 /* nicht-tägliche Termine der nächsten Tage */
 function tdUpcoming(days,from){const T=from||TODAY(),out=[];
  for(let k=1;k<=days;k++){const d=EK.add(T,k);for(const x of tdDay(d)){if(TD_DAILY.includes((x.it.rep||{}).k))continue;out.push({...x,d})}}return out}
@@ -112,23 +119,25 @@ function vTodos(){const T=TODAY(),L=tdDay(T),n=L.filter(x=>x.done).length,open=L
  o+=`<div class="seg mb12" role="tablist">${[["heute","Heute"],["bald","Demnächst"],["kal","Kalender"],["alle","Alle"]].map(([k,l])=>`<button data-tdtab="${k}" class="${TDV.tab===k?"on":""}">${l}</button>`).join("")}</div>`;
  if(!tdItems().length&&!(C.todos))return o+`<div class="card"><p class="empty" style="margin:0">Todos werden geladen …</p></div>`;
  if(TDV.tab==="heute"){
-  o+=`<div class="card tdsum">${tdRing(n,L.length)}<div><b>${L.length?open?`Noch ${open} offen`:"Alles erledigt 🎉":"Heute nichts geplant"}</b><small>${n} von ${L.length} erledigt</small></div>
-   <button class="tdsort" data-tdsort="1" aria-label="Sortierung wechseln">${TDV.sort==="cat"?"Kategorien":"Uhrzeit"} <span>⌄</span></button></div>`;
-  if(typeof pnOn==="function"&&pnOk()&&!pnOn()&&!LS.get("pn_hint_x",false))o+=`<div class="hint acc">🔔<span><b>Erinnerung einschalten</b><br><small class="mute">Ist um 20 Uhr (Sa/So 21:30) noch etwas offen, meldet sich KingStats.</small></span><button class="btn sm p" data-pnenable="1">Ein</button><button class="lnk" data-pnhx="1" aria-label="Ausblenden">✕</button></div>`;
+  const pf=tdPerfect(),ov=L.filter(x=>x.over).length;
+  o+=`<div class="card tdhero">${tdRing(n,L.length)}<div><b>${L.length?open?`Noch ${open} offen`:"Alles erledigt":"Heute nichts geplant"}</b><small>${L.length?open?(n?"Weiter so – du bist dran.":"Leg los, der erste Haken zählt."):"Stark. Der Tag gehört dir.":"Tippe oben auf Plus."}</small>
+   <span class="tdmeta">${pf?`<span class="hot">${ic("flame")}${pf} perfekte${pf>1?"":"r"} Tag${pf>1?"e":""}</span>`:""}${ov?`<span style="color:var(--r)">${ic("warn")}${ov} überfällig</span>`:""}<button class="tdsort" data-tdsort="1" aria-label="Sortierung wechseln">${ic(TDV.sort==="cat"?"grid":"clock")}${TDV.sort==="cat"?"Kategorien":"Uhrzeit"}</button></span></div></div>`;
+  if(typeof pnOn==="function"&&pnOk()&&!pnOn()&&!LS.get("pn_hint_x",false))o+=`<div class="hint acc">${ic("bell")}<span><b>Erinnerung einschalten</b><br><small class="mute">Ist um 20 Uhr (Sa/So 21:30) noch etwas offen, meldet sich KingStats.</small></span><button class="btn sm p" data-pnenable="1">Ein</button><button class="lnk" data-pnhx="1" aria-label="Ausblenden">${ic("x")}</button></div>`;
   const over=L.filter(x=>x.over),rest=L.filter(x=>!x.over);
-  if(over.length)o+=`<div class="tdh over"><span>❗ Überfällig</span><small>${over.length}</small></div><div class="card list tdl">${tdSort(over).map(x=>tdRow(x,T)).join("")}</div>`;
-  o+=tdList(T,rest)||(over.length?"":`<div class="card"><p class="empty" style="margin:0">Für heute steht nichts an. Tippe oben auf ＋, um etwas anzulegen.</p></div>`);
+  if(over.length)o+=`<div class="tdh over" style="--cc:var(--r)"><span class="tdhl"><span class="cico">${ic("warn")}</span>Überfällig</span><small>${over.length}</small></div><div class="card list tdl">${tdSort(over).map(x=>tdRow(x,T)).join("")}</div>`;
+  if(L.length&&!open)o+=`<div class="card tddone">${ic("party")}<b>Alles erledigt für heute</b><small class="mute">Morgen geht's weiter.</small></div>`;
+  o+=tdList(T,rest)||(over.length?"":`<div class="card"><p class="empty" style="margin:0">Für heute steht nichts an. Tippe oben auf Plus, um etwas anzulegen.</p></div>`);
   const up=tdUpcoming(14).slice(0,4);
-  if(up.length)o+=`<div class="tdh"><span>📅 Demnächst</span><button class="lnk2" data-tdtab="bald">Alle ›</button></div><div class="card list">${up.map(x=>`<div class="tdup" data-tdopen="${h(x.it.id)}|${x.d}"><span class="tdd"><b>${+x.d.slice(8)}</b><small>${TD_WD[(tdDate(x.d).getDay()+6)%7]}</small></span><span><b>${h(x.it.t)}</b><small>${tdLong(x.d)}${x.it.zeit?" · "+h(x.it.zeit):""}${x.it.bis?" · bis erledigt":""}</small></span></div>`).join("")}</div>`;
+  if(up.length)o+=tdHead(["","cal","Demnächst","var(--a1)"],null,`<button class="lnk2" data-tdtab="bald">Alle ›</button>`)+`<div class="card list">${up.map(x=>`<div class="tdup" data-tdopen="${h(x.it.id)}|${x.d}"><span class="tdd"><b>${+x.d.slice(8)}</b><small>${TD_WD[(tdDate(x.d).getDay()+6)%7]}</small></span><span><b>${h(x.it.t)}</b><small>${tdLong(x.d)}${x.it.zeit?" · "+h(x.it.zeit):""}${x.it.bis?" · bis erledigt":""}</small></span></div>`).join("")}</div>`;
   return o+`<p class="foot">Kreis antippen = erledigt. Antippen = ändern, nach links wischen = löschen. Ist bis 20:00 Uhr (Sa/So 21:30) noch etwas offen, kommt eine Mitteilung.</p>`}
- if(TDV.tab==="bald"){const up=tdUpcoming(60);if(!up.length)return o+`<div class="card"><p class="empty" style="margin:0">In den nächsten 60 Tagen steht nichts mit Datum an. Termine legst du über ＋ an – z. B. „Abo kündigen“ am 18., monatlich bis erledigt.</p></div>`;
-  let last="";for(const x of up){if(x.d!==last){if(last)o+=`</div>`;o+=`<div class="tdh"><span>${tdLong(x.d)[0].toUpperCase()+tdLong(x.d).slice(1)}${x.d>EK.add(T,1)?"":""}</span><small>${new Date(x.d+"T12:00:00").toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long"})}</small></div><div class="card list tdl">`;last=x.d}
+ if(TDV.tab==="bald"){const up=tdUpcoming(60);if(!up.length)return o+`<div class="card"><p class="empty" style="margin:0">In den nächsten 60 Tagen steht nichts mit Datum an. Termine legst du über Plus an – z. B. „Abo kündigen“ am 18., monatlich bis erledigt.</p></div>`;
+  let last="";for(const x of up){if(x.d!==last){if(last)o+=`</div>`;o+=`<div class="tdh"><span class="tdhl">${tdLong(x.d)[0].toUpperCase()+tdLong(x.d).slice(1)}</span><small>${new Date(x.d+"T12:00:00").toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long"})}</small></div><div class="card list tdl">`;last=x.d}
    o+=tdRow(x,x.d)}return o+`</div>`}
  if(TDV.tab==="kal")return o+tdCal();
  /* Alle */
- return o+TD_CATS.map(([k,e,l])=>{const I=tdItems().filter(x=>(x.cat||"sonst")===k).sort((a,b)=>a.t.localeCompare(b.t,"de"));if(!I.length)return"";
-  return`<div class="tdh"><span>${e} ${l}</span><small>${I.length}</small></div><div class="card list">${I.map(it=>{const f=tdFertig(it);return swRow(`data-tdedit="${h(it.id)}"`,`<span>${f&&tdEnds(it)?"<s>":""}${h(it.t)}${f&&tdEnds(it)?"</s>":""}<br><small>${h(tdRepText(it))}${it.zeit?" · "+h(it.zeit):""}${f&&tdEnds(it)?" · erledigt "+tdLong(f):""}</small></span><span class="mute">›</span>`,`data-tddel="${h(it.id)}"`)}).join("")}</div>`}).join("")
-  +`<button class="btn w mt8" data-tdnew="1">＋ Neues Todo</button>`}
+ return o+TD_CATS.map(c=>{const k=c[0],I=tdItems().filter(x=>(x.cat||"sonst")===k).sort((a,b)=>a.t.localeCompare(b.t,"de"));if(!I.length)return"";
+  return tdHead(c,null,`<small>${I.length}</small>`)+`<div class="card list">${I.map(it=>{const f=tdFertig(it);return swRow(`data-tdedit="${h(it.id)}"`,`<span>${f&&tdEnds(it)?"<s>":""}${h(it.t)}${f&&tdEnds(it)?"</s>":""}<br><small>${h(tdRepText(it))}${it.zeit?" · "+h(it.zeit):""}${f&&tdEnds(it)?" · erledigt "+tdLong(f):""}</small></span><span class="mute">›</span>`,`data-tddel="${h(it.id)}"`)}).join("")}</div>`}).join("")
+  +`<button class="btn p w mt12" data-tdnew="1">${ic("plus")}Neues Todo</button>`}
 function tdCal(){const T=TODAY(),M=TDV.calM||T.slice(0,7),[y,m]=M.split("-").map(Number),off=(new Date(y,m-1,1).getDay()+6)%7,nd=tdMdays(y,m),sel=TDV.sel||T;
  let c=TD_WD.map(x=>`<div class="h">${x}</div>`).join("")+Array(off).fill('<button class="x" tabindex="-1"></button>').join("");
  for(let k=1;k<=nd;k++){const d=`${M}-${String(k).padStart(2,"0")}`,L=tdDay(d).filter(x=>!TD_DAILY.includes((x.it.rep||{}).k)),o2=L.filter(x=>!x.done).length;
@@ -145,19 +154,19 @@ function tdToggle(id,d){const it=tdItems().find(x=>x.id===id);if(!it)return;
  if(autoOk&&!was)return toast(it.auto==="kcal"?"Hakt sich automatisch ab – heute ist schon etwas eingetragen":"Hakt sich automatisch ab – für heute ist ein Gewicht da",3200);
  if(!was&&it.auto==="gewicht"&&d===TODAY())return tdWeight(id);
  const v=!was,row=document.querySelector(`[data-tdrow="${CSS.escape(id)}"]`);
- if(row){row.classList.toggle("done",v);const i=row.querySelector(".tdc i");if(i)i.innerHTML=v?svg("check"):""}
+ if(row){row.classList.toggle("done",v);const i=row.querySelector(".tdc i");if(i)i.innerHTML=v?ic("check"):"";if(v)burst(row.querySelector(".tdc"),tdCat(it.cat)[3])}
  try{if(navigator.vibrate)navigator.vibrate(8)}catch(e){}
  const op={t:"tdck",d,id,v,end:tdEnds(it)};
  /* kurz zeigen, dann einsortieren (erledigte wandern nach unten) */
- change(TD_P,op,true);clearTimeout(tdToggle.t);tdToggle.t=setTimeout(()=>{if(view==="todos")render()},380);
+ change(TD_P,op,true);clearTimeout(tdToggle.t);tdToggle.t=setTimeout(()=>{if(view==="todos"){const y=scrollY;render();scrollTo(0,y)}},650);
  if(v&&it.bis&&(it.rep||{}).k!=="einmal")toast(`„${it.t}“ erledigt – kommt nicht wieder`,4500,"Rückgängig",()=>change(TD_P,{...op,v:false}));
- else if(v&&tdOpen(d)===0&&d===TODAY())toast("Alles erledigt für heute 🎉",2600)}
+ else if(v&&tdOpen(d)===0&&d===TODAY())toast("Alles erledigt für heute – stark!",2600)}
 function tdDel(id){const it=tdItems().find(x=>x.id===id);if(!it)return;if($("sheet").classList.contains("on"))closeSheet();
  change(TD_P,{t:"tddel",id});toast(`„${it.t}“ gelöscht`,4500,"Rückgängig",()=>change(TD_P,{t:"tdset",it}))}
 
 /* ---------- Gewicht eintragen ---------- */
 function tdWeight(){const sh=$("sheet"),T=TODAY(),last=GW();sh.classList.add("on");
- sh.innerHTML=`<div class="top"><button class="ib" data-close="1" aria-label="Schließen">✕</button><h1>Gewicht</h1><span style="min-width:44px"></span></div><main>
+ sh.innerHTML=`<div class="top"><button class="ib" data-close="1" aria-label="Schließen">${ic("x")}</button><h1>Gewicht</h1><span style="min-width:44px"></span></div><main>
  <form id="tdwf" class="card" autocomplete="off"><label class="f">Heute (${dm(T)}) in kg</label>
  <input class="inp big" name="kg" type="text" inputmode="decimal" placeholder="${last?n1(last):"z. B. 79,5"}" value="${tdWaage()[T]?String(tdWaage()[T]).replace(".",","):""}" enterkeyhint="done">
  <button class="btn p w mt12" type="submit">Speichern</button>
@@ -170,13 +179,13 @@ function tdWeightSave(f){const v=+String(f.elements.kg.value).trim().replace(","
 /* ---------- Anlegen / Ändern ---------- */
 function tdEdit(id,preset){const T=TODAY(),old=id?tdItems().find(x=>x.id===id):null,x=old||{t:"",cat:"sonst",rep:{k:"einmal"},start:T,...(preset||{})},r=x.rep||{k:"einmal"};
  TDV.fx=old?old.id:null;const sh=$("sheet");sh.classList.add("on");
- const chip=(name,val,label,on)=>`<label class="chip2"><input type="radio" name="${name}" value="${val}" ${on?"checked":""}>${label}</label>`;
+ const chip=(name,val,label,on,cc)=>`<label class="chip2"${cc?` style="--cc:${cc}"`:""}><input type="radio" name="${name}" value="${val}" ${on?"checked":""}>${label}</label>`;
  const wdays=r.tage&&r.tage.length?r.tage:[(tdDate(x.start||T).getDay()+6)%7+1];
- sh.innerHTML=`<div class="top"><button class="ib" data-close="1" aria-label="Schließen">✕</button><h1>${old?"Todo":"Neues Todo"}</h1><button class="ib txt" form="tdf" type="submit">Fertig</button></div><main>
+ sh.innerHTML=`<div class="top"><button class="ib" data-close="1" aria-label="Schließen">${ic("x")}</button><h1>${old?"Todo":"Neues Todo"}</h1><button class="ib txt" form="tdf" type="submit">Fertig</button></div><main>
  <form id="tdf" autocomplete="off">
  <div class="card"><input class="inp big" name="t" required maxlength="80" placeholder="Was ist zu tun?" value="${h(x.t)}" enterkeyhint="done">
  <textarea class="inp mt8" name="notiz" rows="2" maxlength="200" placeholder="Notiz (optional)">${h(x.notiz||"")}</textarea></div>
- <div class="sec">Kategorie</div><div class="chips">${TD_CATS.map(([k,e,l])=>chip("cat",k,e+" "+l,(x.cat||"sonst")===k)).join("")}</div>
+ <div class="sec">Kategorie</div><div class="chips">${TD_CATS.map(([k,e,l,c])=>chip("cat",k,ic(e)+l,(x.cat||"sonst")===k,c)).join("")}</div>
  <div class="sec">Wiederholen</div><div class="chips">${TD_REPS.map(([k,l])=>chip("rep",k,l,r.k===k)).join("")}</div>
  <div class="card mt8">
   <div class="frow"><span class="f-once">Datum</span><span class="f-rep">Ab</span><input class="inp sm2" type="date" name="start" value="${h(x.start||T)}" required></div>
@@ -190,7 +199,7 @@ function tdEdit(id,preset){const T=TODAY(),old=id?tdItems().find(x=>x.id===id):n
  <button class="btn p w mt12" type="submit">${old?"Speichern":"Anlegen"}</button>
  ${old?`<button class="btn d w mt8" type="button" data-tddel="${h(old.id)}">Löschen</button>`:""}
  </form>
- ${old?"":`<div class="sec">Vorschläge</div><div class="chips sug">${TD_IDEAS.filter(([t])=>!tdItems().some(i=>i.t===t)).map(([t,c,rp],k)=>`<button class="chip2" type="button" data-tdidea="${k}">${(TD_CATS.find(z=>z[0]===c)||TD_CATS[5])[1]} ${h(t)}<small>${h(tdRepText({rep:rp,start:T}))}</small></button>`).join("")}</div>`}
+ ${old?"":`<div class="sec">Vorschläge</div><div class="chips sug">${TD_IDEAS.filter(([t])=>!tdItems().some(i=>i.t===t)).map(([t,c,rp],k)=>`<button class="chip2" type="button" data-tdidea="${k}" style="--cc:${tdCat(c)[3]}">${ic(tdCat(c)[1])}<span>${h(t)}<small>${h(tdRepText({rep:rp,start:T}))}</small></span></button>`).join("")}</div>`}
  </main>`;
  if(!old&&!preset)setTimeout(()=>{const i=sh.querySelector("[name=t]");i&&i.focus()},120)}
 function tdSave(f){const E=f.elements,t=E.t.value.trim();if(!t)return toast("Bitte einen Titel eingeben");

@@ -6,14 +6,14 @@
 "use strict";
 /* öffentlicher VAPID-Schlüssel – der private liegt nur im privaten Repo (Secret oder .github/push/) */
 const PN_KEY="BKGNtpugojPXNPA4aXjeLbf6LBJul93T-w4F6gmTCo2J5NcUFSJ6gS6pQ4Q0nTp1r2bw8_dV5MqobgI38r0JqTk",PN_P="data/ernaehrung/push.json";
-const PN_KINDS=[["todos","❗ Offene Todos","Mo–Fr um 20:00, Sa/So um 21:30 – was heute noch nicht abgehakt ist"],
- ["fristen","📅 Termine & Fristen","Am Tag selbst (morgens) und – falls eingestellt – ein paar Tage vorher"],
- ["morgen","☀️ Morgen-Briefing","Training, Schlaf, HRV und deine Todos für heute"],
- ["training","🏋️ Vor dem Training","1–2 Stunden vor einer geplanten Einheit mit Uhrzeit"],
- ["aktivitaet","✅ Training erkannt","Nach dem Sync mit Soll/Ist zum Plan"],["rekorde","🏆 Rekorde","Längster Lauf, schnellste 5/10 km, Wochen-km"],
- ["plan","🔄 Plan angepasst","Wenn die Mittags-Anpassung etwas ändert"],["essen","🍽️ Essen eintragen","Ab 14 Uhr, wenn noch nichts drinsteht"],
- ["protein","💪 Protein","Am Abend, wenn noch viel Protein fehlt"],["streak","🔥 Streak in Gefahr","Abends, wenn der Tag noch nicht voll ist"],
- ["meilenstein","🔥 Streak-Meilensteine","7, 14, 30, 100 Tage …"],["woche","📊 Wochenrückblick","Sonntagabend"]];
+const PN_KINDS=[["todos",["todo","Offene Todos"],"Mo–Fr um 20:00, Sa/So um 21:30 – was heute noch nicht abgehakt ist"],
+ ["fristen",["cal","Termine & Fristen"],"Am Tag selbst (morgens) und – falls eingestellt – ein paar Tage vorher"],
+ ["morgen",["sun","Morgen-Briefing"],"Training, Schlaf, HRV und deine Todos für heute"],
+ ["training",["gym","Vor dem Training"],"1–2 Stunden vor einer geplanten Einheit mit Uhrzeit"],
+ ["aktivitaet",["check","Training erkannt"],"Nach dem Sync mit Soll/Ist zum Plan"],["rekorde",["trophy","Rekorde"],"Längster Lauf, schnellste 5/10 km, Wochen-km"],
+ ["plan",["sync","Plan angepasst"],"Wenn die Mittags-Anpassung etwas ändert"],["essen",["apple","Essen eintragen"],"Ab 14 Uhr, wenn noch nichts drinsteht"],
+ ["protein",["bolt","Protein"],"Am Abend, wenn noch viel Protein fehlt"],["streak",["flame","Streak in Gefahr"],"Abends, wenn der Tag noch nicht voll ist"],
+ ["meilenstein",["flame","Streak-Meilensteine"],"7, 14, 30, 100 Tage …"],["woche",["stat","Wochenrückblick"],"Sonntagabend"]];
 const PN={busy:false};
 const pnOk=()=>"serviceWorker" in navigator&&"PushManager" in window&&"Notification" in window;
 const pnStandalone=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
@@ -39,7 +39,7 @@ async function pnEnable(){if(PN.busy)return;if(!pnOk())return toast(pnIOS()&&!pn
   const sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:pnKeyBytes(PN_KEY)});
   await pnSave(sub.toJSON());LS.set("push_on",true);LS.set("push_key",PN_KEY);
   if(!(C.profil&&C.profil.mitteilungen))setProf({mitteilungen:pnPrefs(),erinnerung:{...((C.profil||{}).erinnerung||{}),an:true}});
-  toast("Mitteilungen sind eingeschaltet 🔔")}
+  toast("Mitteilungen sind eingeschaltet")}
  catch(e){toast(e.auth?e.message:e instanceof DOMException?"Mitteilungen ließen sich nicht einschalten":"Einschalten fehlgeschlagen – Netz da?",4000)}
  PN.busy=false;pnDraw()}
 async function pnDisable(){if(PN.busy)return;PN.busy=true;pnDraw();
@@ -61,12 +61,12 @@ async function pnCheck(){if(!CFG.token||!pnOk()||Notification.permission!=="gran
 function pnCard(){return`<div class="card" id="pnBox">${pnInner()}</div>`}
 function pnDraw(){const b=$("pnBox");if(b)b.innerHTML=pnInner()}
 function pnInner(){const P=pnPrefs(),on=pnOn();
- const head=`<h2>🔔 Mitteilungen</h2>`;
+ const head=`<h2><span class="ct">${ic("bell")}Mitteilungen</span></h2>`;
  if(!pnOk())return head+`<p class="s mute" style="margin:0">${pnIOS()&&!pnStandalone()?"Auf dem iPhone gibt es Mitteilungen nur in der App vom Home-Bildschirm: In Safari auf Teilen → „Zum Home-Bildschirm“, dann von dort öffnen und hier einschalten.":"Dieses Gerät unterstützt keine Mitteilungen."}</p>`;
  const blocked=Notification.permission==="denied";
  return head+`<label class="frow"><span>Auf diesem iPhone</span><input type="checkbox" class="tgl" data-pnmain="1" ${on?"checked":""} ${PN.busy||blocked?"disabled":""}></label>
  ${blocked?`<p class="s warn" style="margin:6px 0 0">Mitteilungen sind für KingStats gesperrt – iPhone-Einstellungen → Mitteilungen → KingStats → Erlauben.</p>`:""}
- ${on?`<div class="pnk">${PN_KINDS.map(([k,l,s])=>`<label class="frow"><span>${l}<small class="mute block">${s}</small></span><input type="checkbox" class="tgl" data-pnk="${k}" ${P[k]?"checked":""}></label>`).join("")}</div>
+ ${on?`<div class="pnk">${PN_KINDS.map(([k,l,s])=>`<label class="frow"><span><span class="ct">${ic(l[0])}${l[1]}</span><small class="mute block">${s}</small></span><input type="checkbox" class="tgl" data-pnk="${k}" ${P[k]?"checked":""}></label>`).join("")}</div>
  ${P.streak?`<label class="frow"><span>Streak-Erinnerung ab</span><select class="inp sm2" data-pushuhr="1">${[18,19,20,21,22].map(u=>`<option value="${u}" ${u===+(((C.profil||{}).erinnerung||{}).uhr||20)?"selected":""}>${u}:00 Uhr</option>`).join("")}</select></label>`:""}
  <button class="btn w mt10" data-pntest="1">Testmitteilung senden</button>
  <p class="s mute" style="margin:8px 0 0">Gesendet wird von GitHub – geplante Läufe starten manchmal ein paar Minuten später.</p>`:
