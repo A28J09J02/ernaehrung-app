@@ -39,7 +39,13 @@ Dabei wird die Version gestempelt (`APPV` in `index.html`, `version.txt`); die A
 und lädt sich bei einer neuen Version selbst neu. Nie von Hand ins öffentliche Repo schreiben.
 
 ## Funktionen (Auszug)
-- **Navigation**: untere Leiste überall gleich (Heute · Training · Ideen · Einkauf · Mehr); „Mehr“ öffnet das Seitenmenü. Im Tagebuch steht das Datum mit Pfeilen in der Kopfzeile, Tippen aufs Datum = heute.
+- **Design (11/2026)**: Apple-Stil mit Liquid Glass (schwebende Glas-Leiste unten, Glas-Kopfzeile, Hinweise als Glas-Kapsel oben, Fenster als iOS-Sheet), Schwarz/Weiß mit dem bisherigen Akzentblau.
+- **Navigation**: untere Leiste überall gleich (Heute · Training · Todos · Gesundheit · Mehr); „Mehr“ öffnet das Seitenmenü (u. a. Ideen, Statistik). Einkaufsliste und eingebettetes Komplett-Dashboard sind entfallen – Zutaten werden zu Todos in „Einkaufen“, statt des Dashboards gibt es „Statistik“.
+- **Todos** (`todos.js`): Kategorien, Wiederholungen (einmalig, täglich, werktags, Wochenende, Wochentage, alle x Tage, monatlich, jährlich), „bis erledigt“ (z. B. Abo kündigen: kommt jeden Monat wieder, bis abgehakt), Vorab-Erinnerung, Uhrzeit, Kalender, Auto-Haken (Kalorien tracken = sobald etwas eingetragen ist, Gewicht = sobald ein Gewicht für heute da ist). Erledigte werden durchgestrichen und wandern nach unten.
+- **Training / Gesundheit / Statistik** (`gesund.js`): Training nur noch Training (heute, nächste Einheit, Woche Soll/Ist, Bereitschaft); Gesundheit mit Aktivitätsringen, Schlaf, HRV, Ruhepuls, Body Battery, Stress, Atmung, Körper; Statistik mit Laufen, Bestwerten, Training, Ernährung, Erholung im Vergleich zum Zeitraum davor.
+- **Mitteilungen** (`mitteilungen.js`): Web-Push wie bei Kings Movies, Arten einzeln wählbar, Testknopf. Alte Anmeldungen (früherer Schlüssel) werden beim Start still erneuert.
+- **Suche** (`suche.js`): Alltagswörter/Synonyme, Mehrzahl und Tippfehler im BLS, Markenprodukte offline (`data/off_de.json`) und automatische Live-Suche in Open Food Facts beim Tippen (gebremst, zwischengespeichert).
+- **Sicherheit & Datenverkehr**: Content-Security-Policy (Verbindungen nur zu GitHub/Open Food Facts/CDN), Prüfsummen (SRI) für Fremd-Skripte, kein Referrer; GitHub-Abfragen mit ETag (unveränderte Dateien kommen als 304 ohne Inhalt). Im Tagebuch steht das Datum mit Pfeilen in der Kopfzeile, Tippen aufs Datum = heute.
 - **Mahlzeiten wie bei Yazio**: im Tagebuch je Mahlzeit eine Zeile mit Ring (gegessen / Anteil am Tagesziel: Frühstück 30 %, Mittag 40 %, Abend 25 %, Snacks 5 % – `MSHARE`) und „+“. Antippen öffnet die Mahlzeit einzeln (Nährwerte, Einträge, Kopieren, Ideen).
 - **Kopieren & Einfügen**: in der Mahlzeit „Kopieren“ → zu einem anderen Tag wechseln → 📋 an der gewünschten Mahlzeit (oder „Einfügen“ in der Mahlzeit). Die Kopie bleibt, bis eine neue kopiert oder sie mit ✕ verworfen wird. Leere Mahlzeit: „Wie gestern übernehmen“. Mit Rückgängig.
 - **Einkaufsliste** (Seitenmenü): Freitext („500 g Hähnchen“, „3 Eier“), nach Ladenbereichen sortiert, antippen = abhaken, wischen = löschen.
@@ -58,10 +64,7 @@ und lädt sich bei einer neuen Version selbst neu. Nie von Hand ins öffentliche
 - **Meine Lebensmittel**: Suchfeld und Zähler je Reiter (Von dir · Favoriten · Gescannt).
 - **Ziehen zum Aktualisieren** (Tagebuch, Mein Tag): oben nach unten ziehen → Repo-Stand prüfen, Warteschlange hochladen, bei Garmin-Werten älter als 30 Min. Cloud-Sync starten.
 - **Offline-Start** (`sw.js`): Die App-Dateien werden zwischengespeichert, die App startet auch ohne Netz mit dem letzten Stand. Netz zuerst (max. 3 s), sonst Zwischenspeicher; GitHub-Anfragen und `version.txt` nie aus dem Speicher.
-- **Streak-Erinnerung** (Profil → 🔥 Streak-Erinnerung): Mitteilung am Abend, wenn heute noch nichts eingetragen ist. Nur in der App vom Homescreen (iOS 16.4+).
-  Anmeldung in `data/ernaehrung/push.json`, Einstellung `profil.json` → `erinnerung:{an,uhr}`. Gesendet vom Workflow `streak-erinnerung.yml`
-  (stündlich abends, `tools/streak_erinnerung.py`, höchstens 1× pro Tag, Zustand in `push_status.json`). Benötigt einmalig das Secret `VAPID_PRIVATE_KEY`;
-  der öffentliche Gegenschlüssel steht als `VAPID` in `index.html`.
+- **Streak-Erinnerung**: Teil der Mitteilungen (Profil → Mitteilungen → „Streak in Gefahr“, Uhrzeit wählbar).
 - **Gym-Checkliste**: An Gym-Tagen zeigt „Training“ (und der Trainingsplan) die Übungen aus der Plan-Beschreibung als Checkliste – antippen = abhaken, nochmal = zurück. Sortiert nach Geräte-Reihenfolge im Studio (`GYM_ORDER` in `index.html`: Beinpresse → Rückenstrecker → weitere Beine → Bizeps → Trizeps → Schultern → Butterfly/Brust → Reverse Butterfly/Rudern/Latzug → Finisher → Rad). Gespeichert in `data/ernaehrung/gym.json`.
 - **Trainingsplan-Haken**: Lauf zählt nur mit einer Laufaktivität, Gym nur mit Krafttraining (wie im Dashboard). Kurze Radfahrten (Schulweg) zählen nie.
 
@@ -69,7 +72,7 @@ und lädt sich bei einer neuen Version selbst neu. Nie von Hand ins öffentliche
 - `data/ernaehrung/profil.json` – Profil und Ziele
 - `data/ernaehrung/lebensmittel.json` – eigene Lebensmittel, Favoriten, gescannte Produkte
 - `data/ernaehrung/ziele.json` – Kalorienziel je Tag (von der App gerechnet), damit die Erinnerungen wissen, ab wann ein Tag zählt
-- `data/ernaehrung/einkauf.json` – Einkaufsliste (gleiche Zutaten werden zusammengerechnet, Kategorie automatisch nach Stichworten)
+- `data/ernaehrung/todos.json` – Todos · `gewicht.json` – in der App eingetragenes Gewicht · `push.json` – Geräte für Mitteilungen
 - `data/ernaehrung/JJJJ-MM.json` – Tagebuch, ein Eintrag enthält die Nährwerte der gegessenen Menge
 - `data/bls.json` – Bundeslebensmittelschlüssel (aus dem Workflow)
 

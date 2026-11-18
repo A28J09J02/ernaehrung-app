@@ -5,9 +5,10 @@
       Strategie „Netz zuerst“: Ist das Netz da, kommt immer die aktuelle Version (die automatische Update-Prüfung über
       version.txt bleibt unverändert). Antwortet das Netz nicht innerhalb von 3 s, wird der Zwischenspeicher genommen.
       GitHub-Anfragen (api.github.com), Open Food Facts und version.txt laufen nie über den Zwischenspeicher.
-   2) Streak-Erinnerung: zeigt die Mitteilung an, die der Workflow „Streak-Erinnerung“ abends schickt. */
-const APP="kingstats-app-v1";
-const CORE=["./","index.html","kern.js","manifest.webmanifest","icon-180.png","icon-512.png"];
+   2) Mitteilungen (Web-Push): zeigt die Meldungen an, die tools/mitteilungen.py über GitHub Actions schickt
+      (Todos, Fristen, Training, Streak …). Antippen öffnet die App am passenden Ort (z. B. #todos). */
+const APP="kingstats-app-v2";
+const CORE=["./","index.html","kern.js","todos.js","gesund.js","mitteilungen.js","suche.js","manifest.webmanifest","icon-180.png","icon-512.png"];
 
 self.addEventListener("install",e=>{
  e.waitUntil(caches.open(APP).then(c=>c.addAll(CORE)).catch(()=>{}).then(()=>self.skipWaiting()))});
@@ -33,10 +34,11 @@ self.addEventListener("fetch",e=>{
 /* ===== Mitteilungen ===== */
 self.addEventListener("push",e=>{
  let d={};try{d=e.data?e.data.json():{}}catch(err){d={body:e.data&&e.data.text()}}
- e.waitUntil(self.registration.showNotification(d.title||"KingStats",{body:d.body||"Trag heute noch etwas ein.",
-  icon:"icon-180.png",badge:"icon-180.png",tag:d.tag||"streak",data:{url:d.url||"./"}}))});
+ const url=typeof d.url==="string"&&d.url.startsWith(self.registration.scope)?d.url:"./";
+ e.waitUntil(self.registration.showNotification(String(d.title||"KingStats").slice(0,120),{body:String(d.body||"").slice(0,400),
+  icon:"icon-180.png",badge:"icon-180.png",tag:d.tag||undefined,renotify:!!d.tag,data:{url}}))});
 
 self.addEventListener("notificationclick",e=>{
- e.notification.close();const url=(e.notification.data&&e.notification.data.url)||"./";
+ e.notification.close();const url=(e.notification.data&&e.notification.data.url)||"./",hash=new URL(url,self.registration.scope).hash;
  e.waitUntil(self.clients.matchAll({type:"window",includeUncontrolled:true}).then(L=>{
-  for(const w of L){if("focus" in w)return w.focus()}return self.clients.openWindow(url)}))});
+  for(const w of L){if("focus" in w){if(hash)w.postMessage({go:hash});return w.focus()}}return self.clients.openWindow(url)}))});
