@@ -3,13 +3,15 @@
    Farben je Gerät in localStorage „ern_theme“ {acc, bg}. Einstellbar unter Mehr → Design. */
 "use strict";
 /* Akzentfarben: a1 = Hauptfarbe (Knöpfe, Licht, Ringe), a2 = zweite Farbe für Verläufe in Diagrammen */
-const THEMES={indigo:["Indigo","#6d74ff","#4f9dff"],eis:["Eisblau","#4fb6d6","#8b7bff"],violett:["Violett","#a78bfa","#f472b6"],neon:["Neon","#34d399","#22d3ee"],
+const THEMES={blau:["Blau","#3d8bff","#6a5cff"],indigo:["Indigo","#6d74ff","#4f9dff"],eis:["Eisblau","#4fb6d6","#8b7bff"],violett:["Violett","#a78bfa","#f472b6"],neon:["Neon","#34d399","#22d3ee"],
  pink:["Pink","#f472b6","#a78bfa"],orange:["Orange","#fb923c","#f472b6"],gold:["Gold","#fbbf24","#fb7185"],rot:["Rot","#fb7185","#f59e0b"],weiss:["Weiß","#e5e7eb","#8b7bff"]};
-const BGS={nacht:"Nachtblau",schwarz:"Schwarz",grafit:"Grafit",hell:"Hell"};
-const themeGet=()=>{try{return{acc:"indigo",bg:"nacht",...(JSON.parse(localStorage.getItem("ern_theme")||"{}")||{})}}catch(e){return{acc:"indigo",bg:"nacht"}}};
-function themeApply(t){t=t||themeGet();const a=THEMES[t.acc]||THEMES.indigo,r=document.documentElement;
- r.style.setProperty("--a1",a[1]);r.style.setProperty("--a2",a[2]);r.dataset.bg=BGS[t.bg]?t.bg:"nacht";
- const m=document.querySelectorAll('meta[name="theme-color"]');m.forEach(x=>x.setAttribute("content",r.dataset.bg==="hell"?"#f2f2f7":r.dataset.bg==="grafit"?"#0b0d12":r.dataset.bg==="nacht"?"#070918":"#000000"))}
+const BGS={glas:"Glas",matt:"Mattschwarz",hell:"Hell"};
+/* frühere Einstellungen auf die neuen Stile abbilden */
+const BG_ALT={nacht:"glas",schwarz:"matt",grafit:"matt"};
+const themeGet=()=>{try{return(t=>({...t,bg:BG_ALT[t.bg]||t.bg}))({acc:"blau",bg:"glas",...(JSON.parse(localStorage.getItem("ern_theme")||"{}")||{})})}catch(e){return{acc:"blau",bg:"glas"}}};
+function themeApply(t){t=t||themeGet();const a=THEMES[t.acc]||THEMES.blau,r=document.documentElement;
+ r.style.setProperty("--a1",a[1]);r.style.setProperty("--a2",a[2]);r.dataset.bg=BGS[t.bg]?t.bg:"glas";
+ const m=document.querySelectorAll('meta[name="theme-color"]');m.forEach(x=>x.setAttribute("content",r.dataset.bg==="hell"?"#f2f2f7":r.dataset.bg==="glas"?"#02030a":"#000000"))}
 function themeSet(p){const t={...themeGet(),...p};try{localStorage.setItem("ern_theme",JSON.stringify(t))}catch(e){}themeApply(t)}
 themeApply();
 
@@ -94,7 +96,7 @@ function burst(el,col){if(!el||matchMedia("(prefers-reduced-motion: reduce)").ma
 function designCard(){const t=themeGet();
  return`<div class="card" id="dsBox"><h2><span class="ct">${ic("palette")}Design & Farben</span></h2>
  <div class="dsl">Akzentfarbe</div><div class="sw8">${Object.entries(THEMES).map(([k,[l,a1,a2]])=>`<button class="swt${t.acc===k?" on":""}" data-ds-acc="${k}" style="--s1:${a1};--s2:${a2}" aria-label="${l}"><i></i><span>${l}</span></button>`).join("")}</div>
- <div class="dsl">Hintergrund</div><div class="seg">${Object.entries(BGS).map(([k,l])=>`<button data-ds-bg="${k}" class="${t.bg===k?"on":""}">${l}</button>`).join("")}</div>
+ <div class="dsl">Kartenstil</div><div class="seg">${Object.entries(BGS).map(([k,l])=>`<button data-ds-bg="${k}" class="${t.bg===k?"on":""}">${l}</button>`).join("")}</div>
  <p class="s mute" style="margin:10px 0 0">Gilt für dieses Gerät. Die Farbe färbt Knöpfe, Ringe, Diagramme und das Licht in der unteren Leiste.</p></div>`}
 function openDesign(){if(typeof closeDrawer==="function")closeDrawer();const sh=document.getElementById("sheet");sh.classList.add("on");
  sh.innerHTML=`<div class="top"><button class="ib" data-close="1" aria-label="Schließen">${ic("x")}</button><h1>Design</h1><span style="min-width:44px"></span></div><main>${designCard()}</main>`}
