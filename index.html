@@ -4,11 +4,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>KingStats</title>
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="KingStats"><meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="KingStats"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=b38ca0c"></script>
+<script src="design.js?v=126b10a"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -983,17 +983,35 @@ main.v-todos{overflow-x:clip;touch-action:pan-y}
 .bg-apple i{background:linear-gradient(180deg,#8b2436 0 22%,#000 22% 55%,#1c1c1e 55%);box-shadow:inset 0 -9px 0 -2px #1c1c1e}
 .bg-applehell i{background:linear-gradient(180deg,#ffc2cd 0 22%,#f2f2f7 22% 55%,#fff 55%);border-color:rgba(0,0,0,.1)}
 .bgsel{grid-template-columns:repeat(4,minmax(0,1fr))}
+/* Schlafphasen */
+.gzsv{margin:12px auto 0;max-width:220px}
+.hyp{display:flex;gap:8px;margin:0 0 14px}.hypl{display:flex;flex-direction:column;justify-content:space-around;font-size:11px;color:var(--mute);height:104px;flex:none;width:34px}
+.hypc{flex:1;min-width:0}.hypc svg{width:100%;height:104px;display:block}.hypc .ax{display:flex;justify-content:space-between;font-size:11px;color:var(--mute);margin-top:4px}
+.phr{display:flex;align-items:center;gap:10px;margin-top:10px}.phr>i{width:10px;height:10px;border-radius:3px;flex:none}.phr>div{flex:1;min-width:0}.phr b{font-weight:600}.phr small{display:block;font-size:12px;color:var(--mute)}
+.phv{text-align:right}.phv b{font-family:var(--num,inherit)}.phr em{font-style:normal;font-size:12px;padding:2px 8px;border-radius:99px;background:var(--fill);min-width:62px;text-align:center}
+.phr em.t-g{color:var(--g)}.phr em.t-y{color:var(--y)}.phr em.t-r{color:var(--r)}
+.phb{position:relative;height:6px;border-radius:3px;background:var(--fill);margin:6px 0 2px 20px;overflow:hidden}.phb i{position:absolute;left:0;top:0;bottom:0;border-radius:3px}.phb u{position:absolute;top:0;bottom:0;border-left:1px solid rgba(255,255,255,.55);border-right:1px solid rgba(255,255,255,.55);text-decoration:none}
+.sumg .dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px}
+/* ----- 13 Statusleiste & Scrollbalken (19.11.2026) -----
+   Statusleiste „black-translucent“: die App reicht bis ganz oben, das Farblicht liegt hinter Uhrzeit/Akku.
+   env(safe-area-inset-top) ist nur dann > 0 – sonst ändern diese Regeln nichts. Die Kopfzeile zieht sich
+   unter die Statusleiste, damit beim Scrollen nichts hinter der Uhrzeit durchläuft. */
+#app>.top{margin-top:calc(-1 * env(safe-area-inset-top));padding-top:calc(8px + env(safe-area-inset-top))!important}
+:root[data-ah] body.scrolled #app>.top>h1,:root[data-ah] body.scrolled #app>.top .dtl{top:calc(50% + env(safe-area-inset-top) / 2)}
+/* Scrollbalken ausblenden (wie eine echte App) */
+html,body,.sheet,.drawer,*{scrollbar-width:none}
+::-webkit-scrollbar{display:none;width:0;height:0;background:transparent}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="gA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--a1)"/><stop offset="1" style="stop-color:var(--a2)"/></linearGradient></defs></svg>
 <div id="app"></div>
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=b38ca0c"></script>
-<script src="todos.js?v=b38ca0c"></script>
-<script src="gesund.js?v=b38ca0c"></script>
-<script src="mitteilungen.js?v=b38ca0c"></script>
-<script src="suche.js?v=b38ca0c"></script>
+<script src="kern.js?v=126b10a"></script>
+<script src="todos.js?v=126b10a"></script>
+<script src="gesund.js?v=126b10a"></script>
+<script src="mitteilungen.js?v=126b10a"></script>
+<script src="suche.js?v=126b10a"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -1379,10 +1397,10 @@ function vVerlauf(){
 const foods=()=>(C.lm&&C.lm.items)||[];
 const isOwn=f=>f.own||String(f.src||"").startsWith("eigen");
 /* Reiter: Von dir / Favoriten / Gescannt; Suchfeld filtert den aktiven Reiter (gleiche Wortsuche wie beim Eintragen) */
-const LMTABS=[["eigen","Von dir",f=>isOwn(f)],["fav","Favoriten",f=>!!f.fav],["off","Gescannt",f=>srcOf(f).k==="off"]];
+const LMTABS=[["eigen","Von dir",f=>isOwn(f)],["fav","Favoriten",f=>!!f.fav],["off","Gescannt",f=>srcOf(f).k==="off"],["yazio","Yazio",f=>srcOf(f).k==="yazio"]];
 let LMQ="";
 const lmHits=k=>{const t=LMTABS.find(x=>x[0]===k),q=LMQ.trim();return foods().filter(f=>t[2](f)&&(!q||matchWords(f.name+" "+(f.marke||""),q)))};
-function lmSeg(){return LMTABS.map(([k,l])=>`<button data-lmtab="${k}" class="${lmTab===k?"on":""}">${l} <small>(${lmHits(k).length})</small></button>`).join("")}
+function lmSeg(){return LMTABS.filter(t=>t[0]!=="yazio"||lmHits("yazio").length).map(([k,l])=>`<button data-lmtab="${k}" class="${lmTab===k?"on":""}">${l} <small>(${lmHits(k).length})</small></button>`).join("")}
 function lmList(){const L=lmHits(lmTab).sort((a,b)=>a.name.localeCompare(b.name,"de"));
  if(L.length)return L.map(f=>swRow(`data-editfood="${h(f.id)}"`,`<span>${h(f.name)}${f.fav?` ${ic("star")}`:""}<br><small>${f.marke?h(f.marke)+" · ":""}${n0(f.n&&f.n.kcal)} kcal · P ${n1(f.n&&f.n.p)} g je 100 g${f.portion&&f.portion.g!==100?" · Portion "+n0(f.portion.g)+" g":""}${(b=>b?` · <span style="color:${COL[b.a]}">● ${b.label}</span>`:"")(EK.bewertung(f.n))}</small></span><span class="mute">›</span>`,`data-delfood="${h(f.id)}"`)).join("");
  if(LMQ.trim()){const other=LMTABS.filter(x=>x[0]!==lmTab).map(([k,l])=>[k,l,lmHits(k).length]).filter(x=>x[2]);
@@ -1857,8 +1875,8 @@ const hitWords=(t,w)=>{const tc=t.replace(/ /g,"");return w.every(x=>t.includes(
 const matchWords=(text,q)=>{const w=qWords(q);return w.length>0&&hitWords(EK.norm(text),w)};
 /* Herkunft eines Lebensmittels – eine Stelle für Suche, Mengenansicht und „Meine Lebensmittel“.
    k = Herkunft (eigen/off/bls/sonst), kurz = Etikett in der Trefferliste, lang = Zeile in der Mengenansicht */
-const srcOf=f=>{const s=String(f.src||""),k=isOwn(f)?"eigen":s.startsWith("off")?"off":s.startsWith("bls")?"bls":"sonst",
- L={eigen:["von dir","von dir angelegt","var(--acc)"],off:["Marke","Open Food Facts","var(--c)"],bls:["Grundnahrungsmittel","Grundnahrungsmittel","var(--g)"],sonst:["gespeichert","","var(--mute)"]}[k];
+const srcOf=f=>{const s=String(f.src||""),k=isOwn(f)?"eigen":s.startsWith("off")?"off":s.startsWith("bls")?"bls":s.startsWith("yazio")?"yazio":"sonst",
+ L={eigen:["von dir","von dir angelegt","var(--acc)"],off:["Marke","Open Food Facts","var(--c)"],bls:["Grundnahrungsmittel","Grundnahrungsmittel","var(--g)"],yazio:["Yazio","aus Yazio übernommen","var(--p)"],sonst:["gespeichert","","var(--mute)"]}[k];
  return f.zutaten?{k,kurz:"Gericht",lang:L[1],c:"var(--acc)"}:{k,kurz:L[0],lang:L[1],c:L[2]}};
 /* Treffer im Namen hervorheben */
 function hl(name){const w=EK.norm(S.q).split(/\s+/).filter(x=>x.length>1),raw=String(name??"");if(!w.length)return h(raw);const R0=[];
@@ -2425,7 +2443,7 @@ addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="b38ca0c";
+const APPV="126b10a";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;

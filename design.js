@@ -16,7 +16,9 @@ function themeApply(t){t=t||themeGet();const a=THEMES[t.acc]||THEMES.apple,r=doc
  r.style.setProperty("--a1",a[1]);r.style.setProperty("--a2",a[2]);r.dataset.bg=BGS[t.bg]?t.bg:"apple";
  /* data-ah = einer der beiden Apple-Health-Stile, data-acc = gewählte Akzentfarbe (färbt dort das Farblicht oben) */
  r.toggleAttribute("data-ah",r.dataset.bg==="apple"||r.dataset.bg==="applehell");r.dataset.acc=THEMES[t.acc]?t.acc:"apple";
- const m=document.querySelectorAll('meta[name="theme-color"]');m.forEach(x=>x.setAttribute("content",r.dataset.bg==="hell"||r.dataset.bg==="applehell"?"#f2f2f7":r.dataset.bg==="glas"?"#02030a":r.dataset.bg==="classic"?"#141311":r.dataset.bg==="classichell"?"#f3eee5":"#000000"))}
+ const m=document.querySelectorAll('meta[name="theme-color"]');m.forEach(x=>x.setAttribute("content",r.dataset.bg==="hell"||r.dataset.bg==="applehell"?"#f2f2f7":r.dataset.bg==="glas"?"#02030a":r.dataset.bg==="classic"?"#141311":r.dataset.bg==="classichell"?"#f3eee5":"#000000"));
+ /* Statusleiste: im Stil „Apple Health“ durchsichtig (Farblicht reicht bis oben, weiße Uhrzeit), sonst normal */
+ const sb=document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');if(sb)sb.setAttribute("content",r.dataset.bg==="apple"?"black-translucent":"default")}
 function themeSet(p){const t={...themeGet(),...p};try{localStorage.setItem("ern_theme",JSON.stringify(t))}catch(e){}themeApply(t)}
 themeApply();
 

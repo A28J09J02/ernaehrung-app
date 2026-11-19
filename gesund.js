@@ -90,6 +90,9 @@ const GZM={
  schlaf:{t:"Schlafdauer",i:"moon",u:"h",g:r=>r.sleep_s,f:v=>gzHm(v),cv:v=>v/3600,ty:"bar",ref:7,b:1,
   r:v=>v<6*3600?["r","zu kurz"]:v<7*3600?["y","etwas kurz"]:["g","ausreichend"],
   info:"Wie lange du geschlafen hast (ohne Wachphasen). Für Erwachsene sind 7–9 Stunden gut, vor allem im Training. Die gestrichelte Linie zeigt 7 Stunden."},
+ tief:{t:"Tiefschlaf",i:"moon",u:"h",g:r=>r.deep_s,f:v=>gzHm(v),cv:v=>v/3600,ty:"bar",b:1,
+  r:(v,d,r)=>{if(!r||!r.sleep_s)return null;const q=v/(gzSlp(r)||r.sleep_s)*100;return q>=16?["g",`${n0(q)} % der Nacht – gut`]:q>=10?["y",`${n0(q)} % der Nacht – etwas wenig`]:["r",`${n0(q)} % der Nacht – wenig`]},
+  info:"Tiefschlaf ist die erholsamste Phase: Der Körper repariert Muskeln, baut Energie auf und schüttet Wachstumshormon aus. Garmin bewertet 16–33 % der Schlafzeit als gut. Er kommt vor allem in der ersten Nachthälfte – spätes Essen, Alkohol, Bildschirm und hartes Training kurz vorm Schlafen drücken ihn."},
  score:{t:"Schlafqualität",i:"star",u:"",g:r=>r.sleep_score,f:v=>n0(v),ty:"line",b:1,
   r:v=>v>=80?["g","gut"]:v>=60?["y","okay"]:["r","schwach"],info:"Garmin-Schlafscore (0–100) aus Dauer, Schlafphasen, Unruhe und Stress in der Nacht. Ab 80 gut, 60–79 okay, darunter schwach."},
  hrv:{t:"HRV",i:"heart",u:"ms",g:r=>r.hrv,f:v=>n0(v),ty:"line",b:1,band:(r)=>r&&r.hrv_lo?[r.hrv_lo,r.hrv_hi]:null,
@@ -114,7 +117,7 @@ const GZM={
   r:v=>v>=95?["g","normal"]:v>=92?["y","etwas niedrig"]:["r","niedrig"],info:"Sauerstoffsättigung (SpO₂) laut Uhr. 95–100 % ist normal. Einzelne niedrige Werte sind bei Uhren häufig Messfehler (Armhaltung, Sitz der Uhr)."},
  gewicht:{t:"Gewicht",i:"scale",u:"kg",g:(r,d)=>(tdWaage()[d])||r.weight,f:v=>n1(v),ty:"line",b:0,
   r:null,info:"Gewicht von deiner Garmin-Waage oder selbst eingetragen. Tägliche Schwankungen von 0,5–1 kg sind normal (Wasser, Essen) – entscheidend ist die Tendenz über Wochen."}};
-const GZG=[["Erholung",["schlaf","score","hrv","rhr","bb","stress"]],["Aktivität",["schritte","intens"]],["Atmung",["atmung","spo2"]],["Körper",["gewicht"]]];
+const GZG=[["Erholung",["schlaf","tief","score","hrv","rhr","bb","stress"]],["Aktivität",["schritte","intens"]],["Atmung",["atmung","spo2"]],["Körper",["gewicht"]]];
 /* Werte einer Kennzahl für eine Liste von Tagen */
 const gzSer=(k,L)=>{const M=GZM[k],D=gzDaysAll();return L.map(d=>{const r=D[d]||{},v=M.g(r,d);return v==null||!isFinite(v)?null:+v})};
 function gzLastM(k,maxAge=2){const M=GZM[k],D=gzDaysAll();for(let j=0;j<=maxAge;j++){const d=EK.add(TODAY(),-j),r=D[d]||{},v=M.g(r,d);if(v!=null)return{v,d,r}}
@@ -127,7 +130,7 @@ function gzSpark(vals){const v=vals.map(x=>x==null?null:+x),ok=v.filter(x=>x!=nu
  return`<svg class="spk2" viewBox="0 0 ${W} ${H}" aria-hidden="true"><path d="${p}" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${X}" cy="${Y}" r="3" fill="var(--acc)"/></svg>`}
 /* Kategorie-Farben wie in Apple Health (nur im Stil „Apple Health“ sichtbar, sonst Akzentfarbe) */
 /* gemessen an der Health-App: Schlaf #646dff, Herz #ff2d55, Aktivität #ff4f12, Körpermaße #d22ff0, Atmung #5ac8fa, Achtsamkeit #64d2ff */
-const GZCOL={schlaf:"#646dff",score:"#646dff",hrv:"#ff2d55",rhr:"#ff2d55",bb:"#30d158",stress:"#64d2ff",schritte:"#ff4f12",intens:"#ff4f12",atmung:"#5ac8fa",spo2:"#5ac8fa",gewicht:"#d22ff0"};
+const GZCOL={schlaf:"#646dff",tief:"#646dff",score:"#646dff",hrv:"#ff2d55",rhr:"#ff2d55",bb:"#30d158",stress:"#64d2ff",schritte:"#ff4f12",intens:"#ff4f12",atmung:"#5ac8fa",spo2:"#5ac8fa",gewicht:"#d22ff0"};
 /* Mini-Balken der letzten 7 Tage: grau, der letzte in der Kategoriefarbe (wie in Apple Health) */
 function gzMiniBars(vals){const v=vals.slice(-7).map(x=>x==null?null:+x),ok=v.filter(x=>x!=null);if(ok.length<2)return"";const hi=Math.max(...ok,1),W=110,H=48,bw=12,gap=(W-bw*7)/6;
  return`<svg class="mbars" viewBox="0 0 ${W} ${H}" aria-hidden="true">${v.map((x,i)=>{const hh=x==null?3:Math.max(4,x/hi*H),last=i===v.length-1;return`<rect x="${(i*(bw+gap)).toFixed(1)}" y="${(H-hh).toFixed(1)}" width="${bw}" height="${hh.toFixed(1)}" rx="3" class="${last?"mb on":"mb"}"/>`}).join("")}</svg>`}
@@ -159,8 +162,8 @@ function vGesund(){if(!C.store)return`<div class="lt"><div><h2>Gesundheit</h2></
  return o+`<p class="foot">Antippen zeigt Verlauf, Zusammenfassung und Erklärung. Werte von deiner Garmin-Uhr – Orientierung, keine Diagnose.</p>`}
 
 /* ---------- Detailansicht ---------- */
-let GZD={k:null,r:30};
-function gzOpen(k){GZD.k=k;if(!GZ.full)gzFull().then(()=>{if(GZD.k===k&&$("sheet").classList.contains("on"))gzDetail()});gzDetail()}
+let GZD={k:null,r:30,sv:"ph",night:null};
+function gzOpen(k){GZD.k=k;GZD.night=null;if(!GZ.full)gzFull().then(()=>{if(GZD.k===k&&$("sheet").classList.contains("on"))gzDetail()});gzDetail()}
 function gzDetail(){const k=GZD.k,M=GZM[k],sh=$("sheet");if(!M)return;sh.classList.add("on");
  const L=gzRange(GZD.r),V=gzSer(k,L),P=gzSer(k,gzRange(GZD.r*2).slice(0,GZD.r)),ok=V.filter(x=>x!=null),D=gzDaysAll(),l=gzLastM(k,3);
  const avg=gzAvg(ok),pav=gzAvg(P.filter(x=>x!=null)),mn=ok.length?Math.min(...ok):null,mx=ok.length?Math.max(...ok):null;
@@ -187,7 +190,8 @@ function gzDetail(){const k=GZD.k,M=GZM[k],sh=$("sheet");if(!M)return;sh.classLi
  sh.innerHTML=`<div class="top"><button class="ib" data-close="1" aria-label="Schließen">${ic("x")}</button><h1>${M.t}</h1><span style="min-width:44px"></span></div><main>
  <div class="mdh"><div><span>${l&&l.d?tdLong(l.d)[0].toUpperCase()+tdLong(l.d).slice(1):"Zuletzt"}</span><b>${l?M.f(l.v):"–"}${M.u?`<small>${M.u==="h"?"Std.":M.u}</small>`:""}</b></div>${cur&&cur[0]!=="n"?tone(cur[0],cur[1]):""}</div>
  ${gzSeg("gzdr",GZD.r,[[7,"7 T"],[30,"30 T"],[90,"90 T"],[180,"6 M"]])}
- <div class="card" style="--amc:${GZCOL[k]||"var(--acc)"}">${gzICh(k,L,V)}</div>
+ <div class="card" style="--amc:${GZCOL[k]||"var(--acc)"}">${k==="schlaf"&&GZD.sv==="ph"?gzPhCh(L,V):gzICh(k,L,V)}${k==="schlaf"?`<div class="seg sm gzsv">${[["ph","Phasen"],["d","Dauer"]].map(([v,t])=>`<button data-gzsv="${v}" class="${GZD.sv===v?"on":""}">${t}</button>`).join("")}</div>`:""}</div>
+ ${k==="schlaf"?`<div id="gznight">${gzNight(GZD.night&&L.includes(GZD.night)?GZD.night:(l&&l.d))}</div>${gzPhAvg(L)}`:""}
  <div class="card"><div class="verd">${verdict[0]==="n"?`<span class="gbub" style="--mc:var(--mute)">${ic("info")}</span>`:`<span class="gzsi t-${verdict[0]}" style="flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center">${ic(verdict[0]==="g"?"check":"warn")}</span>`}<p>${verdict[1]}</p></div>
   ${rates.length?`<div class="dist">${["g","y","r"].map(x=>cnt[x]?`<i style="flex:${cnt[x]};background:var(--${x})"></i>`:"").join("")}</div><div class="gzleg"><span><i style="background:var(--g)"></i>gut ${cnt.g}</span><span><i style="background:var(--y)"></i>mittel ${cnt.y}</span><span><i style="background:var(--r)"></i>ungünstig ${cnt.r}</span></div>`:""}</div>
  <div class="sumg"><div><span>Durchschnitt</span><b>${vT(avg)}</b>${pav!=null&&avg!=null?`<em class="${dirTone(avg-pav)==="g"?"up good":dirTone(avg-pav)==="r"?"dn bad":""}">${fmtD(avg-pav)} ggü. davor</em>`:""}</div>
@@ -195,6 +199,52 @@ function gzDetail(){const k=GZD.k,M=GZM[k],sh=$("sheet");if(!M)return;sh.classLi
   <div><span>Niedrigster</span><b>${vT(mn)}</b></div><div><span>Höchster</span><b>${vT(mx)}</b></div></div>
  <div class="sec">Über ${M.t}</div><div class="card about"><p>${M.info}</p></div></main>`;
  gzBind()}
+/* ---------- Schlafphasen (wie in Apple Health: Wach · REM · Kern · Tief) ----------
+   Summen je Phase kommen aus Garmins Schlafzusammenfassung (deep_s, rem_s, light_s, awake_s).
+   Der Verlauf über die Nacht (hyp = [[Startminute, Dauer, Phase 0 Tief/1 Leicht/2 REM/3 Wach], …]) wird
+   beim Garmin-Sync für die letzten Nächte geholt; ältere Nächte zeigen nur die Summen.
+   Richtwerte wie bei Garmin: Tief 16–33 %, REM 21–31 %, Leicht 30–64 % der Schlafzeit, Wach möglichst wenig. */
+const GZPH=[{k:"awake_s",t:"Wach",c:"#ff8a5c",lv:3},{k:"rem_s",t:"REM",c:"#5ac8fa",lv:2},{k:"light_s",t:"Kern (leicht)",c:"#3478f6",lv:1},{k:"deep_s",t:"Tief",c:"#4b3fd1",lv:0}];
+const GZPHR={deep_s:[16,33],rem_s:[21,31],light_s:[30,64]};
+/* Anteile wie bei Garmin: Tief/REM/Leicht bezogen auf die Schlafzeit (ohne Wach), Wach auf die ganze Nacht */
+const gzSlp=r=>(r.deep_s||0)+(r.rem_s||0)+(r.light_s||0);
+function gzPhRate(k,sec,tot){if(!tot)return null;const q=sec/tot*100;
+ if(k==="awake_s"){const m=sec/60;return m<=30?["g","ruhig"]:m<=60?["y","etwas unruhig"]:["r","unruhig"]}
+ const R=GZPHR[k];return q>=R[0]&&q<=R[1]?["g","gut"]:q<R[0]?[q<R[0]*.65?"r":"y","wenig"]:["y","viel"]}
+/* gestapelte Balken je Nacht */
+function gzPhCh(L,V){const D=gzDaysAll(),W=300,H=170,n=L.length,rows=L.map(d=>D[d]||{});
+ const tot=rows.map(r=>GZPH.reduce((a,p)=>a+(r[p.k]||0),0)),mx=Math.max(...tot,8*3600)*1.1;if(tot.filter(x=>x>0).length<2)return`<p class="s mute">Noch zu wenige Messungen in diesem Zeitraum.</p>`;
+ const bw=W/n*.62,X=i=>(i+.5)/n*W,Y=v=>H-v/mx*H;let g=`<line x1="0" x2="${W}" y1="${Y(7*3600).toFixed(1)}" y2="${Y(7*3600).toFixed(1)}" stroke="rgba(255,255,255,.3)" stroke-dasharray="3 4" vector-effect="non-scaling-stroke"/>`;
+ rows.forEach((r,i)=>{if(!tot[i])return;let acc=0;[...GZPH].reverse().forEach(p=>{const v=r[p.k]||0;if(!v)return;const y0=Y(acc),y1=Y(acc+v);acc+=v;
+  g+=`<rect x="${(X(i)-bw/2).toFixed(1)}" y="${y1.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(.5,y0-y1).toFixed(1)}" fill="${p.c}" opacity="${L[i]===GZD.night||(!GZD.night&&i===n-1)?1:.8}"/>`})});
+ const yl=[7,4].map(h=>`<span class="yl" style="top:${(Y(h*3600)/H*(100-10.6)).toFixed(1)}%">${h} h</span>`).join("");
+ GZD.data={L,V,n};
+ return`<div class="ich" id="ich"><svg viewBox="0 0 ${W} ${H+20}" preserveAspectRatio="none" aria-hidden="true"><g>${g}</g></svg>${yl}<i class="cur"></i><div class="tip"></div>
+ <div class="ax"><span>${dm(L[0])}</span><span>${dm(L[Math.floor(n/2)])}</span><span>heute</span></div></div>
+ <div class="gzleg" style="margin-top:8px">${GZPH.map(p=>`<span><i style="background:${p.c}"></i>${p.t.replace(" (leicht)","")}</span>`).join("")}</div>`}
+/* eine Nacht: Verlauf (falls vorhanden) + Phasen mit Dauer, Anteil und Einordnung */
+function gzNight(d){const r=d?gzDaysAll()[d]:null;if(!r||!r.sleep_s)return"";
+ const tot=GZPH.reduce((a,p)=>a+(r[p.k]||0),0),sl=gzSlp(r)||r.sleep_s;
+ const head=`${tdLong(d)[0].toUpperCase()+tdLong(d).slice(1)}${r.sleep_start&&r.sleep_end?` · ${gzClock(r.sleep_start)}–${gzClock(r.sleep_end)}`:""}`;
+ let hyp="";if(Array.isArray(r.hyp)&&r.hyp.length){const end=Math.max(...r.hyp.map(x=>x[0]+x[1])),W=300,LH=26,lanes=[3,2,1,0];
+  const bars=r.hyp.map(([a,du,lv])=>{const p=GZPH.find(x=>x.lv===lv);if(!p)return"";const y=lanes.indexOf(lv)*LH+3;return`<rect x="${(a/end*W).toFixed(2)}" y="${y}" width="${Math.max(.8,du/end*W).toFixed(2)}" height="${LH-6}" rx="3" fill="${p.c}"/>`}).join("");
+  const grid=lanes.map((_,i)=>`<line x1="0" x2="${W}" y1="${i*LH+LH/2}" y2="${i*LH+LH/2}" stroke="rgba(255,255,255,.07)" vector-effect="non-scaling-stroke"/>`).join("");
+  const t0=r.sleep_start,ticks=t0?[0,.5,1].map(f=>`<span>${gzClock(t0+f*end*60000)}</span>`).join(""):"";
+  hyp=`<div class="hyp"><div class="hypl">${lanes.map(lv=>`<span>${GZPH.find(x=>x.lv===lv).t.replace(" (leicht)","")}</span>`).join("")}</div><div class="hypc"><svg viewBox="0 0 ${W} ${LH*4}" preserveAspectRatio="none" aria-hidden="true">${grid}${bars}</svg>${ticks?`<div class="ax">${ticks}</div>`:""}</div></div>`}
+ const rowsH=GZPH.map(p=>{const v=r[p.k];if(v==null)return"";const base=p.k==="awake_s"?tot:sl,q=base?v/base*100:0,rt=gzPhRate(p.k,v,base),R=GZPHR[p.k];
+  return`<div class="phr"><i style="background:${p.c}"></i><div><b>${p.t}</b><small>${R?`gut: ${R[0]}–${R[1]} %`:`${r.awake_n!=null?r.awake_n+"× aufgewacht":""}`}</small></div><span class="phv"><b>${gzHm(v)}</b><small>${n0(q)} %</small></span>${rt?`<em class="t-${rt[0]}">${rt[1]}</em>`:""}</div>
+  <div class="phb"><i style="width:${Math.min(100,q).toFixed(1)}%;background:${p.c}"></i>${R?`<u style="left:${R[0]}%;width:${R[1]-R[0]}%"></u>`:""}</div>`}).join("");
+ const deep=r.deep_s!=null&&sl?r.deep_s/sl*100:null;
+ const sum=deep==null?"":deep>=16?`Mit ${gzHm(r.deep_s)} Std. Tiefschlaf (${n0(deep)} %) hattest du genug erholsamen Schlaf.`:`Nur ${gzHm(r.deep_s)} Std. Tiefschlaf (${n0(deep)} %) – gut wären mindestens 16 %, bei dir also etwa ${gzHm(sl*.16)} Std.`;
+ return`<div class="sec">Schlafphasen</div><div class="card"><p class="s mute" style="margin:0 0 10px">${head}${r.sleep_score!=null?` · Score ${n0(r.sleep_score)}`:""}</p>${hyp||`<p class="s mute" style="margin:0 0 10px">Für diese Nacht gibt es nur die Summen – den Verlauf über die Nacht holt der Garmin-Sync ab jetzt für die letzten 10 Nächte. Antippen im Diagramm oben wählt eine andere Nacht.</p>`}${rowsH}${sum?`<p class="s" style="margin:12px 0 0">${sum}</p>`:""}</div>`}
+/* Schnitt je Phase im Zeitraum, mit Vergleich zum Zeitraum davor */
+function gzPhAvg(L){const D=gzDaysAll(),P=gzRange(GZD.r*2).slice(0,GZD.r);
+ const av=(ds,k)=>{const v=ds.map(d=>(D[d]||{})[k]).filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
+ const nights=L.filter(d=>(D[d]||{}).deep_s!=null&&(D[d]||{}).sleep_s);if(nights.length<2)return"";
+ const good=nights.filter(d=>{const r=D[d],t=gzSlp(r)||r.sleep_s;return t&&r.deep_s/t>=.16}).length;
+ const cells=GZPH.map(p=>{const a=av(L,p.k),b=av(P,p.k);if(a==null)return"";const dlt=b!=null?a-b:null,better=p.k==="awake_s"?dlt<0:dlt>0;
+  return`<div><span><i class="dot" style="background:${p.c}"></i>Ø ${p.t.replace(" (leicht)","")}</span><b>${gzHm(a)}</b>${dlt!=null&&Math.abs(dlt)>=300?`<em class="${p.k==="light_s"?"":better?"up good":"dn bad"}">${dlt>0?"+":"−"}${gzHm(Math.abs(dlt))} ggü. davor</em>`:""}</div>`}).join("");
+ return`<div class="sec">Im Schnitt (${GZD.r} Tage)</div><div class="card"><p class="s" style="margin:0 0 12px">Genug Tiefschlaf (ab 16 %) in <b>${good} von ${nights.length}</b> Nächten.</p><div class="sumg">${cells}</div></div>`}
 /* Verlauf zum Antippen: Finger ziehen zeigt Datum und Wert */
 function gzICh(k,L,V){const M=GZM[k],cv=v=>v==null?null:M.cv?M.cv(v):v,W=300,H=170,ok=V.filter(x=>x!=null).map(cv);if(ok.length<2)return`<p class="s mute">Noch zu wenige Messungen in diesem Zeitraum.</p>`;
  const D=gzDaysAll(),last=D[L[L.length-1]]||D[L[L.length-2]]||{},band=M.band?M.band(last):null,ref=M.ref!=null?M.ref:M.refR?M.refR(last):null;
@@ -214,6 +264,7 @@ function gzICh(k,L,V){const M=GZM[k],cv=v=>v==null?null:M.cv?M.cv(v):v,W=300,H=1
 function gzBind(){const el=$("ich");if(!el||!GZD.data)return;const{L,V,n}=GZD.data,cur=el.querySelector(".cur"),tip=el.querySelector(".tip"),M=GZM[GZD.k],D=gzDaysAll();
  const show=x=>{const r=el.getBoundingClientRect();let i=Math.floor((x-r.left)/r.width*n);i=Math.max(0,Math.min(n-1,i));
   /* nächster Tag mit Wert */let j=i;for(let s=0;s<n&&V[j]==null;s++){j=i+((s%2?1:-1)*Math.ceil((s+1)/2));if(j<0||j>=n)j=i}
+  if(GZD.k==="schlaf"&&V[j]!=null&&GZD.night!==L[j]){GZD.night=L[j];const nb=$("gznight");if(nb)nb.innerHTML=gzNight(L[j])}
   const px=(j+.5)/n*r.width,v=V[j],rt=v!=null?gzRate(GZD.k,v,L[j],D[L[j]]||{}):null;
   cur.style.left=px+"px";tip.style.left=Math.max(54,Math.min(r.width-54,px))+"px";
   tip.innerHTML=`<b>${v==null?"–":M.f(v)}${M.u&&v!=null?" "+(M.u==="h"?"Std.":M.u):""}</b>${wd(L[j])} ${dm(L[j])}${rt&&rt[0]!=="n"?` · <span style="color:var(--${rt[0]})">${rt[1]}</span>`:""}`;el.classList.add("on")};
@@ -221,7 +272,7 @@ function gzBind(){const el=$("ich");if(!el||!GZD.data)return;const{L,V,n}=GZD.da
  el.addEventListener("pointerleave",()=>el.classList.remove("on"));
  el.addEventListener("touchstart",e=>show(e.touches[0].clientX),{passive:true});el.addEventListener("touchmove",e=>show(e.touches[0].clientX),{passive:true});
  el.addEventListener("touchend",()=>setTimeout(()=>el.classList.remove("on"),1800))}
-document.addEventListener("click",ev=>{let x;if(x=ev.target.closest("[data-gzm]"))gzOpen(x.dataset.gzm);else if(x=ev.target.closest("[data-gzdr]")){GZD.r=+x.dataset.gzdr;gzDetail()}});
+document.addEventListener("click",ev=>{let x;if(x=ev.target.closest("[data-gzm]"))gzOpen(x.dataset.gzm);else if(x=ev.target.closest("[data-gzdr]")){GZD.r=+x.dataset.gzdr;gzDetail()}else if(x=ev.target.closest("[data-gzsv]")){GZD.sv=x.dataset.gzsv;gzDetail()}});
 
 /* ===================== Statistik ===================== */
 async function gzFull(){if(GZ.full||GZ.loading)return;GZ.loading=true;try{const s=await KV.get("store_full"),p=await KV.get("plan_full");if(s)GZ.full=JSON.parse(s);if(p)GZ.plan=JSON.parse(p)}catch(e){}GZ.loading=false;if(GZ.full&&view==="stat")render()}
