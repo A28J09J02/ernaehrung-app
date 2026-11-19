@@ -14,6 +14,8 @@ const themeGet=()=>{try{const raw=JSON.parse(localStorage.getItem("ern_theme")||
  return{...raw,acc:raw.acc||"apple",bg:BG_ALT[raw.bg]||raw.bg||"apple"}}catch(e){return{acc:"apple",bg:"apple"}}};
 function themeApply(t){t=t||themeGet();const a=THEMES[t.acc]||THEMES.apple,r=document.documentElement;
  r.style.setProperty("--a1",a[1]);r.style.setProperty("--a2",a[2]);r.dataset.bg=BGS[t.bg]?t.bg:"apple";
+ /* data-ah = einer der beiden Apple-Health-Stile, data-acc = gewählte Akzentfarbe (färbt dort das Farblicht oben) */
+ r.toggleAttribute("data-ah",r.dataset.bg==="apple"||r.dataset.bg==="applehell");r.dataset.acc=THEMES[t.acc]?t.acc:"apple";
  const m=document.querySelectorAll('meta[name="theme-color"]');m.forEach(x=>x.setAttribute("content",r.dataset.bg==="hell"||r.dataset.bg==="applehell"?"#f2f2f7":r.dataset.bg==="glas"?"#02030a":r.dataset.bg==="classic"?"#141311":r.dataset.bg==="classichell"?"#f3eee5":"#000000"))}
 function themeSet(p){const t={...themeGet(),...p};try{localStorage.setItem("ern_theme",JSON.stringify(t))}catch(e){}themeApply(t)}
 themeApply();

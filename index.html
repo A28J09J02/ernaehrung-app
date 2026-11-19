@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=7dfc36d"></script>
+<script src="design.js?v=b38ca0c"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -778,157 +778,210 @@ main.v-todos{overflow-x:clip;touch-action:pan-y}
 .tdopt{margin:10px 0 0}.tdopt>summary{list-style:none;cursor:pointer;color:var(--acc);font-weight:600;font-size:15px;padding:10px 4px}.tdopt>summary::-webkit-details-marker{display:none}
 .tdopt>summary::after{content:" ›";display:inline-block;transition:transform .2s}.tdopt[open]>summary::after{transform:rotate(90deg)}
 .tdqd{display:flex;gap:8px}.tdqd .chip2{padding:6px 12px;font-size:14px}
+/* „Über …“-Abschnitt in der Detailansicht (alle Stile) */
+.about p{margin:0;line-height:1.5;color:var(--mute);font-size:14px}
 /* ===================================================================================================
-   Apple Health (Standard, 11/2026): Look der iOS-Health-App – feste graue Karten ohne Rand und Glühen,
-   Kategorie-Titel in Farbe, große Zahlen mit kleiner grauer Einheit, Apple-Blau, schwebende Glas-Leiste.
-   Nur der Look – Aufbau und Funktionen bleiben unverändert. Dunkel = „apple“, hell = „applehell“.
+   Apple Health (Standard seit 19.11.2026) – Look der iOS-Health-App, nach Bildschirmaufnahme nachgebaut.
+   Nur der Look: Aufbau und Funktionen bleiben gleich. Dunkel = „apple“, hell = „applehell“.
+   design.js setzt dazu am <html>: data-ah (beide Apple-Stile) und data-acc (gewählte Akzentfarbe).
+   Gliederung: 1 Farben · 2 Fläche & Farblicht · 3 Schrift & Zahlen · 4 Kopfzeile · 5 Karten · 6 Kennzahl-Karten
+               7 Detailseite · 8 Hinweise · 9 Bedienelemente · 10 Untere Leiste · 11 Fenster & Menü · 12 Design-Vorschau
    =================================================================================================== */
-:root[data-bg="apple"]{--bg:#000;--card:#1c1c1e;--card2:#2c2c2e;--ink:#fff;--mute:#8e8e93;--line:rgba(84,84,88,.55);--grid:rgba(84,84,88,.4);--fill:rgba(120,120,128,.24);--trk:rgba(120,120,128,.3);--edge:transparent;
+/* ----- 1 Farben (gemessen an der Health-App: Karte #1c1c1e, Herz #ff2d55, Aktivität #ff4f12, Schlaf #646dff …) ----- */
+:root[data-bg="apple"]{--bg:#000;--card:#1c1c1e;--card2:#2c2c2e;--ink:#fff;--mute:#8e8e93;--line:rgba(84,84,88,.55);--grid:rgba(84,84,88,.4);
+ --fill:rgba(120,120,128,.24);--trk:rgba(120,120,128,.3);--edge:transparent;--seg-on:#636366;--press:#2c2c2e;--sheet:#000;--sheet-card:#1c1c1e;
  --g:#30d158;--y:#ffd60a;--r:#ff453a;--p:#bf5af2;--c:#ff9f0a;--f:#64d2ff;--rad:22px;color-scheme:dark;
- --cardbg:linear-gradient(transparent,transparent);--sh-card:none;--glow:none;--gl-bg:rgba(44,44,46,.72);--gl-brd:rgba(255,255,255,.1);
- --gl-sh:0 10px 30px rgba(0,0,0,.45);--gl-blur:blur(24px) saturate(1.8);--seg-on:#636366}
-:root[data-bg="applehell"]{--bg:#f2f2f7;--card:#fff;--card2:#f2f2f7;--ink:#000;--mute:#8a8a8e;--line:rgba(60,60,67,.16);--grid:rgba(60,60,67,.1);--fill:rgba(120,120,128,.14);--trk:rgba(120,120,128,.16);--edge:transparent;
+ --cardbg:linear-gradient(transparent,transparent);--sh-card:none;--glow:none;
+ --gl-bg:rgba(44,44,46,.72);--gl-brd:rgba(255,255,255,.1);--gl-sh:0 10px 30px rgba(0,0,0,.45);--gl-blur:blur(24px) saturate(1.8);--tab-on:rgba(255,255,255,.13);
+ --hg1:#8b2436;--hg2:#7a2372;--hg-op:1;--avt:linear-gradient(160deg,#a5acc9,#6b73a8)}
+:root[data-bg="applehell"]{--bg:#f2f2f7;--card:#fff;--card2:#f2f2f7;--ink:#000;--mute:#8a8a8e;--line:rgba(60,60,67,.16);--grid:rgba(60,60,67,.1);
+ --fill:rgba(120,120,128,.14);--trk:rgba(120,120,128,.16);--edge:transparent;--seg-on:#fff;--press:#e5e5ea;--sheet:#f2f2f7;--sheet-card:#fff;
  --g:#34c759;--y:#ff9f0a;--r:#ff3b30;--p:#af52de;--c:#ff9500;--f:#32ade6;--rad:22px;color-scheme:light;
- --cardbg:linear-gradient(transparent,transparent);--sh-card:none;--glow:none;--gl-bg:rgba(255,255,255,.72);--gl-brd:rgba(0,0,0,.06);
- --gl-sh:0 8px 24px rgba(0,0,0,.12);--gl-blur:blur(24px) saturate(1.8);--seg-on:#fff}
-:root:is([data-bg="apple"],[data-bg="applehell"]){background:var(--bg)}
-:root:is([data-bg="apple"],[data-bg="applehell"]) body{background:var(--bg)}
-/* oben ein weiches Farblicht wie in der Health-Übersicht, nach unten schwarz/grau */
-:root:is([data-bg="apple"],[data-bg="applehell"]) body::before{display:block;inset:0 0 auto 0;height:300px;filter:none;opacity:.5;
- background:linear-gradient(180deg,color-mix(in srgb,var(--a1) 55%,var(--bg)) 0%,transparent 100%)}
-:root[data-bg="applehell"] body::before{opacity:.22}
-/* Karten: fest, ohne Rand, ohne Licht */
-:root:is([data-bg="apple"],[data-bg="applehell"]) :is(.card,.tile,.res,.hint,.dnav,.mact button,.btn.idee,.btn.dis,.mtile,.mgrid,.mcard,.tdhero,.hint.acc){background:var(--card);border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:var(--rad)}
-:root:is([data-bg="apple"],[data-bg="applehell"]) :is(.card,.mtile,.tile,.tdhero,.mhero)::before,:root:is([data-bg="apple"],[data-bg="applehell"]) :is(.card,.tile)::after,:root:is([data-bg="apple"],[data-bg="applehell"]) .tdhero::after{display:none}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .card{padding:16px 18px}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .card.list{padding:4px 18px}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .res{border-left:3px solid var(--src,transparent);border-radius:16px}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mhero{background:var(--card);border:0}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mgrid div{border-color:var(--line)!important}
-/* Kartentitel: Symbol ohne Blase, Titel in der Kategoriefarbe (--mc, sonst Akzent) */
-:root:is([data-bg="apple"],[data-bg="applehell"]) .card h2{font-size:17px;font-weight:600;letter-spacing:-.01em;margin-bottom:10px}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .card h2 .ct{color:var(--mc,var(--acc));gap:6px}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .ct>.ic,:root:is([data-bg="apple"],[data-bg="applehell"]) .gbub{padding:0;border:0;background:none;box-shadow:none;width:20px;height:20px;color:var(--mc,var(--acc))}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .card h2 small{color:var(--mute);font-weight:400;font-size:14px}
-/* große Titel und Abschnitte */
-:root:is([data-bg="apple"],[data-bg="applehell"]) .lt h2{font-size:34px;font-weight:700;letter-spacing:.01em}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .lt small{font-weight:400;font-size:15px}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .sec{font-size:22px;font-weight:700;letter-spacing:-.01em;color:var(--ink);margin:26px 4px 10px}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .grad{background:none;color:var(--acc);-webkit-background-clip:border-box;background-clip:border-box}
-/* Kopfzeile: mittiger Titel, runde Glas-Knöpfe */
-:root:is([data-bg="apple"],[data-bg="applehell"]) .top,:root:is([data-bg="apple"],[data-bg="applehell"]) .sheet .top{background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:0;border-bottom:0}
-:root:is([data-bg="apple"],[data-bg="applehell"]) body.scrolled .top,:root:is([data-bg="apple"],[data-bg="applehell"]) .top:has(.dtl){background:color-mix(in srgb,var(--bg) 78%,transparent);-webkit-backdrop-filter:var(--gl-blur);backdrop-filter:var(--gl-blur)}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .top h1{font-size:17px;font-weight:600}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .glassb{background:var(--gl-bg);border:.5px solid var(--gl-brd);box-shadow:var(--gl-sh);color:var(--ink)}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .ib{color:var(--acc)}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .sheet{background:var(--bg);box-shadow:none}
-:root[data-bg="apple"] .sheet{background:#1c1c1e}
-:root[data-bg="apple"] .sheet .card,:root[data-bg="apple"] .sheet :is(.res,.hint,.mgrid,.mtile,.mact button){background:#2c2c2e}
-/* untere Leiste: Glas-Kapsel, aktiver Reiter als helle Pille */
-:root:is([data-bg="apple"],[data-bg="applehell"]) .tabs{background:var(--gl-bg);border:.5px solid var(--gl-brd);box-shadow:var(--gl-sh);-webkit-backdrop-filter:var(--gl-blur);backdrop-filter:var(--gl-blur)}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .tabs button{color:var(--ink);font-weight:500;font-size:10.5px}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .tabs button.on{color:var(--acc);font-weight:600;background:var(--fill)}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .tabs button.on svg{filter:none}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .tabs .bdg{box-shadow:none}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .lamp{display:none}
-/* Seitenmenü und Hinweise */
-:root:is([data-bg="apple"],[data-bg="applehell"]) .drawer{background:var(--card);box-shadow:none;border-right:0;-webkit-backdrop-filter:none;backdrop-filter:none}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .drawer .ttl .ic{filter:none}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .drawer button.it.on{background:var(--fill);box-shadow:none;color:var(--acc)}
-:root:is([data-bg="apple"],[data-bg="applehell"]) :is(.toast,#dhint,#ptr){background:var(--gl-bg);box-shadow:var(--gl-sh)}
-/* Knöpfe: einfarbig Apple-Blau, keine Verläufe und Schatten */
-:root:is([data-bg="apple"],[data-bg="applehell"]) .btn{background:var(--fill);color:var(--acc);border-radius:14px}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .btn.p,:root:is([data-bg="apple"],[data-bg="applehell"]) :is(.mpl,.plus,.res .pl,.today){background:var(--acc);color:#fff;box-shadow:none;border-color:var(--acc)}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .btn.d{color:var(--r)}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mpb{background:var(--fill);color:var(--acc)}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mact button{color:var(--acc)}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .qs button{background:var(--fill);border:0;box-shadow:none}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .qs button.on{background:var(--acc);color:#fff}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .seg{background:var(--fill);border:0;-webkit-backdrop-filter:none;backdrop-filter:none}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .seg button.on{background:var(--seg-on);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.25)}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .inp{background:var(--fill);border:0}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .tgl:checked,:root:is([data-bg="apple"],[data-bg="applehell"]) .tg input[type=checkbox]:checked{background:var(--g);box-shadow:none}
-:root:is([data-bg="apple"],[data-bg="applehell"]) :is(.tgl,.tg input[type=checkbox]){border:0}
-/* Ringe und Balken: ruhig, ohne Leuchten */
-:root:is([data-bg="apple"],[data-bg="applehell"]) :is(.gring,.tdring circle,.gzr .rg){filter:none!important}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .streak{background:var(--fill);color:var(--c);border-color:transparent}
-/* ----- Apple Health: Kopfzeile wie in der Health-App (zentrierter Titel, Profilkreis rechts) ----- */
+ --cardbg:linear-gradient(transparent,transparent);--sh-card:none;--glow:none;
+ --gl-bg:rgba(255,255,255,.72);--gl-brd:rgba(0,0,0,.06);--gl-sh:0 8px 24px rgba(0,0,0,.12);--gl-blur:blur(24px) saturate(1.8);--tab-on:rgba(0,0,0,.06);
+ --hg1:#ff8fa3;--hg2:#d79ce8;--hg-op:.45;--avt:linear-gradient(160deg,#b9bfd8,#7f87b8)}
+:root[data-ah]{--num:ui-rounded,"SF Pro Rounded",-apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+/* mit eigener Akzentfarbe färbt sie auch das Farblicht oben */
+:root[data-ah]:not([data-acc="apple"]){--hg1:color-mix(in srgb,var(--a1) 62%,#000);--hg2:color-mix(in srgb,var(--a2) 55%,#000)}
+:root[data-bg="applehell"]:not([data-acc="apple"]){--hg1:color-mix(in srgb,var(--a1) 45%,#fff);--hg2:color-mix(in srgb,var(--a2) 40%,#fff)}
+
+/* ----- 2 Fläche & Farblicht: oben rot-violett wie die Health-Übersicht, scrollt mit weg ----- */
+:root[data-ah]{background:var(--bg)}
+:root[data-ah] body{background:transparent}
+:root[data-ah] body::before{display:block;position:absolute;inset:0 0 auto 0;height:330px;z-index:-1;filter:none;opacity:var(--hg-op);
+ background:linear-gradient(100deg,var(--hg1),var(--hg2));-webkit-mask-image:linear-gradient(#000 42%,transparent);mask-image:linear-gradient(#000 42%,transparent)}
+
+/* ----- 3 Schrift & Zahlen: große Werte in runden Apple-Ziffern ----- */
+:root[data-ah] :is(.mcb b,.mdh b,.sumg b,.gzk b,.gzrl b,.hero .kv b,.mac b,.tdhero b,.mgrid b,.wt b,.kp b,.arcc b,.top .dtl b,#app>.top h1,.lt h2,.drawer .ttl){font-family:var(--num)}
+:root[data-ah] .hero svg text,:root[data-ah] .tdring text{font-family:var(--num)}
+/* der große Titel steht in der Kopfzeile (Abschnitt 4) – im Inhalt nur noch die Unterzeile */
+:root[data-ah] .lt{margin:0 4px 12px}
+:root[data-ah] .lt h2{display:none}
+:root[data-ah] .lt small{margin:0;font-weight:400;font-size:15px;color:var(--mute)}
+:root[data-ah] .sec{font-size:22px;font-weight:700;letter-spacing:-.01em;text-transform:none;color:var(--ink);margin:26px 4px 10px}
+:root[data-ah] .grad{background:none;color:var(--acc);-webkit-background-clip:border-box;background-clip:border-box}
+
+/* ----- 4 Kopfzeile: großer linker Titel, beim Scrollen kleiner mittiger Titel auf Glas; rechts runder Profilkreis ----- */
 .avt,.mini-a{display:none}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .top::before{content:"";min-width:44px;order:0}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .top>h1,:root:is([data-bg="apple"],[data-bg="applehell"]) .top>.dtl,:root:is([data-bg="apple"],[data-bg="applehell"]) .top>.ib[data-day]{order:1}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .top>.streak,:root:is([data-bg="apple"],[data-bg="applehell"]) .top>.glassb,:root:is([data-bg="apple"],[data-bg="applehell"]) .top>span:last-child{order:2}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .top>[data-menu]{order:3;width:40px;min-width:40px;height:40px;margin:2px;border-radius:50%;background:linear-gradient(145deg,#8e9bd6,#5a63b8);color:#fff;box-shadow:0 0 0 2.5px rgba(255,69,58,.55)}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .top>[data-menu] svg{display:none}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .top>[data-menu] .avt{display:block;font-size:15px;font-weight:600;letter-spacing:0}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .top h1.sm{opacity:1;transform:none}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .lt h2{display:none}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .lt{margin:0 4px 12px}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .lt small{margin:0;font-size:14px;color:var(--mute)}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .ct>.ic{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;color:var(--amc,var(--mc,var(--acc)))!important}
-/* ----- Apple Health: Karten mit Kategoriefarbe, großer Zahl und grauen Mini-Balken ----- */
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mini-o{display:none}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mini-a{display:block}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mcard{padding:16px 18px 18px;gap:14px;margin-bottom:12px}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mch .ct{font-size:17px;font-weight:600;color:var(--amc,var(--acc))}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mch .ct>.ic{color:var(--amc,var(--acc));width:19px;height:19px;padding:0}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mch small{font-size:15px;color:var(--mute)}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mch small .ic{color:var(--mute);width:15px;height:15px}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mcb b{font-size:34px;font-weight:600;letter-spacing:-.02em}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mcb b small{font-size:17px;font-weight:500;color:var(--mute);margin-left:4px}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mcb .tone{background:none;padding:0;font-size:15px;font-weight:500;gap:5px}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mcb .tone.t-n{color:var(--mute)}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mcb .tone .ic{width:12px;height:12px}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mbars{width:110px;height:48px;display:block}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mbars .mb{fill:rgba(120,120,128,.45)}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mbars .mb.on{fill:var(--amc,var(--acc))}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mini-a .spk2 circle{fill:var(--amc,var(--acc))}
-/* ----- Apple Health: Gefühl – Zurück-Pfeil im runden Glas-Knopf, Seiten gleiten von rechts, Karten dunkeln beim Drücken ----- */
-:root:is([data-bg="apple"],[data-bg="applehell"]) .sheet .top>.ib[data-close]{width:44px;min-width:44px;height:44px;margin:2px;border-radius:50%;background:var(--gl-bg);border:.5px solid var(--gl-brd);box-shadow:var(--gl-sh);-webkit-backdrop-filter:var(--gl-blur);backdrop-filter:var(--gl-blur);color:var(--ink)}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .sheet .top>.ib[data-close] svg{display:none}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .sheet .top>.ib[data-close]::before{content:"";width:11px;height:11px;border-left:2.6px solid currentColor;border-bottom:2.6px solid currentColor;border-radius:1px;transform:rotate(45deg) translate(2px,-2px)}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .sheet{border-radius:0;box-shadow:-12px 0 40px rgba(0,0,0,.5)}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .sheet.on:not(.quiet){animation:apin .4s cubic-bezier(.22,.9,.3,1)}
+:root[data-ah] .top{background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:0;border-bottom:.5px solid transparent;transition:background .25s,border-color .25s}
+:root[data-ah] .top h1{font-size:17px;font-weight:600}
+:root[data-ah] .top h1.sm{opacity:1;transform:none}
+:root[data-ah] .ib{color:var(--acc)}
+:root[data-ah] .glassb{background:var(--gl-bg);border:.5px solid var(--gl-brd);box-shadow:var(--gl-sh);color:var(--ink)}
+/* Hauptseiten */
+:root[data-ah] #app>.top{padding:8px 12px 4px 18px;min-height:58px}
+:root[data-ah] #app>.top>h1{order:0;flex:1;font-size:34px;font-weight:700;letter-spacing:-.025em;line-height:1.15;text-align:left;padding:0}
+:root[data-ah] #app>.top>h1.long{font-size:28px}
+:root[data-ah] #app>.top>.streak,:root[data-ah] #app>.top>.glassb,:root[data-ah] #app>.top>span:last-child{order:2}
+/* rechte Gruppe (Streak/Plus + Profil) bleibt immer rechts, auch wenn der Titel beim Scrollen in die Mitte rückt */
+:root[data-ah] #app>.top>:is(.streak,.glassb){margin-left:auto}
+:root[data-ah] #app>.top>span:last-child{display:none}
+:root[data-ah] #app>.top:not(:has(>.streak,>.glassb))>[data-menu]{margin-left:auto}
+:root[data-ah] #app>.top>[data-menu]{order:3;width:40px;min-width:40px;height:40px;margin:2px 0 2px 6px;border-radius:50%;background:var(--avt);color:#fff;box-shadow:0 0 0 .5px rgba(255,255,255,.25),0 2px 8px rgba(0,0,0,.25)}
+:root[data-ah] #app>.top>[data-menu] svg{display:none}
+:root[data-ah] #app>.top>[data-menu] .avt{display:block;font-size:15px;font-weight:600;letter-spacing:.02em}
+:root[data-ah] #app>.top>.streak{background:var(--gl-bg);border:.5px solid var(--gl-brd);color:var(--c);min-height:40px;padding:4px 12px}
+:root[data-ah] #app>.top>.streak.off{color:var(--mute)}
+/* Tagebuch: „Heute“ groß links mit Datum darunter, Vortag/Folgetag als kleine runde Knöpfe rechts */
+:root[data-ah] #app>.top .dtl{order:0;flex:1;align-items:flex-start;text-align:left;padding:0;gap:1px}
+:root[data-ah] #app>.top .dtl b{font-size:34px;font-weight:700;letter-spacing:-.025em;line-height:1.1}
+:root[data-ah] #app>.top .dtl small{font-size:15px;color:var(--mute);font-weight:400}
+:root[data-ah] #app>.top>.ib[data-day]{order:1;width:36px;min-width:36px;height:36px;margin:0 3px;border-radius:50%;background:var(--fill);color:var(--ink);font-size:26px;line-height:1;padding:0 0 3px}
+:root[data-ah] #app>.top>.ib[data-day]:disabled{opacity:.3}
+/* beim Scrollen: Glas-Kopfzeile mit kleinem Titel in der Mitte */
+:root[data-ah] body.scrolled #app>.top{background:color-mix(in srgb,var(--bg) 70%,transparent);-webkit-backdrop-filter:var(--gl-blur);backdrop-filter:var(--gl-blur);border-bottom-color:var(--line)}
+:root[data-ah] body.scrolled #app>.top>h1,:root[data-ah] body.scrolled #app>.top .dtl{position:absolute;left:96px;right:96px;top:50%;transform:translateY(-50%);align-items:center;text-align:center;font-size:17px;font-weight:600;letter-spacing:-.01em;animation:tsm .25s ease-out}
+:root[data-ah] body.scrolled #app>.top .dtl b{font-size:17px;font-weight:600;letter-spacing:-.01em}
+:root[data-ah] body.scrolled #app>.top .dtl small{display:none}
+@keyframes tsm{from{opacity:0}to{opacity:1}}
+:root[data-ah] #app>.stat{text-align:left;margin:-2px 20px 8px;font-size:13px}
+
+/* ----- 5 Karten: feste graue Fläche, ohne Rand, Licht und Verlauf ----- */
+:root[data-ah] :is(.card,.tile,.res,.hint,.dnav,.mact button,.btn.idee,.btn.dis,.mtile,.mgrid,.mcard,.tdhero,.mhero){background:var(--card);border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:var(--rad)}
+:root[data-ah] :is(.card,.mtile,.tile,.tdhero,.mhero)::before,:root[data-ah] :is(.card,.tile,.tdhero)::after{display:none}
+:root[data-ah] .card{padding:16px 18px}
+:root[data-ah] .card.list{padding:4px 18px}
+:root[data-ah] .res{border-left:3px solid var(--src,transparent);border-radius:16px}
+:root[data-ah] .mgrid div{border-color:var(--line)!important}
+/* Kartentitel: Symbol ohne Blase, Titel in der Kategoriefarbe (--amc/--mc, sonst Akzent) */
+:root[data-ah] .card h2{font-size:17px;font-weight:600;letter-spacing:-.01em;margin-bottom:10px}
+:root[data-ah] .card h2 .ct{color:var(--mc,var(--acc));gap:6px}
+:root[data-ah] .card h2 small{color:var(--mute);font-weight:400;font-size:14px}
+:root[data-ah] .ct>.ic,:root[data-ah] .gbub{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;width:20px;height:20px;color:var(--amc,var(--mc,var(--acc)))!important}
+/* gedrückt: Karte hellt kurz auf statt zu verblassen */
+:root[data-ah] :is(.mcard,.res,.mrw,.tdr,.card.list button):active{opacity:1;filter:none;background:var(--press)}
+:root[data-ah] .mrw:active{border-radius:12px}
+
+/* ----- 6 Kennzahl-Karten (Gesundheit): Kategorie oben links, Zeit + Pfeil oben rechts, große Zahl unten, Mini-Diagramm rechts ----- */
+:root[data-ah] .mini-o{display:none}
+:root[data-ah] .mini-a{display:block}
+:root[data-ah] .mcard{padding:14px 16px 16px;gap:16px;margin-bottom:10px;min-height:118px;justify-content:space-between}
+:root[data-ah] .mch .ct{font-size:15.5px;font-weight:600;color:var(--amc,var(--acc));gap:5px}
+:root[data-ah] .mch .ct>.ic{width:17px;height:17px}
+:root[data-ah] .mch small{font-size:14px;color:var(--mute)}
+:root[data-ah] .mch small .ic{color:var(--mute);width:13px;height:13px;stroke-width:2.6;opacity:.7}
+:root[data-ah] .mcb b{font-size:32px;font-weight:600;letter-spacing:-.01em;line-height:1.05}
+:root[data-ah] .mcb b small{font-size:16px;font-weight:500;color:var(--mute);margin-left:3px;font-family:inherit}
+:root[data-ah] .mcb .tone{background:none;padding:0;font-size:14px;font-weight:500;gap:5px;margin-top:3px}
+:root[data-ah] .mcb .tone.t-n{color:var(--mute)}
+:root[data-ah] .mcb .tone .ic{width:12px;height:12px}
+:root[data-ah] .mbars{width:76px;height:40px;display:block}
+:root[data-ah] .mbars .mb{fill:rgba(120,120,128,.5)}
+:root[data-ah] .mbars .mb.on{fill:var(--amc,var(--acc))}
+:root[data-ah] .mini-a .spk2{width:76px;height:30px}
+:root[data-ah] .mini-a .spk2 path{stroke:var(--mute)}
+:root[data-ah] .mini-a .spk2 circle{fill:var(--amc,var(--acc))}
+/* Ringe und Balken: ruhig, ohne Leuchten */
+:root[data-ah] :is(.gring,.tdring circle,.gzr .rg){filter:none!important}
+/* Balken in Statistik/Training einfarbig statt Verlauf (Farbe steht inline, daher !important) */
+:root[data-ah] .gzc linearGradient[id^="gb"] stop{stop-color:var(--acc)!important;stop-opacity:1!important}
+
+/* ----- 7 Detailseite (Schlaf, HRV …): Zeitraum-Schalter oben, große Zahl, Diagramm direkt auf dem Hintergrund, „Über …“ ----- */
+:root[data-ah] .sheet main:has(.mdh){display:flex;flex-direction:column}
+:root[data-ah] .sheet main:has(.mdh)>.seg{order:-2;margin:4px 0 16px}
+:root[data-ah] .sheet main:has(.mdh)>.mdh{order:-1}
+:root[data-ah] .mdh{margin:0 2px 8px;align-items:flex-start}
+:root[data-ah] .mdh>div>span{text-transform:uppercase;font-size:13px;font-weight:600;letter-spacing:.02em;color:var(--mute);margin-bottom:0}
+:root[data-ah] .mdh b{font-size:40px;font-weight:600;letter-spacing:-.01em}
+:root[data-ah] .mdh b small{font-size:18px;font-weight:500;font-family:inherit}
+:root[data-ah] .mdh .tone{background:none;padding:0;font-size:15px;font-weight:600;margin-top:8px}
+:root[data-ah] .sheet .card:has(.ich){background:none!important;padding:0;margin:0 0 18px;border-radius:0}
+:root[data-ah] .ich{border-top:.5px solid var(--line);border-bottom:.5px solid var(--line)}
+:root[data-ah] .ich rect[fill="var(--acc)"]{fill:var(--amc,var(--acc));opacity:1}
+:root[data-ah] .ich path[stroke="var(--acc)"]{stroke:var(--amc,var(--acc))}
+:root[data-ah] .ich circle[fill="var(--acc)"]{fill:var(--amc,var(--acc))}
+:root[data-ah] .ich .cur{background:var(--mute)}
+/* Urteil: Symbol ohne Kasten in der Ampelfarbe (die Kastengröße steht inline, daher !important) */
+:root[data-ah] .verd>.gzsi{width:auto!important;height:auto!important;background:none!important;display:block!important;padding-top:2px}
+:root[data-ah] .verd>.gzsi .ic{width:22px;height:22px;stroke-width:2.4}
+:root[data-ah] .verd>.gbub{display:none}
+:root[data-ah] .verd p{font-size:16px;font-weight:500;line-height:1.4}
+:root[data-ah] .sumg>*{background:var(--sheet-card);border:0;border-radius:16px}
+:root[data-ah] .sumg b{font-weight:600}
+:root[data-ah] .about p{margin:0;font-size:16px;line-height:1.45;color:var(--ink)}
+
+/* ----- 8 Hinweise: ruhige graue Karten statt farbiger Kästen, nur das Symbol trägt Farbe ----- */
+:root[data-ah] .hint>.ic{color:var(--c)}
+:root[data-ah] .hint.acc>.ic{color:var(--acc)}
+:root[data-ah] .hint.part{border-left:0;box-shadow:inset 3px 0 0 var(--y)}
+:root[data-ah] .gzadj{background:var(--fill);border:0;border-radius:12px;color:var(--ink);font-size:14px;line-height:1.4}
+:root[data-ah] .gzsum{gap:12px;align-items:flex-start}
+:root[data-ah] .gzsum .gzsi{background:none!important;width:auto;height:auto;border-radius:0;padding-top:1px}
+:root[data-ah] .gzsum .gzsi .ic{width:22px;height:22px;stroke-width:2.4}
+:root[data-ah] .gzsum b{font-size:17px}
+:root[data-ah] .gzsum small{font-size:15px;line-height:1.4;color:var(--ink);opacity:.85;margin-top:2px}
+
+/* ----- 9 Bedienelemente: einfarbig Apple-Blau, graue Flächen, keine Verläufe ----- */
+:root[data-ah] .btn{background:var(--fill);color:var(--acc);border-radius:14px;border:0;box-shadow:none}
+:root[data-ah] :is(.btn.p,.mpl,.plus,.res .pl,.today){background:var(--acc);color:#fff;box-shadow:none;border-color:var(--acc)}
+:root[data-ah] .btn.d{color:var(--r)}
+:root[data-ah] .mpb{background:var(--fill);color:var(--acc)}
+:root[data-ah] .mact button{color:var(--acc)}
+:root[data-ah] :is(.qs button,.chip2){background:var(--fill);border:0;box-shadow:none}
+:root[data-ah] .qs button.on,:root[data-ah] .chip2:has(input:checked){background:var(--acc);color:#fff;box-shadow:none}
+:root[data-ah] .chip2:has(input:checked) .ic{color:#fff}
+:root[data-ah] .tdqd .chip2{color:var(--acc)}
+:root[data-ah] .seg{background:var(--fill);border:0;border-radius:99px;padding:3px;-webkit-backdrop-filter:none;backdrop-filter:none}
+:root[data-ah] .seg button{border-radius:99px;font-size:14px;font-weight:500}
+:root[data-ah] .seg button.on{background:var(--seg-on);color:var(--ink);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+:root[data-ah] .inp{background:var(--fill);border:0}
+:root[data-ah] :is(.tgl,.tg input[type=checkbox]){border:0}
+:root[data-ah] :is(.tgl,.tg input[type=checkbox]):checked{background:var(--g);box-shadow:none}
+:root[data-ah] .streak{background:var(--fill);color:var(--c);border-color:transparent}
+
+/* ----- 10 Untere Leiste: schwebende Glas-Kapsel, aktiver Reiter als helle Pille in Apple-Blau ----- */
+:root[data-ah] .tabs{left:14px;right:14px;padding:4px;border-radius:999px;background:var(--gl-bg);border:.5px solid var(--gl-brd);box-shadow:var(--gl-sh);-webkit-backdrop-filter:var(--gl-blur);backdrop-filter:var(--gl-blur)}
+:root[data-ah] .tabs button{border-radius:999px;padding:7px 0 5px;color:var(--ink);font-weight:500;font-size:10.5px;gap:2px}
+:root[data-ah] .tabs button.on{color:var(--acc);font-weight:600;background:var(--tab-on)}
+:root[data-ah] .tabs svg{width:24px;height:24px;stroke-width:2}
+:root[data-ah] .tabs button.on svg{filter:none;stroke-width:2.3}
+:root[data-ah] .tabs .bdg{box-shadow:0 0 0 1.5px var(--card)}
+:root[data-ah] .lamp{display:none}
+
+/* ----- 11 Fenster & Seitenmenü: Seiten gleiten von rechts, runder Glas-Zurück-Knopf, schwarzer Grund wie in Health ----- */
+:root[data-ah] .sheet{top:0;padding-top:0;background:var(--sheet);border-radius:0;box-shadow:-12px 0 40px rgba(0,0,0,.5)}
+:root[data-ah] .sheet::before{display:none}
+:root[data-ah] .sheet :is(.card,.res,.hint,.mgrid,.mtile,.mact button,.mhero,.tile,.dnav){background:var(--sheet-card)}
+:root[data-ah] .sheet .card:has(.ich){background:none}
+:root[data-ah] .sheet.on:not(.quiet){animation:apin .4s cubic-bezier(.22,.9,.3,1)}
 @keyframes apin{from{transform:translateX(100%)}to{transform:none}}
-:root:is([data-bg="apple"],[data-bg="applehell"]) :is(.mcard,.res,.mrw,.tdr,.card.list button):active{opacity:1;filter:brightness(1.25)}
-:root[data-bg="applehell"] :is(.mcard,.res,.mrw,.tdr):active{filter:brightness(.94)}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mcard{min-height:132px;justify-content:space-between}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mcb b{font-size:36px;font-weight:500}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mch .ct{font-size:17px;font-weight:600}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .card h2{font-size:17px;font-weight:600}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .sheet .top::before{display:none}
-/* ----- Apple Health: Detailseite (Schlaf, HRV …) – Diagramm direkt auf Schwarz, Segment-Schalter oben, Kategoriefarbe ----- */
-:root:is([data-bg="apple"],[data-bg="applehell"]) .sheet::before{display:none}
-:root[data-bg="apple"] .sheet:has(.mdh){background:#000}
-:root[data-bg="apple"] .sheet:has(.mdh) :is(.card,.sumg div){background:#1c1c1e}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .sheet main:has(.mdh){display:flex;flex-direction:column}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .sheet main:has(.mdh)>.seg{order:-2;margin:4px 0 18px}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .sheet main:has(.mdh)>.mdh{order:-1}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mdh{margin:0 2px 6px;align-items:flex-start}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mdh>div>span{text-transform:uppercase;font-size:13px;font-weight:600;letter-spacing:.03em;color:var(--mute);margin-bottom:2px}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mdh b{font-size:42px;font-weight:600;letter-spacing:-.02em}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mdh b small{font-size:19px;font-weight:500}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .mdh .tone{background:none;padding:0;font-size:15px;font-weight:600;margin-top:6px}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .sheet .card:has(.ich){background:none!important;padding:0;margin:0 0 20px;border-radius:0}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .ich rect[fill="var(--acc)"]{fill:var(--amc,var(--acc));opacity:1}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .ich path[stroke="var(--acc)"]{stroke:var(--amc,var(--acc))}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .ich circle[fill="var(--acc)"]{fill:var(--amc,var(--acc))}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .ich{border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .ich .cur{background:var(--mute)}
-:root[data-bg="applehell"] .sheet:has(.mdh) .sumg>*{background:#fff;border-radius:16px}
-/* ----- Apple Health: großer linker Titel auf den Hauptseiten ----- */
-:root:is([data-bg="apple"],[data-bg="applehell"]) #app>.top h1{font-size:34px;font-weight:700;letter-spacing:-.03em;text-align:left;padding:6px 0 2px 8px;line-height:1.1}
-:root:is([data-bg="apple"],[data-bg="applehell"]) #app>.top{padding-top:10px;padding-bottom:4px}
-:root:is([data-bg="apple"],[data-bg="applehell"]) #app>.top:has(h1)::before{display:none}
-:root:is([data-bg="apple"],[data-bg="applehell"]) #app>.top h1{text-align:left!important;justify-content:flex-start}
-/* Auswahl-Chips (Todo-Formular, Kategorien): graue Kapseln, gewählt = Apple-Blau */
-:root:is([data-bg="apple"],[data-bg="applehell"]) .sec{text-transform:none}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .chip2{background:var(--fill);border:0;box-shadow:none}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .chip2:has(input:checked){background:var(--acc);color:#fff;box-shadow:none}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .chip2:has(input:checked) .ic{color:#fff}
-:root:is([data-bg="apple"],[data-bg="applehell"]) .tdqd .chip2{color:var(--acc)}
-/* Vorschau in Mehr → Design */
-.bg-apple i{background:linear-gradient(180deg,#000 55%,#1c1c1e 55%);box-shadow:inset 0 -9px 0 -2px #1c1c1e,inset 0 3px 0 #0a84ff}
-.bg-applehell i{background:linear-gradient(180deg,#f2f2f7 55%,#fff 55%);border-color:rgba(0,0,0,.1);box-shadow:inset 0 3px 0 #007aff}
+/* Seiten füllen den ganzen Bildschirm (wie in Health), die Kopfzeile reicht unter die Statusleiste */
+:root[data-ah] .sheet .top{position:sticky;top:0;background:color-mix(in srgb,var(--sheet) 72%,transparent);-webkit-backdrop-filter:var(--gl-blur);backdrop-filter:var(--gl-blur);padding:calc(6px + env(safe-area-inset-top)) 12px 6px;border-radius:0}
+:root[data-ah] .sheet .top::before{display:none}
+/* linker Knopf (Zurück/Schließen) und Stern rechts als runde Glas-Knöpfe; der Pfeil wird gezeichnet */
+:root[data-ah] .sheet .top>.ib:first-child,:root[data-ah] .sheet .top>.ib[data-fav]{width:44px;min-width:44px;height:44px;margin:2px;border-radius:50%;background:var(--gl-bg);border:.5px solid var(--gl-brd);box-shadow:var(--gl-sh);-webkit-backdrop-filter:var(--gl-blur);backdrop-filter:var(--gl-blur);color:var(--ink)}
+:root[data-ah] .sheet .top>.ib:first-child{font-size:0}
+:root[data-ah] .sheet .top>.ib:first-child svg{display:none}
+:root[data-ah] .sheet .top>.ib:first-child::before{content:"";width:11px;height:11px;border-left:2.6px solid currentColor;border-bottom:2.6px solid currentColor;border-radius:1px;transform:rotate(45deg) translate(2px,-2px)}
+:root[data-ah] .sheet .top>.ib.txt{color:var(--acc)}
+:root[data-ah] .drawer{background:var(--card);box-shadow:none;border-right:0;-webkit-backdrop-filter:none;backdrop-filter:none}
+:root[data-ah] .drawer .ttl .ic{filter:none}
+:root[data-ah] .drawer button.it.on{background:var(--fill);box-shadow:none;color:var(--acc)}
+:root[data-ah] :is(.toast,#dhint,#ptr){background:var(--gl-bg);box-shadow:var(--gl-sh)}
+
+/* ----- 12 Vorschau in Mehr → Design ----- */
+.bg-apple i{background:linear-gradient(180deg,#8b2436 0 22%,#000 22% 55%,#1c1c1e 55%);box-shadow:inset 0 -9px 0 -2px #1c1c1e}
+.bg-applehell i{background:linear-gradient(180deg,#ffc2cd 0 22%,#f2f2f7 22% 55%,#fff 55%);border-color:rgba(0,0,0,.1)}
 .bgsel{grid-template-columns:repeat(4,minmax(0,1fr))}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="gA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--a1)"/><stop offset="1" style="stop-color:var(--a2)"/></linearGradient></defs></svg>
@@ -936,11 +989,11 @@ main.v-todos{overflow-x:clip;touch-action:pan-y}
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=7dfc36d"></script>
-<script src="todos.js?v=7dfc36d"></script>
-<script src="gesund.js?v=7dfc36d"></script>
-<script src="mitteilungen.js?v=7dfc36d"></script>
-<script src="suche.js?v=7dfc36d"></script>
+<script src="kern.js?v=b38ca0c"></script>
+<script src="todos.js?v=b38ca0c"></script>
+<script src="gesund.js?v=b38ca0c"></script>
+<script src="mitteilungen.js?v=b38ca0c"></script>
+<script src="suche.js?v=b38ca0c"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -1140,7 +1193,7 @@ function render(){
  const head=view==="tag"?(()=>{const rel=cur===T?"Heute":cur===EK.add(T,-1)?"Gestern":cur===EK.add(T,1)?"Morgen":null,
    long=new Date(cur+"T12:00:00").toLocaleDateString("de-DE",{weekday:"short",day:"numeric",month:"long"});
    return`<button class="ib" data-day="-1" aria-label="Vortag">‹</button><button class="dtl" data-day="0" aria-label="Zurück zu heute"><b>${rel||long}</b>${rel?`<small>${long}</small>`:""}</button><button class="ib" data-day="1" aria-label="Folgetag" ${cur>=MAXD()?"disabled":""}>›</button>`})()
-  :`<h1 class="${BIGT.includes(view)?"sm":""}">${TITLE[view]}</h1>`;
+  :`<h1 class="${BIGT.includes(view)?"sm":""}${TITLE[view].length>14?" long":""}">${TITLE[view]}</h1>`;
  const right=food?streakBtn:view==="todos"?`<button class="ib glassb" data-tdnew="1" aria-label="Neues Todo">${svg("plus")}</button>`:`<span style="min-width:44px"></span>`;
  const open=tdOpen(),on=tabOf(view);
  a.innerHTML=`<div class="top"><button class="ib" data-menu="1" aria-label="Menü">${svg("menu")}<span class="avt" aria-hidden="true">JK</span></button>${head}${right}</div>
@@ -1482,7 +1535,7 @@ function vPlan(){
   o+=`<div class="card" style="padding:12px 14px;${d===T?"border:2px solid var(--acc)":""}${past?";opacity:.75":""}"><div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline">
    <span><span class="s mute">${ddm(d)}</span><br><b style="font-size:16px">${EMOP[pd.type]||"•"} ${h(pd.type==="rest"?"Ruhetag":title)}</b></span><span class="s" style="color:${sc};white-space:nowrap">${st}</span></div>
    ${meta?`<div class="s mute">${meta}</div>`:""}
-   ${it?`<div class="s" style="margin-top:6px;padding:6px 8px;border-radius:10px;background:var(--acc-bg);color:var(--acc)">↻ Angepasst${it.vorher&&it.vorher.title?`: vorher „${h(String(it.vorher.title).replace(/^\S+\s/,""))}“`:""}${it.grund?`<br><span style="color:var(--ink)">${h(it.grund)}</span>`:""}</div>`:""}
+   ${it?`<div class="gzadj" style="margin-top:6px">↻ Angepasst${it.vorher&&it.vorher.title?`: vorher „${h(String(it.vorher.title).replace(/^\S+\s/,""))}“`:""}${it.grund?`<br><span style="color:var(--ink)">${h(it.grund)}</span>`:""}</div>`:""}
    ${pd.type==="gym"&&gymList(pd.desc).items.length?(d===T?gymCheck(d,pd.desc):`<details class="more"><summary>Übungen${gymDone(d).size?` (${gymDone(d).size} erledigt)`:""} ›</summary>${gymCheck(d,pd.desc)}</details>`):pd.desc?`<details class="more"><summary>Details ›</summary><p class="s" style="margin:6px 0 0">${h(pd.desc)}</p></details>`:""}
    ${acts.length||other.length?`<div class="s mute" style="margin-top:6px">${[...acts,...other].map(a=>`<span${acts.includes(a)?"":' style="opacity:.55" title="zählt nicht als Einheit"'}>${EMO[a.type]||ic("bolt")} ${a.km?n1(a.km)+" km · ":""}${Math.round(a.min)} min</span>`).join(" · ")}</div>`:""}</div>`}
  return o+`<p class="foot">Der Plan selbst (data/plan.json) wird nie automatisch geändert – Anpassungen liegen als eigene Ebene darüber. Größere Änderungen besprechen wir im Chat.</p>`}
@@ -2372,7 +2425,7 @@ addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="7dfc36d";
+const APPV="b38ca0c";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;

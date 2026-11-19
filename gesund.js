@@ -126,7 +126,8 @@ function gzSpark(vals){const v=vals.map(x=>x==null?null:+x),ok=v.filter(x=>x!=nu
  const Y=(H-3-(v[li]-lo)/r*(H-6)).toFixed(1),X=(li/(v.length-1)*W).toFixed(1);
  return`<svg class="spk2" viewBox="0 0 ${W} ${H}" aria-hidden="true"><path d="${p}" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${X}" cy="${Y}" r="3" fill="var(--acc)"/></svg>`}
 /* Kategorie-Farben wie in Apple Health (nur im Stil „Apple Health“ sichtbar, sonst Akzentfarbe) */
-const GZCOL={schlaf:"#7d7aff",score:"#7d7aff",hrv:"#ff375f",rhr:"#ff375f",bb:"#30d158",stress:"#64d2ff",schritte:"#ff7a2f",intens:"#ff9f0a",atmung:"#5ac8fa",spo2:"#ff6482",gewicht:"#bf5af2"};
+/* gemessen an der Health-App: Schlaf #646dff, Herz #ff2d55, Aktivität #ff4f12, Körpermaße #d22ff0, Atmung #5ac8fa, Achtsamkeit #64d2ff */
+const GZCOL={schlaf:"#646dff",score:"#646dff",hrv:"#ff2d55",rhr:"#ff2d55",bb:"#30d158",stress:"#64d2ff",schritte:"#ff4f12",intens:"#ff4f12",atmung:"#5ac8fa",spo2:"#5ac8fa",gewicht:"#d22ff0"};
 /* Mini-Balken der letzten 7 Tage: grau, der letzte in der Kategoriefarbe (wie in Apple Health) */
 function gzMiniBars(vals){const v=vals.slice(-7).map(x=>x==null?null:+x),ok=v.filter(x=>x!=null);if(ok.length<2)return"";const hi=Math.max(...ok,1),W=110,H=48,bw=12,gap=(W-bw*7)/6;
  return`<svg class="mbars" viewBox="0 0 ${W} ${H}" aria-hidden="true">${v.map((x,i)=>{const hh=x==null?3:Math.max(4,x/hi*H),last=i===v.length-1;return`<rect x="${(i*(bw+gap)).toFixed(1)}" y="${(H-hh).toFixed(1)}" width="${bw}" height="${hh.toFixed(1)}" rx="3" class="${last?"mb on":"mb"}"/>`}).join("")}</svg>`}
@@ -192,7 +193,7 @@ function gzDetail(){const k=GZD.k,M=GZM[k],sh=$("sheet");if(!M)return;sh.classLi
  <div class="sumg"><div><span>Durchschnitt</span><b>${vT(avg)}</b>${pav!=null&&avg!=null?`<em class="${dirTone(avg-pav)==="g"?"up good":dirTone(avg-pav)==="r"?"dn bad":""}">${fmtD(avg-pav)} ggü. davor</em>`:""}</div>
   <div><span>Tendenz</span><b>${ok.length>=4?trendTxt[0].toUpperCase()+trendTxt.slice(1):"–"}</b>${ok.length>=4&&!flat?`<em class="${dirTone(change)==="g"?"up good":dirTone(change)==="r"?"dn bad":""}">${fmtD(change)} im Zeitraum</em>`:""}</div>
   <div><span>Niedrigster</span><b>${vT(mn)}</b></div><div><span>Höchster</span><b>${vT(mx)}</b></div></div>
- <div class="card mt12"><h2><span class="ct">${ic("info")}Was bedeutet das?</span></h2><p class="s" style="margin:0;line-height:1.5;color:var(--mute)">${M.info}</p></div></main>`;
+ <div class="sec">Über ${M.t}</div><div class="card about"><p>${M.info}</p></div></main>`;
  gzBind()}
 /* Verlauf zum Antippen: Finger ziehen zeigt Datum und Wert */
 function gzICh(k,L,V){const M=GZM[k],cv=v=>v==null?null:M.cv?M.cv(v):v,W=300,H=170,ok=V.filter(x=>x!=null).map(cv);if(ok.length<2)return`<p class="s mute">Noch zu wenige Messungen in diesem Zeitraum.</p>`;
