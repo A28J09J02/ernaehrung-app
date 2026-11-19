@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=0210170"></script>
+<script src="design.js?v=7dfc36d"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -915,6 +915,11 @@ main.v-todos{overflow-x:clip;touch-action:pan-y}
 :root:is([data-bg="apple"],[data-bg="applehell"]) .ich{border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
 :root:is([data-bg="apple"],[data-bg="applehell"]) .ich .cur{background:var(--mute)}
 :root[data-bg="applehell"] .sheet:has(.mdh) .sumg>*{background:#fff;border-radius:16px}
+/* ----- Apple Health: großer linker Titel auf den Hauptseiten ----- */
+:root:is([data-bg="apple"],[data-bg="applehell"]) #app>.top h1{font-size:34px;font-weight:700;letter-spacing:-.03em;text-align:left;padding:6px 0 2px 8px;line-height:1.1}
+:root:is([data-bg="apple"],[data-bg="applehell"]) #app>.top{padding-top:10px;padding-bottom:4px}
+:root:is([data-bg="apple"],[data-bg="applehell"]) #app>.top:has(h1)::before{display:none}
+:root:is([data-bg="apple"],[data-bg="applehell"]) #app>.top h1{text-align:left!important;justify-content:flex-start}
 /* Auswahl-Chips (Todo-Formular, Kategorien): graue Kapseln, gewählt = Apple-Blau */
 :root:is([data-bg="apple"],[data-bg="applehell"]) .sec{text-transform:none}
 :root:is([data-bg="apple"],[data-bg="applehell"]) .chip2{background:var(--fill);border:0;box-shadow:none}
@@ -931,11 +936,11 @@ main.v-todos{overflow-x:clip;touch-action:pan-y}
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=0210170"></script>
-<script src="todos.js?v=0210170"></script>
-<script src="gesund.js?v=0210170"></script>
-<script src="mitteilungen.js?v=0210170"></script>
-<script src="suche.js?v=0210170"></script>
+<script src="kern.js?v=7dfc36d"></script>
+<script src="todos.js?v=7dfc36d"></script>
+<script src="gesund.js?v=7dfc36d"></script>
+<script src="mitteilungen.js?v=7dfc36d"></script>
+<script src="suche.js?v=7dfc36d"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -2367,7 +2372,7 @@ addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="0210170";
+const APPV="7dfc36d";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
