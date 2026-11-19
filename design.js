@@ -3,15 +3,18 @@
    Farben je Gerät in localStorage „ern_theme“ {acc, bg}. Einstellbar unter Mehr → Design. */
 "use strict";
 /* Akzentfarben: a1 = Hauptfarbe (Knöpfe, Licht, Ringe), a2 = zweite Farbe für Verläufe in Diagrammen */
-const THEMES={blau:["Blau","#3d8bff","#6a5cff"],messing:["Messing","#c2a46d","#a08a5c"],salbei:["Salbei","#8fae8b","#6f917c"],marine:["Marine","#7f9cc4","#617ea8"],tanne:["Tanne","#3f6b52","#6b8a62"],indigo:["Indigo","#6d74ff","#4f9dff"],eis:["Eisblau","#4fb6d6","#8b7bff"],violett:["Violett","#a78bfa","#f472b6"],neon:["Neon","#34d399","#22d3ee"],
+const THEMES={apple:["Apple","#0a84ff","#5e5ce6"],blau:["Blau","#3d8bff","#6a5cff"],messing:["Messing","#c2a46d","#a08a5c"],salbei:["Salbei","#8fae8b","#6f917c"],marine:["Marine","#7f9cc4","#617ea8"],tanne:["Tanne","#3f6b52","#6b8a62"],indigo:["Indigo","#6d74ff","#4f9dff"],eis:["Eisblau","#4fb6d6","#8b7bff"],violett:["Violett","#a78bfa","#f472b6"],neon:["Neon","#34d399","#22d3ee"],
  pink:["Pink","#f472b6","#a78bfa"],orange:["Orange","#fb923c","#f472b6"],gold:["Gold","#fbbf24","#fb7185"],rot:["Rot","#fb7185","#f59e0b"],weiss:["Weiß","#e5e7eb","#8b7bff"]};
-const BGS={glas:"Glas",matt:"Matt",classic:"Classic",classichell:"Classic hell",hell:"Hell"};
+const BGS={apple:"Apple Health",applehell:"Apple hell",glas:"Glas",matt:"Matt",classic:"Classic",classichell:"Classic hell",hell:"Hell"};
 /* frühere Einstellungen auf die neuen Stile abbilden */
 const BG_ALT={nacht:"glas",schwarz:"matt",grafit:"matt"};
-const themeGet=()=>{try{return(t=>({...t,bg:BG_ALT[t.bg]||t.bg}))({acc:"blau",bg:"glas",...(JSON.parse(localStorage.getItem("ern_theme")||"{}")||{})})}catch(e){return{acc:"blau",bg:"glas"}}};
-function themeApply(t){t=t||themeGet();const a=THEMES[t.acc]||THEMES.blau,r=document.documentElement;
- r.style.setProperty("--a1",a[1]);r.style.setProperty("--a2",a[2]);r.dataset.bg=BGS[t.bg]?t.bg:"glas";
- const m=document.querySelectorAll('meta[name="theme-color"]');m.forEach(x=>x.setAttribute("content",r.dataset.bg==="hell"?"#f2f2f7":r.dataset.bg==="glas"?"#02030a":r.dataset.bg==="classic"?"#141311":r.dataset.bg==="classichell"?"#f3eee5":"#000000"))}
+/* Standard: Apple Health. Einmalig (Merker „ap“) wird auch eine früher gespeicherte Wahl darauf umgestellt – danach bleibt jede Wahl bestehen. */
+const themeGet=()=>{try{const raw=JSON.parse(localStorage.getItem("ern_theme")||"{}")||{};
+ if(!raw.ap){raw.bg="apple";raw.acc="apple";raw.ap=1;try{localStorage.setItem("ern_theme",JSON.stringify(raw))}catch(e){}}
+ return{...raw,acc:raw.acc||"apple",bg:BG_ALT[raw.bg]||raw.bg||"apple"}}catch(e){return{acc:"apple",bg:"apple"}}};
+function themeApply(t){t=t||themeGet();const a=THEMES[t.acc]||THEMES.apple,r=document.documentElement;
+ r.style.setProperty("--a1",a[1]);r.style.setProperty("--a2",a[2]);r.dataset.bg=BGS[t.bg]?t.bg:"apple";
+ const m=document.querySelectorAll('meta[name="theme-color"]');m.forEach(x=>x.setAttribute("content",r.dataset.bg==="hell"||r.dataset.bg==="applehell"?"#f2f2f7":r.dataset.bg==="glas"?"#02030a":r.dataset.bg==="classic"?"#141311":r.dataset.bg==="classichell"?"#f3eee5":"#000000"))}
 function themeSet(p){const t={...themeGet(),...p};try{localStorage.setItem("ern_theme",JSON.stringify(t))}catch(e){}themeApply(t)}
 themeApply();
 
@@ -101,6 +104,6 @@ function designCard(){const t=themeGet();
 function openDesign(){if(typeof closeDrawer==="function")closeDrawer();const sh=document.getElementById("sheet");sh.classList.add("on");
  sh.innerHTML=`<div class="top"><button class="ib" data-close="1" aria-label="Schließen">${ic("x")}</button><h1>Design</h1><span style="min-width:44px"></span></div><main>${designCard()}</main>`}
 document.addEventListener("click",ev=>{if(ev.target.closest("[data-design]"))return openDesign();const x=ev.target.closest("[data-ds-acc],[data-ds-bg]");if(!x)return;
- if(x.dataset.dsAcc)themeSet({acc:x.dataset.dsAcc});else{const b=x.dataset.dsBg,cur=themeGet(),cl=b==="classic"||b==="classichell",wasCl=cur.bg==="classic"||cur.bg==="classichell";
-  themeSet(cl&&!wasCl?{bg:b,acc:b==="classic"?"messing":"tanne"}:!cl&&wasCl?{bg:b,acc:"blau"}:{bg:b})}
+ if(x.dataset.dsAcc)themeSet({acc:x.dataset.dsAcc});else{const b=x.dataset.dsBg,cur=themeGet(),F=k=>k==="classic"||k==="classichell"?"c":k==="apple"||k==="applehell"?"a":"o",nf=F(b),of=F(cur.bg);
+  themeSet(nf!==of?{bg:b,acc:nf==="a"?"apple":nf==="c"?(b==="classic"?"messing":"tanne"):"blau"}:{bg:b})}
  const b=document.getElementById("dsBox");if(b)b.outerHTML=designCard();if(typeof placeLamp==="function")placeLamp()});

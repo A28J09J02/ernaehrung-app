@@ -21,7 +21,7 @@ const TD_SEED=()=>{const s=EK.add(TODAY(),0);return[
  {id:"kreatin",t:"Kreatin nehmen",cat:"essen",rep:{k:"tag"},start:s},
  {id:"kalorien",t:"Kalorien tracken",cat:"essen",rep:{k:"tag"},start:s,auto:"kcal"},
  {id:"gewicht",t:"Gewicht eintragen",cat:"koerper",rep:{k:"tag"},start:s,auto:"gewicht"},
- {id:"waesche",t:"Wäsche kontrollieren",cat:"haushalt",rep:{k:"tag"},start:s},
+ {id:"waesche",t:"Wäsche kontrollieren",cat:"haushalt",rep:{k:"tag"},start:s,zeit:"17:30"},
  {id:"spuelen",t:"Spülen",cat:"haushalt",rep:{k:"tag"},start:s}]};
 /* Vorschläge zum schnellen Anlegen (öffnen das Formular vorausgefüllt) */
 const TD_IDEAS=[
@@ -125,7 +125,7 @@ function vTodos(){if(render.lv!=="todos")TDV.hold=null;const T=TODAY(),L=tdDay(T
   const pf=tdPerfect(),ov=L.filter(x=>x.over).length;
   o+=`<div class="card tdhero">${tdRing(n,L.length)}<div><b>${L.length?open?`Noch ${open} offen`:"Alles erledigt":"Heute nichts geplant"}</b><small>${L.length?open?(n?"Weiter so – du bist dran.":"Leg los, der erste Haken zählt."):"Stark. Der Tag gehört dir.":"Tippe oben auf Plus."}</small>
    <span class="tdmeta">${pf?`<span class="hot">${ic("flame")}${pf} perfekte${pf>1?"":"r"} Tag${pf>1?"e":""}</span>`:""}${ov?`<span style="color:var(--r)">${ic("warn")}${ov} überfällig</span>`:""}<button class="tdsort" data-tdsort="1" aria-label="Sortierung wechseln">${ic(TDV.sort==="cat"?"grid":"clock")}${TDV.sort==="cat"?"Kategorien":"Uhrzeit"}</button></span></div></div>`;
-  if(typeof pnOn==="function"&&pnOk()&&!pnOn()&&!LS.get("pn_hint_x",false))o+=`<div class="hint acc">${ic("bell")}<span><b>Erinnerung einschalten</b><br><small class="mute">Ist um 20 Uhr (Sa/So 21:30) noch etwas offen, meldet sich KingStats.</small></span><button class="btn sm p" data-pnenable="1">Ein</button><button class="lnk" data-pnhx="1" aria-label="Ausblenden">${ic("x")}</button></div>`;
+  if(typeof pnOn==="function"&&pnOk()&&!pnOn()&&!LS.get("pn_hint_x",false))o+=`<div class="hint acc">${ic("bell")}<span><b>Erinnerung einschalten</b><br><small class="mute">Ist um 20 Uhr (Sa/So 21:30) noch etwas offen, meldet sich KingStats – Todos mit Uhrzeit auch genau dann.</small></span><button class="btn sm p" data-pnenable="1">Ein</button><button class="lnk" data-pnhx="1" aria-label="Ausblenden">${ic("x")}</button></div>`;
   const over=L.filter(x=>x.over),rest=L.filter(x=>!x.over);
   if(over.length)o+=`<div class="tdh over" style="--cc:var(--r)"><span class="tdhl"><span class="cico">${ic("warn")}</span>Überfällig</span><small>${over.length}</small></div><div class="card list tdl">${tdSort(over).map(x=>tdRow(x,T)).join("")}</div>`;
   if(L.length&&!open)o+=`<div class="card tddone">${ic("party")}<b>Alles erledigt für heute</b><small class="mute">Morgen geht's weiter.</small></div>`;
@@ -191,25 +191,31 @@ function tdEdit(id,preset){const T=TODAY(),old=id?tdItems().find(x=>x.id===id):n
  TDV.fx=old?old.id:null;const sh=$("sheet");sh.classList.add("on");
  const chip=(name,val,label,on,cc)=>`<label class="chip2"${cc?` style="--cc:${cc}"`:""}><input type="radio" name="${name}" value="${val}" ${on?"checked":""}>${label}</label>`;
  const wdays=r.tage&&r.tage.length?r.tage:[(tdDate(x.start||T).getDay()+6)%7+1];
+ const QUICK=["einmal","tag","woche","monat"],qrep=TD_REPS.filter(([k])=>QUICK.includes(k)),mrep=TD_REPS.filter(([k])=>!QUICK.includes(k)),
+  hasOpt=!!(old&&(x.notiz||x.bis||x.vor||x.auto||(x.cat&&x.cat!=="sonst")));
  sh.innerHTML=`<div class="top"><button class="ib" data-close="1" aria-label="Schließen">${ic("x")}</button><h1>${old?"Todo":"Neues Todo"}</h1><button class="ib txt" form="tdf" type="submit">Fertig</button></div><main>
  <form id="tdf" autocomplete="off">
- <div class="card"><input class="inp big" name="t" required maxlength="80" placeholder="Was ist zu tun?" value="${h(x.t)}" enterkeyhint="done">
- <textarea class="inp mt8" name="notiz" rows="2" maxlength="200" placeholder="Notiz (optional)">${h(x.notiz||"")}</textarea></div>
- <div class="sec">Kategorie</div><div class="chips">${TD_CATS.map(([k,e,l,c])=>chip("cat",k,ic(e)+l,(x.cat||"sonst")===k,c)).join("")}</div>
- <div class="sec">Wiederholen</div><div class="chips">${TD_REPS.map(([k,l])=>chip("rep",k,l,r.k===k)).join("")}</div>
+ <div class="card"><input class="inp big" name="t" required maxlength="80" placeholder="Was ist zu tun?" value="${h(x.t)}" enterkeyhint="done"></div>
+ <div class="sec">Wie oft?</div><div class="chips">${qrep.map(([k,l])=>chip("rep",k,l,r.k===k)).join("")}</div>
+ <details class="tdopt"${mrep.some(([k])=>k===r.k)?" open":""}><summary>Weitere Wiederholungen</summary><div class="chips mt8">${mrep.map(([k,l])=>chip("rep",k,l,r.k===k)).join("")}</div></details>
  <div class="card mt8">
-  <div class="frow"><span class="f-once">Datum</span><span class="f-rep">Ab</span><input class="inp sm2" type="date" name="start" value="${h(x.start||T)}" required></div>
+  <div class="frow"><span class="f-once">Wann</span><span class="f-rep">Ab</span><span class="tdqd"><button class="chip2" type="button" data-tdqd="0">Heute</button><button class="chip2" type="button" data-tdqd="1">Morgen</button></span></div>
+  <div class="frow"><span>Datum</span><input class="inp sm2" type="date" name="start" value="${h(x.start||T)}" required></div>
   <div class="frow f-woche"><span>An</span><div class="wdp">${TD_WD.map((w,i)=>`<label><input type="checkbox" name="wd" value="${i+1}" ${wdays.includes(i+1)?"checked":""}><span>${w}</span></label>`).join("")}</div></div>
   <div class="frow f-int"><span>Alle</span><span><input class="inp sm2" type="number" name="n" min="2" max="365" inputmode="numeric" value="${r.n||2}" style="width:84px"> Tage</span></div>
-  <div class="frow"><span>Uhrzeit <small class="mute">optional</small></span><input class="inp sm2" type="time" name="zeit" value="${h(x.zeit||"")}"></div>
+  <div class="frow"><span>Erinnerung um<small class="mute block">Zur Uhrzeit meldet sich KingStats, wenn es noch offen ist</small></span><input class="inp sm2" type="time" name="zeit" value="${h(x.zeit||"")}"></div>
+ </div>
+ <details class="tdopt"${hasOpt?" open":""}><summary>Mehr Optionen</summary>
+ <div class="sec">Kategorie</div><div class="chips">${TD_CATS.map(([k,e,l,c])=>chip("cat",k,ic(e)+l,(x.cat||"sonst")===k,c)).join("")}</div>
+ <div class="card mt8"><textarea class="inp" name="notiz" rows="2" maxlength="200" placeholder="Notiz (optional)">${h(x.notiz||"")}</textarea>
   <div class="frow f-bis"><span>Bis erledigt<small class="mute block">Kommt wieder, bis du es einmal abhakst – z. B. Abo kündigen</small></span><input type="checkbox" class="tgl" name="bis" ${x.bis?"checked":""}></div>
   <div class="frow f-vor"><span>Vorher erinnern</span><select class="inp sm2" name="vor">${[[0,"Nein"],[1,"1 Tag vorher"],[2,"2 Tage vorher"],[3,"3 Tage vorher"],[7,"1 Woche vorher"]].map(([v,l])=>`<option value="${v}" ${+(x.vor||0)===v?"selected":""}>${l}</option>`).join("")}</select></div>
   <div class="frow"><span>Automatisch abhaken</span><select class="inp sm2" name="auto">${[["","Nein"],["kcal","wenn Essen eingetragen"],["gewicht","wenn Gewicht eingetragen"]].map(([v,l])=>`<option value="${v}" ${(x.auto||"")===v?"selected":""}>${l}</option>`).join("")}</select></div>
- </div>
+ </div></details>
  <button class="btn p w mt12" type="submit">${old?"Speichern":"Anlegen"}</button>
  ${old?`<button class="btn d w mt8" type="button" data-tddel="${h(old.id)}">Löschen</button>`:""}
  </form>
- ${old?"":`<div class="sec">Vorschläge</div><div class="chips sug">${TD_IDEAS.filter(([t])=>!tdItems().some(i=>i.t===t)).map(([t,c,rp],k)=>`<button class="chip2" type="button" data-tdidea="${k}" style="--cc:${tdCat(c)[3]}">${ic(tdCat(c)[1])}<span>${h(t)}<small>${h(tdRepText({rep:rp,start:T}))}</small></span></button>`).join("")}</div>`}
+ ${old?"":`<div class="sec">Schnell anlegen</div><div class="chips sug">${TD_IDEAS.filter(([t])=>!tdItems().some(i=>i.t===t)).map(([t,c,rp],k)=>`<button class="chip2" type="button" data-tdidea="${k}" style="--cc:${tdCat(c)[3]}">${ic(tdCat(c)[1])}<span>${h(t)}<small>${h(tdRepText({rep:rp,start:T}))}</small></span></button>`).join("")}</div>`}
  </main>`;
  if(!old&&!preset)setTimeout(()=>{const i=sh.querySelector("[name=t]");i&&i.focus()},120)}
 function tdSave(f){const E=f.elements,t=E.t.value.trim();if(!t)return toast("Bitte einen Titel eingeben");
@@ -228,6 +234,10 @@ function tdShop(list,von){const T=TODAY(),have=new Set(tdItems().filter(x=>x.cat
   if(have.has(EK.norm(t)))continue;have.add(EK.norm(t));change(TD_P,{t:"tdset",it:{id:"td"+EK.uid(),t:t.slice(0,80),cat:"einkauf",rep:{k:"einmal"},start:T,notiz:von?("für "+von).slice(0,200):undefined,ts:Date.now()}},true);n++}
  render();return n}
 
+/* Wochentag folgt dem Datum, solange nur ein Wochentag gewählt ist */
+function tdWdSync(i){const f=i.form,c=[...f.querySelectorAll("[name=wd]")];if(c.filter(z=>z.checked).length>1||!/^\d{4}-\d\d-\d\d$/.test(i.value))return;
+ const w=(tdDate(i.value).getDay()+6)%7;c.forEach((z,k)=>z.checked=k===w)}
+document.addEventListener("change",ev=>{if(ev.target.name==="start"&&ev.target.form&&ev.target.form.id==="tdf")tdWdSync(ev.target)});
 /* ---------- Ereignisse ---------- */
 document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x;
  const sw=b(".swc");if(sw&&(sw.dataset.swopen||Date.now()-(+sw.dataset.swiped||0)<350))return;
@@ -239,6 +249,7 @@ document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x
  else if(x=b("[data-tdedit]"))tdEdit(x.dataset.tdedit);
  else if(x=b("[data-tddel]"))tdDel(x.dataset.tddel);
  else if(x=b("[data-tdnew]")){const d=x.dataset.tdnew;tdEdit(null,/^\d{4}-/.test(d)?{start:d}:null)}
+ else if(x=b("[data-tdqd]")){const i=document.querySelector("#tdf [name=start]");if(i){i.value=EK.add(TODAY(),+x.dataset.tdqd);tdWdSync(i)}}
  else if(x=b("[data-tdtab]")){TDV.tab=x.dataset.tdtab;render();scrollTo(0,0)}
  else if(b("[data-tdsort]")){TDV.sort=TDV.sort==="cat"?"zeit":"cat";LS.set("td_sort",TDV.sort);render()}
  else if(x=b("[data-tdcal]")){TDV.calM=x.dataset.tdcal;render()}

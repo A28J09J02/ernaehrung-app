@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=21460f9"></script>
+<script src="design.js?v=f90916e"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -774,17 +774,105 @@ main.v-todos{overflow-x:clip;touch-action:pan-y}
 :root:is([data-bg="classic"],[data-bg="classichell"]) :is(.mpl,.res .pl,.plus){border:1.2px solid color-mix(in srgb,var(--gold) 75%,transparent);background:color-mix(in srgb,var(--gold) 7%,transparent)!important}
 :root:is([data-bg="classic"],[data-bg="classichell"]) .gring,:root:is([data-bg="classic"],[data-bg="classichell"]) .tdring circle+circle{stroke-width:10}
 :root:is([data-bg="classic"],[data-bg="classichell"]) .lt small{color:color-mix(in srgb,var(--gold) 85%,var(--mute))}
+/* Todo-Formular: aufgeräumt, Zusatzoptionen eingeklappt */
+.tdopt{margin:10px 0 0}.tdopt>summary{list-style:none;cursor:pointer;color:var(--acc);font-weight:600;font-size:15px;padding:10px 4px}.tdopt>summary::-webkit-details-marker{display:none}
+.tdopt>summary::after{content:" ›";display:inline-block;transition:transform .2s}.tdopt[open]>summary::after{transform:rotate(90deg)}
+.tdqd{display:flex;gap:8px}.tdqd .chip2{padding:6px 12px;font-size:14px}
+/* ===================================================================================================
+   Apple Health (Standard, 11/2026): Look der iOS-Health-App – feste graue Karten ohne Rand und Glühen,
+   Kategorie-Titel in Farbe, große Zahlen mit kleiner grauer Einheit, Apple-Blau, schwebende Glas-Leiste.
+   Nur der Look – Aufbau und Funktionen bleiben unverändert. Dunkel = „apple“, hell = „applehell“.
+   =================================================================================================== */
+:root[data-bg="apple"]{--bg:#000;--card:#1c1c1e;--card2:#2c2c2e;--ink:#fff;--mute:#8e8e93;--line:rgba(84,84,88,.55);--grid:rgba(84,84,88,.4);--fill:rgba(120,120,128,.24);--trk:rgba(120,120,128,.3);--edge:transparent;
+ --g:#30d158;--y:#ffd60a;--r:#ff453a;--p:#bf5af2;--c:#ff9f0a;--f:#64d2ff;--rad:22px;color-scheme:dark;
+ --cardbg:linear-gradient(transparent,transparent);--sh-card:none;--glow:none;--gl-bg:rgba(44,44,46,.72);--gl-brd:rgba(255,255,255,.1);
+ --gl-sh:0 10px 30px rgba(0,0,0,.45);--gl-blur:blur(24px) saturate(1.8);--seg-on:#636366}
+:root[data-bg="applehell"]{--bg:#f2f2f7;--card:#fff;--card2:#f2f2f7;--ink:#000;--mute:#8a8a8e;--line:rgba(60,60,67,.16);--grid:rgba(60,60,67,.1);--fill:rgba(120,120,128,.14);--trk:rgba(120,120,128,.16);--edge:transparent;
+ --g:#34c759;--y:#ff9f0a;--r:#ff3b30;--p:#af52de;--c:#ff9500;--f:#32ade6;--rad:22px;color-scheme:light;
+ --cardbg:linear-gradient(transparent,transparent);--sh-card:none;--glow:none;--gl-bg:rgba(255,255,255,.72);--gl-brd:rgba(0,0,0,.06);
+ --gl-sh:0 8px 24px rgba(0,0,0,.12);--gl-blur:blur(24px) saturate(1.8);--seg-on:#fff}
+:root:is([data-bg="apple"],[data-bg="applehell"]){background:var(--bg)}
+:root:is([data-bg="apple"],[data-bg="applehell"]) body{background:var(--bg)}
+/* oben ein weiches Farblicht wie in der Health-Übersicht, nach unten schwarz/grau */
+:root:is([data-bg="apple"],[data-bg="applehell"]) body::before{display:block;inset:0 0 auto 0;height:300px;filter:none;opacity:.5;
+ background:linear-gradient(180deg,color-mix(in srgb,var(--a1) 55%,var(--bg)) 0%,transparent 100%)}
+:root[data-bg="applehell"] body::before{opacity:.22}
+/* Karten: fest, ohne Rand, ohne Licht */
+:root:is([data-bg="apple"],[data-bg="applehell"]) :is(.card,.tile,.res,.hint,.dnav,.mact button,.btn.idee,.btn.dis,.mtile,.mgrid,.mcard,.tdhero,.hint.acc){background:var(--card);border:0;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:var(--rad)}
+:root:is([data-bg="apple"],[data-bg="applehell"]) :is(.card,.mtile,.tile,.tdhero,.mhero)::before,:root:is([data-bg="apple"],[data-bg="applehell"]) :is(.card,.tile)::after,:root:is([data-bg="apple"],[data-bg="applehell"]) .tdhero::after{display:none}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .card{padding:16px 18px}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .card.list{padding:4px 18px}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .res{border-left:3px solid var(--src,transparent);border-radius:16px}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .mhero{background:var(--card);border:0}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .mgrid div{border-color:var(--line)!important}
+/* Kartentitel: Symbol ohne Blase, Titel in der Kategoriefarbe (--mc, sonst Akzent) */
+:root:is([data-bg="apple"],[data-bg="applehell"]) .card h2{font-size:17px;font-weight:600;letter-spacing:-.01em;margin-bottom:10px}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .card h2 .ct{color:var(--mc,var(--acc));gap:6px}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .ct>.ic,:root:is([data-bg="apple"],[data-bg="applehell"]) .gbub{padding:0;border:0;background:none;box-shadow:none;width:20px;height:20px;color:var(--mc,var(--acc))}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .card h2 small{color:var(--mute);font-weight:400;font-size:14px}
+/* große Titel und Abschnitte */
+:root:is([data-bg="apple"],[data-bg="applehell"]) .lt h2{font-size:34px;font-weight:700;letter-spacing:.01em}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .lt small{font-weight:400;font-size:15px}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .sec{font-size:22px;font-weight:700;letter-spacing:-.01em;color:var(--ink);margin:26px 4px 10px}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .grad{background:none;color:var(--acc);-webkit-background-clip:border-box;background-clip:border-box}
+/* Kopfzeile: mittiger Titel, runde Glas-Knöpfe */
+:root:is([data-bg="apple"],[data-bg="applehell"]) .top,:root:is([data-bg="apple"],[data-bg="applehell"]) .sheet .top{background:transparent;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:0;border-bottom:0}
+:root:is([data-bg="apple"],[data-bg="applehell"]) body.scrolled .top,:root:is([data-bg="apple"],[data-bg="applehell"]) .top:has(.dtl){background:color-mix(in srgb,var(--bg) 78%,transparent);-webkit-backdrop-filter:var(--gl-blur);backdrop-filter:var(--gl-blur)}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .top h1{font-size:17px;font-weight:600}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .glassb{background:var(--gl-bg);border:.5px solid var(--gl-brd);box-shadow:var(--gl-sh);color:var(--ink)}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .ib{color:var(--acc)}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .sheet{background:var(--bg);box-shadow:none}
+:root[data-bg="apple"] .sheet{background:#1c1c1e}
+:root[data-bg="apple"] .sheet .card,:root[data-bg="apple"] .sheet :is(.res,.hint,.mgrid,.mtile,.mact button){background:#2c2c2e}
+/* untere Leiste: Glas-Kapsel, aktiver Reiter als helle Pille */
+:root:is([data-bg="apple"],[data-bg="applehell"]) .tabs{background:var(--gl-bg);border:.5px solid var(--gl-brd);box-shadow:var(--gl-sh);-webkit-backdrop-filter:var(--gl-blur);backdrop-filter:var(--gl-blur)}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .tabs button{color:var(--ink);font-weight:500;font-size:10.5px}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .tabs button.on{color:var(--acc);font-weight:600;background:var(--fill)}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .tabs button.on svg{filter:none}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .tabs .bdg{box-shadow:none}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .lamp{display:none}
+/* Seitenmenü und Hinweise */
+:root:is([data-bg="apple"],[data-bg="applehell"]) .drawer{background:var(--card);box-shadow:none;border-right:0;-webkit-backdrop-filter:none;backdrop-filter:none}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .drawer .ttl .ic{filter:none}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .drawer button.it.on{background:var(--fill);box-shadow:none;color:var(--acc)}
+:root:is([data-bg="apple"],[data-bg="applehell"]) :is(.toast,#dhint,#ptr){background:var(--gl-bg);box-shadow:var(--gl-sh)}
+/* Knöpfe: einfarbig Apple-Blau, keine Verläufe und Schatten */
+:root:is([data-bg="apple"],[data-bg="applehell"]) .btn{background:var(--fill);color:var(--acc);border-radius:14px}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .btn.p,:root:is([data-bg="apple"],[data-bg="applehell"]) :is(.mpl,.plus,.res .pl,.today){background:var(--acc);color:#fff;box-shadow:none;border-color:var(--acc)}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .btn.d{color:var(--r)}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .mpb{background:var(--fill);color:var(--acc)}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .mact button{color:var(--acc)}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .qs button{background:var(--fill);border:0;box-shadow:none}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .qs button.on{background:var(--acc);color:#fff}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .seg{background:var(--fill);border:0;-webkit-backdrop-filter:none;backdrop-filter:none}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .seg button.on{background:var(--seg-on);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.25)}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .inp{background:var(--fill);border:0}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .tgl:checked,:root:is([data-bg="apple"],[data-bg="applehell"]) .tg input[type=checkbox]:checked{background:var(--g);box-shadow:none}
+:root:is([data-bg="apple"],[data-bg="applehell"]) :is(.tgl,.tg input[type=checkbox]){border:0}
+/* Ringe und Balken: ruhig, ohne Leuchten */
+:root:is([data-bg="apple"],[data-bg="applehell"]) :is(.gring,.tdring circle,.gzr .rg){filter:none!important}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .streak{background:var(--fill);color:var(--c);border-color:transparent}
+/* Auswahl-Chips (Todo-Formular, Kategorien): graue Kapseln, gewählt = Apple-Blau */
+:root:is([data-bg="apple"],[data-bg="applehell"]) .sec{text-transform:none}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .chip2{background:var(--fill);border:0;box-shadow:none}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .chip2:has(input:checked){background:var(--acc);color:#fff;box-shadow:none}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .chip2:has(input:checked) .ic{color:#fff}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .tdqd .chip2{color:var(--acc)}
+/* Vorschau in Mehr → Design */
+.bg-apple i{background:linear-gradient(180deg,#000 55%,#1c1c1e 55%);box-shadow:inset 0 -9px 0 -2px #1c1c1e,inset 0 3px 0 #0a84ff}
+.bg-applehell i{background:linear-gradient(180deg,#f2f2f7 55%,#fff 55%);border-color:rgba(0,0,0,.1);box-shadow:inset 0 3px 0 #007aff}
+.bgsel{grid-template-columns:repeat(4,minmax(0,1fr))}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="gA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--a1)"/><stop offset="1" style="stop-color:var(--a2)"/></linearGradient></defs></svg>
 <div id="app"></div>
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=21460f9"></script>
-<script src="todos.js?v=21460f9"></script>
-<script src="gesund.js?v=21460f9"></script>
-<script src="mitteilungen.js?v=21460f9"></script>
-<script src="suche.js?v=21460f9"></script>
+<script src="kern.js?v=f90916e"></script>
+<script src="todos.js?v=f90916e"></script>
+<script src="gesund.js?v=f90916e"></script>
+<script src="mitteilungen.js?v=f90916e"></script>
+<script src="suche.js?v=f90916e"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -2215,7 +2303,7 @@ addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="21460f9";
+const APPV="f90916e";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
