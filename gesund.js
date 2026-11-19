@@ -186,7 +186,7 @@ function gzDetail(){const k=GZD.k,M=GZM[k],sh=$("sheet");if(!M)return;sh.classLi
  sh.innerHTML=`<div class="top"><button class="ib" data-close="1" aria-label="Schließen">${ic("x")}</button><h1>${M.t}</h1><span style="min-width:44px"></span></div><main>
  <div class="mdh"><div><span>${l&&l.d?tdLong(l.d)[0].toUpperCase()+tdLong(l.d).slice(1):"Zuletzt"}</span><b>${l?M.f(l.v):"–"}${M.u?`<small>${M.u==="h"?"Std.":M.u}</small>`:""}</b></div>${cur&&cur[0]!=="n"?tone(cur[0],cur[1]):""}</div>
  ${gzSeg("gzdr",GZD.r,[[7,"7 T"],[30,"30 T"],[90,"90 T"],[180,"6 M"]])}
- <div class="card">${gzICh(k,L,V)}</div>
+ <div class="card" style="--amc:${GZCOL[k]||"var(--acc)"}">${gzICh(k,L,V)}</div>
  <div class="card"><div class="verd">${verdict[0]==="n"?`<span class="gbub" style="--mc:var(--mute)">${ic("info")}</span>`:`<span class="gzsi t-${verdict[0]}" style="flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center">${ic(verdict[0]==="g"?"check":"warn")}</span>`}<p>${verdict[1]}</p></div>
   ${rates.length?`<div class="dist">${["g","y","r"].map(x=>cnt[x]?`<i style="flex:${cnt[x]};background:var(--${x})"></i>`:"").join("")}</div><div class="gzleg"><span><i style="background:var(--g)"></i>gut ${cnt.g}</span><span><i style="background:var(--y)"></i>mittel ${cnt.y}</span><span><i style="background:var(--r)"></i>ungünstig ${cnt.r}</span></div>`:""}</div>
  <div class="sumg"><div><span>Durchschnitt</span><b>${vT(avg)}</b>${pav!=null&&avg!=null?`<em class="${dirTone(avg-pav)==="g"?"up good":dirTone(avg-pav)==="r"?"dn bad":""}">${fmtD(avg-pav)} ggü. davor</em>`:""}</div>
