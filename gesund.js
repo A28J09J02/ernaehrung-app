@@ -125,12 +125,17 @@ function gzSpark(vals){const v=vals.map(x=>x==null?null:+x),ok=v.filter(x=>x!=nu
  let p="",pen=false,li=0;v.forEach((x,i)=>{if(x==null){pen=false;return}const X=(i/(v.length-1)*W).toFixed(1),Y=(H-3-(x-lo)/r*(H-6)).toFixed(1);p+=(pen?"L":"M")+X+" "+Y;pen=true;li=i});
  const Y=(H-3-(v[li]-lo)/r*(H-6)).toFixed(1),X=(li/(v.length-1)*W).toFixed(1);
  return`<svg class="spk2" viewBox="0 0 ${W} ${H}" aria-hidden="true"><path d="${p}" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="${X}" cy="${Y}" r="3" fill="var(--acc)"/></svg>`}
+/* Kategorie-Farben wie in Apple Health (nur im Stil „Apple Health“ sichtbar, sonst Akzentfarbe) */
+const GZCOL={schlaf:"#7d7aff",score:"#7d7aff",hrv:"#ff375f",rhr:"#ff375f",bb:"#30d158",stress:"#64d2ff",schritte:"#ff7a2f",intens:"#ff9f0a",atmung:"#5ac8fa",spo2:"#ff6482",gewicht:"#bf5af2"};
+/* Mini-Balken der letzten 7 Tage: grau, der letzte in der Kategoriefarbe (wie in Apple Health) */
+function gzMiniBars(vals){const v=vals.slice(-7).map(x=>x==null?null:+x),ok=v.filter(x=>x!=null);if(ok.length<2)return"";const hi=Math.max(...ok,1),W=110,H=48,bw=12,gap=(W-bw*7)/6;
+ return`<svg class="mbars" viewBox="0 0 ${W} ${H}" aria-hidden="true">${v.map((x,i)=>{const hh=x==null?3:Math.max(4,x/hi*H),last=i===v.length-1;return`<rect x="${(i*(bw+gap)).toFixed(1)}" y="${(H-hh).toFixed(1)}" width="${bw}" height="${hh.toFixed(1)}" rx="3" class="${last?"mb on":"mb"}"/>`}).join("")}</svg>`}
 function gzCard(k){const M=GZM[k],l=gzLastM(k);let val="–",sub="";
  if(k==="intens"){const T=TODAY(),mon=EK.monday(T),L=[];for(let d=mon;d<=T;d=EK.add(d,1))L.push(d);const w=gzSer(k,L).reduce((a,b)=>a+(b||0),0);
   val=n0(w);sub=tone(w>=150?"g":w>=75?"y":"r",w>=150?"Wochenziel erreicht":`${n0(150-w)} Min bis 150 diese Woche`)}
  else if(l){val=M.f(l.v);const rt=gzRate(k,l.v,l.d,l.r);sub=rt?rt[0]==="n"?`<span class="tone t-n">${rt[1]}</span>`:tone(rt[0],rt[1]):k==="gewicht"?gzWTrend():""}
- const sp=gzSpark(gzSer(k,gzRange(14)));
- return`<button class="card mcard gztap" data-gzm="${k}"><span class="mch"><span class="ct">${ic(M.i)}${M.t}</span><small>${l&&l.d?tdLong(l.d):k==="intens"?"diese Woche":""} ${ic("chev")}</small></span>
+ const ser=gzSer(k,gzRange(14)),sp=`<span class="mini-o">${gzSpark(ser)}</span><span class="mini-a">${M.ty==="bar"?gzMiniBars(ser):gzSpark(ser)}</span>`;
+ return`<button class="card mcard gztap" data-gzm="${k}" style="--amc:${GZCOL[k]||"var(--acc)"}"><span class="mch"><span class="ct">${ic(M.i)}${M.t}</span><small>${l&&l.d?tdLong(l.d):k==="intens"?"diese Woche":""} ${ic("chev")}</small></span>
  <span class="mcb"><span><b>${val}${M.u&&val!=="–"?`<small>${M.u==="h"?"Std.":M.u}</small>`:""}</b>${sub}</span>${sp}</span></button>`}
 function gzWTrend(){const L=gzRange(28),v=gzSer("gewicht",L).filter(x=>x!=null);if(v.length<3)return"";const d=v[v.length-1]-v[0],goal=C.profil&&C.profil.zielGewicht;
  const good=goal?(goal<v[v.length-1]?d<0:d>0):null;return tone(Math.abs(d)<.3?"g":good?"g":"y",`${d>0?"+":""}${n1(d)} kg in 4 Wochen`)}
