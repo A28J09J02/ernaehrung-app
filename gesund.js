@@ -236,7 +236,7 @@ function gzNight(d){const r=d?gzDaysAll()[d]:null;if(!r||!r.sleep_s)return"";
   <div class="phb"><i style="width:${Math.min(100,q).toFixed(1)}%;background:${p.c}"></i>${R?`<u style="left:${R[0]}%;width:${R[1]-R[0]}%"></u>`:""}</div>`}).join("");
  const deep=r.deep_s!=null&&sl?r.deep_s/sl*100:null;
  const sum=deep==null?"":deep>=16?`Mit ${gzHm(r.deep_s)} Std. Tiefschlaf (${n0(deep)} %) hattest du genug erholsamen Schlaf.`:`Nur ${gzHm(r.deep_s)} Std. Tiefschlaf (${n0(deep)} %) – gut wären mindestens 16 %, bei dir also etwa ${gzHm(sl*.16)} Std.`;
- return`<div class="sec">Schlafphasen</div><div class="card"><p class="s mute" style="margin:0 0 10px">${head}${r.sleep_score!=null?` · Score ${n0(r.sleep_score)}`:""}</p>${hyp||`<p class="s mute" style="margin:0 0 10px">Für diese Nacht gibt es nur die Summen – den Verlauf über die Nacht holt der Garmin-Sync ab jetzt für die letzten 10 Nächte. Antippen im Diagramm oben wählt eine andere Nacht.</p>`}${rowsH}${sum?`<p class="s" style="margin:12px 0 0">${sum}</p>`:""}</div>`}
+ return`<div class="sec">Schlafphasen</div><div class="card"><p class="s mute" style="margin:0 0 10px">${head}${r.sleep_score!=null?` · Score ${n0(r.sleep_score)}`:""}</p>${hyp||`<p class="s mute" style="margin:0 0 10px">Antippen im Diagramm oben wählt eine andere Nacht.</p>`}${rowsH}${sum?`<p class="s" style="margin:12px 0 0">${sum}</p>`:""}</div>`}
 /* Schnitt je Phase im Zeitraum, mit Vergleich zum Zeitraum davor */
 function gzPhAvg(L){const D=gzDaysAll(),P=gzRange(GZD.r*2).slice(0,GZD.r);
  const av=(ds,k)=>{const v=ds.map(d=>(D[d]||{})[k]).filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
