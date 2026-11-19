@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=06aac0e"></script>
+<script src="design.js?v=aaca62c"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -882,6 +882,19 @@ main.v-todos{overflow-x:clip;touch-action:pan-y}
 :root:is([data-bg="apple"],[data-bg="applehell"]) .mbars .mb{fill:rgba(120,120,128,.45)}
 :root:is([data-bg="apple"],[data-bg="applehell"]) .mbars .mb.on{fill:var(--amc,var(--acc))}
 :root:is([data-bg="apple"],[data-bg="applehell"]) .mini-a .spk2 circle{fill:var(--amc,var(--acc))}
+/* ----- Apple Health: Gefühl – Zurück-Pfeil im runden Glas-Knopf, Seiten gleiten von rechts, Karten dunkeln beim Drücken ----- */
+:root:is([data-bg="apple"],[data-bg="applehell"]) .sheet .top>.ib[data-close]{width:44px;min-width:44px;height:44px;margin:2px;border-radius:50%;background:var(--gl-bg);border:.5px solid var(--gl-brd);box-shadow:var(--gl-sh);-webkit-backdrop-filter:var(--gl-blur);backdrop-filter:var(--gl-blur);color:var(--ink)}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .sheet .top>.ib[data-close] svg{display:none}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .sheet .top>.ib[data-close]::before{content:"";width:11px;height:11px;border-left:2.6px solid currentColor;border-bottom:2.6px solid currentColor;border-radius:1px;transform:rotate(45deg) translate(2px,-2px)}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .sheet{border-radius:0;box-shadow:-12px 0 40px rgba(0,0,0,.5)}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .sheet.on:not(.quiet){animation:apin .4s cubic-bezier(.22,.9,.3,1)}
+@keyframes apin{from{transform:translateX(100%)}to{transform:none}}
+:root:is([data-bg="apple"],[data-bg="applehell"]) :is(.mcard,.res,.mrw,.tdr,.card.list button):active{opacity:1;filter:brightness(1.25)}
+:root[data-bg="applehell"] :is(.mcard,.res,.mrw,.tdr):active{filter:brightness(.94)}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .mcard{min-height:132px;justify-content:space-between}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .mcb b{font-size:36px;font-weight:500}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .mch .ct{font-size:17px;font-weight:600}
+:root:is([data-bg="apple"],[data-bg="applehell"]) .card h2{font-size:17px;font-weight:600}
 /* Auswahl-Chips (Todo-Formular, Kategorien): graue Kapseln, gewählt = Apple-Blau */
 :root:is([data-bg="apple"],[data-bg="applehell"]) .sec{text-transform:none}
 :root:is([data-bg="apple"],[data-bg="applehell"]) .chip2{background:var(--fill);border:0;box-shadow:none}
@@ -898,11 +911,11 @@ main.v-todos{overflow-x:clip;touch-action:pan-y}
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=06aac0e"></script>
-<script src="todos.js?v=06aac0e"></script>
-<script src="gesund.js?v=06aac0e"></script>
-<script src="mitteilungen.js?v=06aac0e"></script>
-<script src="suche.js?v=06aac0e"></script>
+<script src="kern.js?v=aaca62c"></script>
+<script src="todos.js?v=aaca62c"></script>
+<script src="gesund.js?v=aaca62c"></script>
+<script src="mitteilungen.js?v=aaca62c"></script>
+<script src="suche.js?v=aaca62c"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -2333,7 +2346,7 @@ addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="06aac0e";
+const APPV="aaca62c";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
