@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=ed6b58d"></script>
+<script src="design.js?v=0fed76c"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -1001,17 +1001,27 @@ main.v-todos{overflow-x:clip;touch-action:pan-y}
 /* Scrollbalken ausblenden (wie eine echte App) */
 html,body,.sheet,.drawer,*{scrollbar-width:none}
 ::-webkit-scrollbar{display:none;width:0;height:0;background:transparent}
+
+/* Laufbewertung */
+.lbv{font-size:22px;font-weight:700;letter-spacing:-.01em;margin:2px 0 2px}.lbv.s{font-size:17px}
+.lbm{font-size:13px;color:var(--mute);margin-bottom:8px}.lbh{margin:0 0 10px;font-size:14px}
+.lbz{display:flex;height:10px;border-radius:5px;overflow:hidden;gap:2px;margin:6px 0 6px}.lbz i{display:block;min-width:3px}
+.lbzl{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;color:var(--mute);margin-bottom:8px}.lbzl i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px}.lbzl b{color:var(--ink);font-weight:600}
+.lbr span:first-child{color:var(--mute)}.lbr span:last-child{text-align:right}
+details.lbrow>summary{list-style:none;cursor:pointer}details.lbrow>summary::-webkit-details-marker{display:none}
+.lbo{padding:2px 0 10px}.lbd{font-size:11px;margin-left:4px}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="gA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--a1)"/><stop offset="1" style="stop-color:var(--a2)"/></linearGradient></defs></svg>
 <div id="app"></div>
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=ed6b58d"></script>
-<script src="todos.js?v=ed6b58d"></script>
-<script src="gesund.js?v=ed6b58d"></script>
-<script src="mitteilungen.js?v=ed6b58d"></script>
-<script src="suche.js?v=ed6b58d"></script>
+<script src="kern.js?v=0fed76c"></script>
+<script src="todos.js?v=0fed76c"></script>
+<script src="gesund.js?v=0fed76c"></script>
+<script src="lauf.js?v=0fed76c"></script>
+<script src="mitteilungen.js?v=0fed76c"></script>
+<script src="suche.js?v=0fed76c"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -1109,8 +1119,8 @@ async function flush(){
 /* ===== Laden ===== */
 const trimStore=(st,days)=>{const lim=EK.add(TODAY(),-days),d={},a=[];
  for(const k in st.days)if(k>=lim)d[k]=st.days[k];
- for(const k in st.acts){const x=st.acts[k];if(x.date>=lim)a.push({date:x.date,name:x.name,type:x.type,kcal:x.kcal,bmr:x.bmr,km:x.km,min:x.min,mov:x.mov,hr:x.hr,t0:x.t0,te:x.te,load:x.load,f5k:x.f5k,f10k:x.f10k})}
- return{days:d,acts:a,synced:st.synced,fitness:st.fitness||null}};
+ for(const k in st.acts){const x=st.acts[k];if(x.date>=lim)a.push({id:k,date:x.date,name:x.name,type:x.type,kcal:x.kcal,bmr:x.bmr,km:x.km,min:x.min,mov:x.mov,hr:x.hr,maxhr:x.maxhr,hrz:x.hrz,anaer:x.anaer,cad:x.cad,t0:x.t0,te:x.te,load:x.load,f5k:x.f5k,f10k:x.f10k})}
+ return{days:d,acts:a,synced:st.synced,fitness:st.fitness||null,hrz:st.hrz||null}};
 const trimPlan=p=>{if(!p||!p.days)return null;const lo=EK.add(TODAY(),-10),hi=EK.add(TODAY(),21),d={};for(const k in p.days)if(k>=lo&&k<=hi)d[k]=p.days[k];return{meta:p.meta,days:d}};
 /* Neuester Commit auf dem Branch (1 kleine Anfrage) */
 async function headSha(){const r=await gh(`/branches/${CFG.branch}`);if(!r.ok)return null;const j=await r.json();return j.commit&&j.commit.sha||null}
@@ -2443,7 +2453,7 @@ addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="ed6b58d";
+const APPV="0fed76c";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;

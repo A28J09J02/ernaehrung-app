@@ -61,6 +61,7 @@ function vTraining(){if(!C.store)return`<div class="lt"><div><h2>Training</h2></
  const T=TODAY(),{ph,race,rest}=gzPhase(),mon=EK.monday(T),A=C.store.acts||[];
  let o=`<div class="lt"><div><h2>Training</h2><small>${ph?"Phase "+h(ph.name):""}${rest>0?` · noch ${rest} Tage bis ${h(race.name||"zum Rennen")}`:""}</small></div></div>`;
  o+=`<div class="card"><h2>Heute<small>${new Date(T+"T12:00:00").toLocaleDateString("de-DE",{weekday:"long"})}</small></h2>${gzPlanCard(T,true)}</div>`;
+ if(typeof lbCard==='function')o+=lbCard();
  /* nächste Einheit */
  for(let k=1;k<=7;k++){const d=EK.add(T,k),p=planDay(d);if(p&&p.type!=="rest"){o+=`<div class="card slim"><h2>Nächste Einheit<small>${tdLong(d)}</small></h2>${gzPlanCard(d,false)}</div>`;break}}
  /* Woche: Plan gegen Ist */
@@ -77,7 +78,7 @@ function vTraining(){if(!C.store)return`<div class="lt"><div><h2>Training</h2></
  o+=`<button class="card gzready" data-go="gesund"><span>${ic("moon")}<b>${sl?sl.v:"–"}</b><small>Schlaf</small></span><span>${ic("battery")}<b>${bb?bb.v:"–"}</b><small>Body Battery</small></span><span>${ic("heart")}<b>${hv?hv.v:"–"}</b><small>HRV ${hv&&HS[gzDay(hv.d).hrv_status]||""}</small></span>${ic("chev")}</button>`;
  if(C.anp&&C.anp.fazit)o+=`<div class="card"><details class="more" style="margin:0"><summary><b style="color:var(--ink)">Einschätzung</b> <small class="mute">${h(C.anp.stand||"")}</small> ›</summary>${bullets(C.anp.fazit)}</details></div>`;
  const last=A.slice().sort((a,b)=>(a.date+(a.t0||""))<(b.date+(b.t0||""))?1:-1).slice(0,6);
- if(last.length)o+=`<div class="card"><h2>Letzte Aktivitäten<button class="btn sm" data-go="stat">Statistik ›</button></h2>${last.map(a=>`<div class="act"><span>${EMO[a.type]||ic("bolt")} ${tdLong(a.date)} · ${h(a.name||a.type)}</span><span>${a.km?n1(a.km)+" km · ":""}${Math.round(a.min)} min${/running/.test(a.type)&&gzPace(a.mov||a.min,a.km)?" · "+gzPace(a.mov||a.min,a.km):""}</span></div>`).join("")}</div>`;
+ if(last.length)o+=`<div class="card"><h2>Letzte Aktivitäten<button class="btn sm" data-go="stat">Statistik ›</button></h2>${last.map(a=>{const f=`<div class="act"><span>${EMO[a.type]||ic("bolt")} ${tdLong(a.date)} · ${h(a.name||a.type)}</span><span>${a.km?n1(a.km)+" km · ":""}${Math.round(a.min)} min${/running/.test(a.type)&&gzPace(a.mov||a.min,a.km)?" · "+gzPace(a.mov||a.min,a.km):""}</span></div>`;return typeof lbRow==='function'?lbRow(a,f):f}).join("")}</div>`;
  return o+`<div class="row mb"><button class="btn" data-sync="1">↻ Garmin-Sync</button><button class="btn" data-go="plan">Trainingsplan</button></div><p class="foot">Garmin-Stand ${gzStand()}.</p>`}
 
 /* ===================== Gesundheit ===================== */

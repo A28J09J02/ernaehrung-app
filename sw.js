@@ -8,7 +8,7 @@
    2) Mitteilungen (Web-Push): zeigt die Meldungen an, die tools/mitteilungen.py über GitHub Actions schickt
       (Todos, Fristen, Training, Streak …). Antippen öffnet die App am passenden Ort (z. B. #todos). */
 const APP="kingstats-app-v3";
-const CORE=["./","index.html","kern.js","design.js","todos.js","gesund.js","mitteilungen.js","suche.js","manifest.webmanifest","icon-180.png","icon-512.png"];
+const CORE=["./","index.html","kern.js","design.js","todos.js","gesund.js","lauf.js","mitteilungen.js","suche.js","manifest.webmanifest","icon-180.png","icon-512.png"];
 
 self.addEventListener("install",e=>{
  e.waitUntil(caches.open(APP).then(c=>c.addAll(CORE)).catch(()=>{}).then(()=>self.skipWaiting()))});
