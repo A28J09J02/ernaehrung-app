@@ -334,7 +334,7 @@ function tvParse(text,today){
   return{t:t.slice(0,80),start:it.d||it.d2||preD||today,zeit:z||"",cat:tvCat(t)}})}
 
 /* Oberfläche: Sprechen/Diktieren → Vorschau → anlegen */
-const TVS={rows:[]};
+const TVS={rows:[],rec:null,iv:0,sil:0};
 function tvDateLabel(iso){const T=TODAY();return iso===T?"Heute":iso===EK.add(T,1)?"Morgen":iso===EK.add(T,2)?"Übermorgen":tdLong(iso)}
 function tvPreview(){const box=document.getElementById("tvprev"),ta=document.getElementById("tvtext");if(!box||!ta)return;
  TVS.rows=tvParse(ta.value,TODAY());
@@ -345,11 +345,33 @@ function tvPreview(){const box=document.getElementById("tvprev"),ta=document.get
 function tvOpen(){const sh=$("sheet");sh.classList.add("on");
 
  sh.innerHTML=`<div class="top"><button class="ib" data-close="1" aria-label="Schließen">${ic("x")}</button><h1>Per Sprache</h1><span style="min-width:44px"></span></div><main>
- <div class="card"><textarea id="tvtext" class="inp" rows="5" placeholder="Tippe auf das Mikrofon unten rechts auf der Tastatur und sprich …" autocomplete="off" autocapitalize="sentences" enterkeyhint="done"></textarea>
- <p class="s mute" style="margin:10px 0 0">Der Text erscheint beim Sprechen sofort hier, darunter siehst du die erkannten Todos. Beendet ist die Aufnahme, sobald du das Mikrofon der Tastatur nochmal antippst oder die Tastatur schließt – die App hört nie mit. „Äh“, „also“, „genau“ und Einleitungen wie „trag ein“ werden entfernt.</p></div>
+ <div class="card"><button class="btn p w" type="button" data-tvrec="1" id="tvrec">${ic("mic")}Aufnahme starten</button>
+ <div id="tvstat" class="s mute" style="margin:10px 2px 8px;min-height:20px"></div>
+ <textarea id="tvtext" class="inp" rows="5" placeholder="Hier erscheint, was du sagst – du kannst auch tippen …" autocomplete="off" autocapitalize="sentences"></textarea>
+ <p class="s mute" style="margin:10px 0 0">Die Aufnahme läuft nur, solange du sie mit dem Knopf gestartet hast. Sie endet mit „Stopp“, nach 8 Sekunden Stille, beim Schließen oder wenn du die App verlässt. „Äh“, „also“, „genau“ und Einleitungen wie „trag ein“ werden entfernt. Fragt iOS nach dem Mikrofon, erlaubst du es für diese App.</p></div>
  <div id="tvprev" class="mt12"></div></main>`;
  tvPreview();setTimeout(()=>{const t=document.getElementById("tvtext");t&&t.focus()},150)}
-function tvSave(){const T=TODAY(),rows=TVS.rows.filter(r=>r.t&&r.t.trim());if(!rows.length)return toast("Nichts zum Anlegen");
+function tvStat(t,err){const e=document.getElementById("tvstat");if(e){e.textContent=t||"";e.style.color=err?"#ff453a":""}}
+function tvStop(why){const r=TVS.rec;TVS.rec=null;clearInterval(TVS.iv);clearTimeout(TVS.sil);
+ if(r){r.onresult=r.onerror=r.onend=null;try{r.stop()}catch(e){}try{r.abort&&r.abort()}catch(e){}}
+ const b=document.getElementById("tvrec");if(b){b.innerHTML=ic("mic")+"Aufnahme starten";b.classList.add("p")}
+ if(why!==undefined)tvStat(why)}
+function tvRec(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition,btn=document.getElementById("tvrec"),ta=document.getElementById("tvtext");if(!btn||!ta)return;
+ if(TVS.rec){return tvStop(ta.value.trim()?"Aufnahme beendet.":"")}
+ if(!SR)return tvStat("Dieser Browser kann hier nicht zuhören.",1);
+ const r=new SR();r.lang="de-DE";r.interimResults=true;r.continuous=true;const base=ta.value.trim()?ta.value.trim()+" ":"";TVS.rec=r;
+ const sil=()=>{clearTimeout(TVS.sil);TVS.sil=setTimeout(()=>tvStop("Aufnahme beendet (Stille)."),8000)};
+ btn.innerHTML=ic("x")+"Stopp";btn.classList.remove("p");tvStat("Starte … ggf. Mikrofon erlauben.");sil();
+ r.onstart=()=>tvStat("🔴 Ich höre zu …");
+ r.onresult=e=>{let t="";for(let i=0;i<e.results.length;i++)t+=e.results[i][0].transcript+" ";ta.value=base+t.trim();tvPreview();tvStat("🔴 Ich höre zu …");sil()};
+ r.onerror=e=>{const c=e.error;if(c==="no-speech"||c==="aborted")return;
+  tvStop();tvStat(c==="not-allowed"||c==="service-not-allowed"?"Mikrofon nicht erlaubt ("+c+"). In iOS: Einstellungen → Datenschutz → Mikrofon bzw. Spracherkennung prüfen.":"Aufnahme fehlgeschlagen ("+c+").",1)};
+ r.onend=()=>{if(TVS.rec===r)tvStop("Aufnahme beendet.")};
+ clearInterval(TVS.iv);TVS.iv=setInterval(()=>{if(!document.getElementById("tvtext"))tvStop()},700);
+ try{r.start()}catch(e){tvStop();tvStat("Aufnahme konnte nicht starten ("+(e&&e.name||"Fehler")+").",1)}}
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&TVS.rec)tvStop("Aufnahme beendet.")});
+addEventListener("pagehide",()=>{if(TVS.rec)tvStop()});
+function tvSave(){tvStop();const T=TODAY(),rows=TVS.rows.filter(r=>r.t&&r.t.trim());if(!rows.length)return toast("Nichts zum Anlegen");
  for(const r of rows){const it={id:"td"+EK.uid(),t:r.t.trim().slice(0,80),cat:r.cat||"sonst",rep:{k:"einmal"},start:/^\d{4}-\d\d-\d\d$/.test(r.start)?r.start:T,ts:Date.now()};
   if(/^\d\d:\d\d$/.test(r.zeit))it.zeit=r.zeit;change(TD_P,{t:"tdset",it},true)}
  closeSheet();render();toast(rows.length===1?`„${rows[0].t}“ angelegt`:`${rows.length} Todos angelegt`)}
@@ -358,6 +380,7 @@ document.addEventListener("input",ev=>{const t=ev.target;if(t.id==="tvtext"){cle
  if((i=g("data-tvt"))!=null)TVS.rows[+i].t=t.value;else if((i=g("data-tvd"))!=null)TVS.rows[+i].start=t.value;else if((i=g("data-tvz"))!=null)TVS.rows[+i].zeit=t.value});
 document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x;
  if(b("[data-tdvoice]"))tvOpen();
+ else if(b("[data-tvrec]"))tvRec();
  else if(x=b("[data-tvx]")){TVS.rows.splice(+x.dataset.tvx,1);const box=document.getElementById("tvprev");if(box){const keep=TVS.rows.slice();box.innerHTML="";TVS.rows=keep;
    box.innerHTML=keep.length?keep.map((r,i)=>`<div class="card tvr"><div class="frow"><input class="inp" data-tvt="${i}" maxlength="80" value="${h(r.t)}"><button class="ib" type="button" data-tvx="${i}" aria-label="Entfernen">${ic("x")}</button></div><div class="frow"><span>${ic(tdCat(r.cat)[1])} ${h(tdCat(r.cat)[2])}</span><span><input class="inp sm2" type="date" data-tvd="${i}" value="${h(r.start)}"> <input class="inp sm2" type="time" data-tvz="${i}" value="${h(r.zeit)}"></span></div></div>`).join("")+`<button class="btn p w mt12" type="button" data-tvgo="1">${keep.length===1?"Todo anlegen":keep.length+" Todos anlegen"}</button>`:""}}
  else if(b("[data-tvgo]"))tvSave()});
