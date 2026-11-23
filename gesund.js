@@ -54,10 +54,11 @@ function gzPlanCard(d,big){const p=planDay(d),acts=planActs(d,p),done=acts.lengt
  if(!p)return`<p class="mute" style="margin:0">Kein Training geplant.</p>`;
  const t=String(p.title||"").replace(/^\S+\s/,""),meta=[p.start&&p.start+" Uhr",p.dur&&p.dur+" Min",p.km&&p.km+" km"].filter(Boolean).join(" · ");
  return`<div class="gzp"><span class="gzpi ${p.type}">${EMOP[p.type]||ic("bolt")}</span><span><b>${h(p.type==="rest"?"Ruhetag":t)}</b>${meta?`<small>${meta}</small>`:""}</span>${done?`<span class="gzok">${ic("check")}</span>`:""}</div>
- ${p.adj?`<div class="gzadj">↻ Angepasst: ${h(p.adj)}${d>=T?` <button class="lnk2" data-planorig="${d}|1">Alten Plan machen</button>`:""}</div>`:""}
- ${p.orig?`<div class="gzadj">Ursprünglicher Plan gewählt <button class="lnk2" data-planorig="${d}|0">Zurück zur Anpassung</button></div>`:""}
+ ${p.adj?`<div class="gzadj">↻ Angepasst: ${h(p.adj)}</div>`:""}
+ ${p.orig?`<div class="gzadj">Ursprünglicher Plan gewählt</div>`:""}
  ${big?(p.type==="gym"&&gymList(p.desc).items.length?gymCheck(d,p.desc):p.desc?`<details class="more"><summary>Details ›</summary><p class="s" style="margin:6px 0 0">${h(p.desc)}</p></details>`:""):""}
- ${acts.length?`<div class="gzacts">${acts.map(a=>`<span>${EMO[a.type]||ic("bolt")} ${a.km?n1(a.km)+" km · ":""}${Math.round(a.min)} min${a.km&&/running/.test(a.type)&&gzPace(a.mov||a.min,a.km)?" · "+gzPace(a.mov||a.min,a.km)+"/km":""}</span>`).join("")}</div>`:d<T&&p.type!=="rest"?`<div style="margin-top:8px">${tone("r","nicht erledigt")}</div>`:""}`}
+ ${acts.length?`<div class="gzacts">${acts.map(a=>`<span>${EMO[a.type]||ic("bolt")} ${a.km?n1(a.km)+" km · ":""}${Math.round(a.min)} min${a.km&&/running/.test(a.type)&&gzPace(a.mov||a.min,a.km)?" · "+gzPace(a.mov||a.min,a.km)+"/km":""}</span>`).join("")}</div>`:d<T&&p.type!=="rest"?`<div style="margin-top:8px">${tone("r","nicht erledigt")}</div>`:""}
+ ${p.adj&&d>=T?`<button class="btn w mt10 gzswitch" data-planorig="${d}|1">${ic("repeat")}Alten Plan machen</button>`:""}${p.orig?`<button class="btn w mt10 gzswitch" data-planorig="${d}|0">${ic("repeat")}Zurück zur Anpassung</button>`:""}`}
 function vTraining(){if(!C.store)return`<div class="lt"><div><h2>Training</h2></div></div><div class="card">Noch keine Garmin-Daten geladen.</div>`;
  const T=TODAY(),{ph,race,rest}=gzPhase(),mon=EK.monday(T),A=C.store.acts||[];
  let o=`<div class="lt"><div><h2>Training</h2><small>${ph?"Phase "+h(ph.name):""}${rest>0?` · noch ${rest} Tage bis ${h(race.name||"zum Rennen")}`:""}</small></div></div>`;

@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=884b629"></script>
+<script src="design.js?v=b30fcd1"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -1015,13 +1015,15 @@ details.lbrow>summary{list-style:none;cursor:pointer}details.lbrow>summary::-web
 .tdfold{-webkit-tap-highlight-color:transparent}.tdfold>.tdh{cursor:pointer;margin-bottom:8px;transition:background .25s,box-shadow .25s,padding .25s,border-radius .25s}
 .tdchev{display:inline-flex;transition:transform .28s}.tdchev .ic{width:16px;height:16px;color:var(--mute)}.tdfold:not(.fo) .tdchev{transform:rotate(90deg)}
 .tdwrap{display:grid;grid-template-rows:1fr;transition:grid-template-rows .32s cubic-bezier(.2,.8,.2,1),opacity .25s}.tdin{overflow:hidden;min-height:0}
-.tdfold.fo .tdwrap{grid-template-rows:0fr;opacity:0}.tdfold.fo>.tdh{padding:11px 14px;border-radius:16px;background:var(--fill)}
+.tdfold.fo .tdwrap{grid-template-rows:0fr;opacity:0}
+.tdfold.fo>.tdh{margin:6px 0 0;padding:0 14px;min-height:46px;border-radius:16px;background:var(--card2,var(--fill));border:1px solid var(--edge,transparent);box-shadow:none}
+.tdfold.fo .tdhl{font-size:15px;white-space:nowrap}.tdfold>.tdh>span:last-child{white-space:nowrap;flex-shrink:0}.tdfold>.tdh .tdhl{flex:1;min-width:0}.tdwarn,.tdn,.tdokb{white-space:nowrap;line-height:1.2}.tdfold.fo .cbar{display:none}.tdfold.fo .tdn{font-size:13px}
 .tdwarn,.tdokb{display:none}.tdfold.fo.hasop .tdwarn{display:inline-block}.tdfold.fo.alld .tdokb{display:inline-flex}.tdfold.fo.hasop .tdn,.tdfold.fo.alld .tdn{display:none}
-.tdfold.fo.hasop>.tdh{background:color-mix(in srgb,var(--r) 16%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--r) 55%,transparent)}
-.tdfold.fo.hasop .tdhl{color:var(--r)}
-.tdfold.fo.alld>.tdh{background:color-mix(in srgb,#34c759 13%,transparent)}.tdfold.fo.alld .tdhl{opacity:.75}
+.tdfold.fo.hasop>.tdh{box-shadow:inset 4px 0 0 var(--r);border-color:color-mix(in srgb,var(--r) 40%,transparent)}
+.tdfold.fo.alld>.tdh{opacity:.72}
 .tdwarn{font-style:normal;font-size:12px;font-weight:750;color:#fff;background:var(--r);border-radius:99px;padding:2px 9px}
 .tdokb{color:#34c759}.tdokb .ic{width:18px;height:18px}
+.gzswitch{background:color-mix(in srgb,var(--a1) 18%,transparent);color:var(--a1);border:1px solid color-mix(in srgb,var(--a1) 45%,transparent);font-weight:700;min-height:46px;display:flex;align-items:center;justify-content:center;gap:8px}.gzswitch .ic{width:18px;height:18px}
 #dsBar{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 14px);z-index:400;display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:20px;background:rgba(40,40,44,.94);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:#fff;font-size:13px;font-weight:650}
 #dsBar span{flex:1}.dsprev{margin-top:14px;display:flex;flex-direction:column;gap:8px}.dsrow{display:flex;gap:8px}.dsrow .btn{flex:1}
 </style></head><body>
@@ -1030,12 +1032,12 @@ details.lbrow>summary{list-style:none;cursor:pointer}details.lbrow>summary::-web
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=884b629"></script>
-<script src="todos.js?v=884b629"></script>
-<script src="gesund.js?v=884b629"></script>
-<script src="lauf.js?v=884b629"></script>
-<script src="mitteilungen.js?v=884b629"></script>
-<script src="suche.js?v=884b629"></script>
+<script src="kern.js?v=b30fcd1"></script>
+<script src="todos.js?v=b30fcd1"></script>
+<script src="gesund.js?v=b30fcd1"></script>
+<script src="lauf.js?v=b30fcd1"></script>
+<script src="mitteilungen.js?v=b30fcd1"></script>
+<script src="suche.js?v=b30fcd1"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -1218,7 +1220,8 @@ const TITLE={tag:"",kal:"Kalender",verlauf:"Verlauf",rezepte:"Gerichte",ideen:"I
 /* Bereiche mit großem Titel im Inhalt (Kopfzeile bleibt dann schlicht) */
 const BIGT=["todos","meintag","gesund","stat"];
 const goHash=g=>{const v=HASHV[String(g).replace(/^#/,"")];if(v){if(v==="tag")cur=TODAY();go(v)}};
-function go(v){if(v!=="tag")MRET=null;if($("sheet").classList.contains("on"))closeSheet();view=v;LS.set("view",v);closeDrawer();render();scrollTo(0,0);
+let BACKV="tag";
+function go(v){if(v==="kal"&&view!=="kal")BACKV=view;if(v!=="tag")MRET=null;if($("sheet").classList.contains("on"))closeSheet();view=v;LS.set("view",v);closeDrawer();render();scrollTo(0,0);
  try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}}
 function openDrawer(){const d=$("drawer");d.innerHTML=`<div class="ttl">${ic("crown")}KingStats</div>`+NAV.map(([g,L])=>`<div class="hd">${g}</div>`+L.map(([k,i,l])=>`<button class="it ${view===k?"on":""}" data-go="${k}">${svg(i)}${l}${k==="todos"&&tdOpen()?` <i class="dbdg">${tdOpen()}</i>`:""}</button>`).join("")).join("")+
  `<div class="hd">App</div><button class="it" data-design="1">${svg("palette")}Design & Farben</button><div class="hd">Garmin</div>${syncSince()?`<button class="it" disabled>${svg("sync")}Sync läuft … seit ${hhmm(syncSince())}</button>`:`<button class="it" data-sync="1">${svg("sync")}Jetzt synchronisieren</button>`}<p class="foot" style="margin:6px 10px">${C.store&&C.store.synced?"Letzter Stand: "+new Date(C.store.synced*1000).toLocaleString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):""}</p>`;
@@ -1230,7 +1233,7 @@ const tabOf=v=>v==="plan"?"meintag":TABS.some(t=>t[0]===v)?v:"mehr";
 function render(){
  if(!CFG.token)return;if(!/^\d{4}-\d\d-\d\d$/.test(cur)||isNaN(new Date(cur+"T12:00:00")))cur=TODAY();calcAus();
  const a=$("app"),T=TODAY(),food=["tag","kal","verlauf","rezepte","ideen","lm","profil"].includes(view),sk=streaks();
- const streakBtn=`<button class="streak ${sk.today?"":"off"}" data-go="kal" aria-label="Streak ${sk.n} Tage – Kalender">${ic("flame")}${sk.n}</button>`;
+ const streakBtn=`<button class="streak ${sk.today?"":"off"}" data-go="${view==="kal"?(BACKV&&BACKV!=="kal"?BACKV:"tag"):"kal"}" aria-label="Streak ${sk.n} Tage – ${view==="kal"?"zurück":"Kalender"}">${ic("flame")}${sk.n}</button>`;
  /* Tagebuch: Datum mit Pfeilen direkt in der Kopfzeile (Tippen auf das Datum = zurück zu heute) */
  const head=view==="tag"?(()=>{const rel=cur===T?"Heute":cur===EK.add(T,-1)?"Gestern":cur===EK.add(T,1)?"Morgen":null,
    long=new Date(cur+"T12:00:00").toLocaleDateString("de-DE",{weekday:"short",day:"numeric",month:"long"});
@@ -2313,10 +2316,11 @@ document.addEventListener("touchend",()=>sgEnd(true));
 document.addEventListener("touchcancel",()=>sgEnd(false));
 
 /* ===== Garmin-Sync anstoßen ===== */
-/* Automatisch beim Öffnen: Garmin-Stand älter als 2 h → Cloud-Sync anstoßen (geplante GitHub-Läufe kommen oft Stunden zu spät).
-   Höchstens 1× pro Stunde, nie während ein Sync läuft. */
-function autoSync(){const sy=C.store&&C.store.synced;if(!sy||!CFG.token||Date.now()/1000-sy<2*3600||syncSince())return;
- if(Date.now()-LS.get("autosync",0)<36e5)return;LS.set("autosync",Date.now());syncGarmin(true)}
+/* Automatisch beim Öffnen: Garmin-Stand älter als 15 Min. → Cloud-Sync anstoßen (geplante GitHub-Läufe kommen oft Stunden zu spät).
+   Höchstens alle 10 Min., nie während ein Sync läuft. */
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")try{autoSync()}catch(e){}});
+function autoSync(){const sy=C.store&&C.store.synced;if(!sy||!CFG.token||Date.now()/1000-sy<15*60||syncSince())return;
+ if(Date.now()-LS.get("autosync",0)<10*60e3)return;LS.set("autosync",Date.now());syncGarmin(true)}
 /* Sperre gegen Doppeltipp: Zeitpunkt des Starts in localStorage (max. 5 Min.), vor dem Start Prüfung auf einen schon laufenden Lauf */
 const SYNC_LOCK=5*60e3,syncSince=()=>{const t=LS.get("sync",0);return t&&Date.now()-t<SYNC_LOCK?t:0},hhmm=t=>new Date(t).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});
 async function syncGarmin(auto){closeDrawer();
@@ -2471,7 +2475,7 @@ addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="884b629";
+const APPV="b30fcd1";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
