@@ -8,14 +8,14 @@ const THEMES={apple:["Apple","#0a84ff","#5e5ce6"],blau:["Blau","#3d8bff","#6a5cf
 const BGS={apple:"Apple Health",applehell:"Apple hell",glas:"Glas",matt:"Matt",classic:"Classic",classichell:"Classic hell",hell:"Hell"};
 /* frühere Einstellungen auf die neuen Stile abbilden */
 const BG_ALT={nacht:"glas",schwarz:"matt",grafit:"matt"};
-/* Standard: Apple Health. Einmalig (Merker „ap“) wird auch eine früher gespeicherte Wahl darauf umgestellt – danach bleibt jede Wahl bestehen. */
+/* Standard: Matt mit Akzent Tanne. Einmalig (Merker „mt“) wird auch eine früher gespeicherte Wahl darauf umgestellt – danach bleibt jede Wahl bestehen. */
 const themeGet=()=>{try{const raw=JSON.parse(localStorage.getItem("ern_theme")||"{}")||{};
- if(!raw.ap){raw.bg="apple";raw.acc="apple";raw.ap=1;try{localStorage.setItem("ern_theme",JSON.stringify(raw))}catch(e){}}
- return{...raw,acc:raw.acc||"apple",bg:BG_ALT[raw.bg]||raw.bg||"apple"}}catch(e){return{acc:"apple",bg:"apple"}}};
-function themeApply(t){t=t||themeGet();const a=THEMES[t.acc]||THEMES.apple,r=document.documentElement;
- r.style.setProperty("--a1",a[1]);r.style.setProperty("--a2",a[2]);r.dataset.bg=BGS[t.bg]?t.bg:"apple";
+ if(!raw.mt){raw.bg="matt";raw.acc="tanne";raw.mt=1;raw.ap=1;try{localStorage.setItem("ern_theme",JSON.stringify(raw))}catch(e){}}
+ return{...raw,acc:raw.acc||"tanne",bg:BG_ALT[raw.bg]||raw.bg||"matt"}}catch(e){return{acc:"tanne",bg:"matt"}}};
+function themeApply(t){t=t||themeGet();const a=THEMES[t.acc]||THEMES.tanne,r=document.documentElement;
+ r.style.setProperty("--a1",a[1]);r.style.setProperty("--a2",a[2]);r.dataset.bg=BGS[t.bg]?t.bg:"matt";
  /* data-ah = einer der beiden Apple-Health-Stile, data-acc = gewählte Akzentfarbe (färbt dort das Farblicht oben) */
- r.toggleAttribute("data-ah",r.dataset.bg==="apple"||r.dataset.bg==="applehell");r.dataset.acc=THEMES[t.acc]?t.acc:"apple";
+ r.toggleAttribute("data-ah",r.dataset.bg==="apple"||r.dataset.bg==="applehell");r.dataset.acc=THEMES[t.acc]?t.acc:"tanne";
  const m=document.querySelectorAll('meta[name="theme-color"]');m.forEach(x=>x.setAttribute("content",r.dataset.bg==="hell"||r.dataset.bg==="applehell"?"#f2f2f7":r.dataset.bg==="glas"?"#02030a":r.dataset.bg==="classic"?"#141311":r.dataset.bg==="classichell"?"#f3eee5":"#000000"));
  /* Statusleiste: im Stil „Apple Health“ durchsichtig (Farblicht reicht bis oben, weiße Uhrzeit), sonst normal */
  const sb=document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');if(sb)sb.setAttribute("content",r.dataset.bg==="apple"?"black-translucent":"default")}
