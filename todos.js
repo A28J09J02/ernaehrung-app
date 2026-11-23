@@ -334,7 +334,7 @@ function tvParse(text,today){
   return{t:t.slice(0,80),start:it.d||it.d2||preD||today,zeit:z||"",cat:tvCat(t)}})}
 
 /* Oberfläche: Sprechen/Diktieren → Vorschau → anlegen */
-const TVS={rows:[],rec:null};
+const TVS={rows:[]};
 function tvDateLabel(iso){const T=TODAY();return iso===T?"Heute":iso===EK.add(T,1)?"Morgen":iso===EK.add(T,2)?"Übermorgen":tdLong(iso)}
 function tvPreview(){const box=document.getElementById("tvprev"),ta=document.getElementById("tvtext");if(!box||!ta)return;
  TVS.rows=tvParse(ta.value,TODAY());
@@ -343,32 +343,21 @@ function tvPreview(){const box=document.getElementById("tvprev"),ta=document.get
   +`<button class="btn p w mt12" type="button" data-tvgo="1">${TVS.rows.length===1?"Todo anlegen":TVS.rows.length+" Todos anlegen"}</button>`
   :`<p class="s mute" style="margin:8px 4px">Sag oder tippe zum Beispiel: „Morgen Müllbeutel kaufen und Shaker kaufen, Handy aufräumen. Mail um 21:30 Uhr.“</p>`}
 function tvOpen(){const sh=$("sheet");sh.classList.add("on");
- const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+
  sh.innerHTML=`<div class="top"><button class="ib" data-close="1" aria-label="Schließen">${ic("x")}</button><h1>Per Sprache</h1><span style="min-width:44px"></span></div><main>
- <div class="card"><textarea id="tvtext" class="inp" rows="4" placeholder="Hier diktieren oder tippen …" autocomplete="off"></textarea>
- ${SR?`<button class="btn w mt8" type="button" data-tvrec="1" id="tvrec">${ic("mic")}Aufnahme starten</button>`:""}
- <p class="s mute" style="margin:10px 0 0">${SR?"Oder die Mikrofon-Taste der iPhone-Tastatur benutzen.":"Mikrofon-Taste der iPhone-Tastatur benutzen (unten rechts) und einfach sprechen."} „Äh“, „also“, „genau“ und Einleitungen wie „trag ein“ werden entfernt. Du siehst vor dem Anlegen alles und kannst es ändern.</p></div>
+ <div class="card"><textarea id="tvtext" class="inp" rows="5" placeholder="Tippe auf das Mikrofon unten rechts auf der Tastatur und sprich …" autocomplete="off" autocapitalize="sentences" enterkeyhint="done"></textarea>
+ <p class="s mute" style="margin:10px 0 0">Der Text erscheint beim Sprechen sofort hier, darunter siehst du die erkannten Todos. Beendet ist die Aufnahme, sobald du das Mikrofon der Tastatur nochmal antippst oder die Tastatur schließt – die App hört nie mit. „Äh“, „also“, „genau“ und Einleitungen wie „trag ein“ werden entfernt.</p></div>
  <div id="tvprev" class="mt12"></div></main>`;
  tvPreview();setTimeout(()=>{const t=document.getElementById("tvtext");t&&t.focus()},150)}
-function tvRec(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition,btn=document.getElementById("tvrec"),ta=document.getElementById("tvtext");if(!SR||!btn||!ta)return;
- if(TVS.rec){try{TVS.rec.stop()}catch(e){}return}
- const r=new SR();r.lang="de-DE";r.interimResults=true;r.continuous=true;const base=ta.value?ta.value.trim()+" ":"";TVS.rec=r;
- btn.innerHTML=ic("mic")+"Stopp – ich höre zu …";
- r.onresult=e=>{let t="";for(let i=0;i<e.results.length;i++)t+=e.results[i][0].transcript+" ";ta.value=base+t.trim();tvPreview()};
- r.onerror=e=>{const b=document.getElementById("tvrec");TVS.rec=null;if(b)b.innerHTML=ic("mic")+"Aufnahme starten";toast(e.error==="not-allowed"||e.error==="service-not-allowed"?"Mikrofon hier nicht erlaubt – nimm die Mikrofon-Taste der Tastatur":"Aufnahme fehlgeschlagen – Mikrofon-Taste der Tastatur nutzen",3600)};
- r.onend=()=>{TVS.rec=null;const b=document.getElementById("tvrec");if(b)b.innerHTML=ic("mic")+"Aufnahme starten"};
- try{r.start()}catch(e){TVS.rec=null}}
 function tvSave(){const T=TODAY(),rows=TVS.rows.filter(r=>r.t&&r.t.trim());if(!rows.length)return toast("Nichts zum Anlegen");
  for(const r of rows){const it={id:"td"+EK.uid(),t:r.t.trim().slice(0,80),cat:r.cat||"sonst",rep:{k:"einmal"},start:/^\d{4}-\d\d-\d\d$/.test(r.start)?r.start:T,ts:Date.now()};
   if(/^\d\d:\d\d$/.test(r.zeit))it.zeit=r.zeit;change(TD_P,{t:"tdset",it},true)}
- if(TVS.rec){try{TVS.rec.stop()}catch(e){}}
  closeSheet();render();toast(rows.length===1?`„${rows[0].t}“ angelegt`:`${rows.length} Todos angelegt`)}
 document.addEventListener("input",ev=>{const t=ev.target;if(t.id==="tvtext"){clearTimeout(tvPreview.t);tvPreview.t=setTimeout(tvPreview,250);return}
  const g=a=>t.getAttribute(a);let i;
  if((i=g("data-tvt"))!=null)TVS.rows[+i].t=t.value;else if((i=g("data-tvd"))!=null)TVS.rows[+i].start=t.value;else if((i=g("data-tvz"))!=null)TVS.rows[+i].zeit=t.value});
 document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x;
  if(b("[data-tdvoice]"))tvOpen();
- else if(b("[data-tvrec]"))tvRec();
  else if(x=b("[data-tvx]")){TVS.rows.splice(+x.dataset.tvx,1);const box=document.getElementById("tvprev");if(box){const keep=TVS.rows.slice();box.innerHTML="";TVS.rows=keep;
    box.innerHTML=keep.length?keep.map((r,i)=>`<div class="card tvr"><div class="frow"><input class="inp" data-tvt="${i}" maxlength="80" value="${h(r.t)}"><button class="ib" type="button" data-tvx="${i}" aria-label="Entfernen">${ic("x")}</button></div><div class="frow"><span>${ic(tdCat(r.cat)[1])} ${h(tdCat(r.cat)[2])}</span><span><input class="inp sm2" type="date" data-tvd="${i}" value="${h(r.start)}"> <input class="inp sm2" type="time" data-tvz="${i}" value="${h(r.zeit)}"></span></div></div>`).join("")+`<button class="btn p w mt12" type="button" data-tvgo="1">${keep.length===1?"Todo anlegen":keep.length+" Todos anlegen"}</button>`:""}}
  else if(b("[data-tvgo]"))tvSave()});
