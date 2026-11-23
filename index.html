@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=b30fcd1"></script>
+<script src="design.js?v=e34958b"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -1024,6 +1024,7 @@ details.lbrow>summary{list-style:none;cursor:pointer}details.lbrow>summary::-web
 .tdwarn{font-style:normal;font-size:12px;font-weight:750;color:#fff;background:var(--r);border-radius:99px;padding:2px 9px}
 .tdokb{color:#34c759}.tdokb .ic{width:18px;height:18px}
 .gzswitch{background:color-mix(in srgb,var(--a1) 18%,transparent);color:var(--a1);border:1px solid color-mix(in srgb,var(--a1) 45%,transparent);font-weight:700;min-height:46px;display:flex;align-items:center;justify-content:center;gap:8px}.gzswitch .ic{width:18px;height:18px}
+.calttl{display:flex;align-items:center;gap:8px;font:inherit;color:inherit}.calttl em{font-style:normal;font-size:12px;font-weight:700;color:var(--a1);background:color-mix(in srgb,var(--a1) 16%,transparent);border-radius:99px;padding:3px 10px}
 #dsBar{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 14px);z-index:400;display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:20px;background:rgba(40,40,44,.94);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:#fff;font-size:13px;font-weight:650}
 #dsBar span{flex:1}.dsprev{margin-top:14px;display:flex;flex-direction:column;gap:8px}.dsrow{display:flex;gap:8px}.dsrow .btn{flex:1}
 </style></head><body>
@@ -1032,12 +1033,12 @@ details.lbrow>summary{list-style:none;cursor:pointer}details.lbrow>summary::-web
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=b30fcd1"></script>
-<script src="todos.js?v=b30fcd1"></script>
-<script src="gesund.js?v=b30fcd1"></script>
-<script src="lauf.js?v=b30fcd1"></script>
-<script src="mitteilungen.js?v=b30fcd1"></script>
-<script src="suche.js?v=b30fcd1"></script>
+<script src="kern.js?v=e34958b"></script>
+<script src="todos.js?v=e34958b"></script>
+<script src="gesund.js?v=e34958b"></script>
+<script src="lauf.js?v=e34958b"></script>
+<script src="mitteilungen.js?v=e34958b"></script>
+<script src="suche.js?v=e34958b"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -1397,7 +1398,7 @@ function vKal(){
   cells+=`<button class="${c} ${fut?"fut":""} ${d===T?"t":""}" data-open="${d}" ${off?"disabled":""}>${k}${au?`<sup style="position:absolute;top:3px;right:5px;font-size:11px">${au}</sup>`:""}${i.has?`<small>${n0(i.s.kcal)}</small>`:""}</button>`}
  const pm=EK.add(calM+"-01",-1).slice(0,7),nm=EK.add(calM+"-28",5).slice(0,7);
  return`<div class="card"><div class="kp"><div><b class="ct">${ic("flame")}${sk.n}</b><span>Streak aktuell</span></div><div><b>${sk.best}</b><span>Rekord (Tage)</span></div><div><b>${cnt.g}</b><span>Tage im Ziel</span></div></div></div>
- <div class="card"><div class="dnav" style="border:0;margin-bottom:8px"><button class="ib" data-cal="${pm}" aria-label="Vormonat">‹</button><b>${MON[m-1]} ${y}</b><button class="ib" data-cal="${nm}" aria-label="Folgemonat" ${nm>MAXD().slice(0,7)?"disabled":""}>›</button></div>
+ <div class="card"><div class="dnav" style="border:0;margin-bottom:8px"><button class="ib" data-cal="${pm}" aria-label="Vormonat">‹</button><button class="calttl" data-cal="${T.slice(0,7)}" aria-label="Zurück zum aktuellen Monat"><b>${MON[m-1]} ${y}</b>${calM!==T.slice(0,7)?`<em>Heute</em>`:""}</button><button class="ib" data-cal="${nm}" aria-label="Folgemonat" ${nm>MAXD().slice(0,7)?"disabled":""}>›</button></div>
  <div class="cal">${cells}</div>
  <div class="leg"><span><i style="background:var(--g)"></i>Ziel ±10 % (${cnt.g})</span><span><i style="background:var(--y)"></i>±20 % (${cnt.y})</span><span><i style="background:var(--r)"></i>deutlich daneben (${cnt.r})</span><span><i style="background:var(--acc-bg)"></i>heute/geplant</span><span><i class="lu"></i>zu wenig eingetragen${cnt.u?` (${cnt.u})`:""}</span><span><i style="background:var(--grid)"></i>nicht erfasst</span></div></div>
  <p class="foot">Farbe = Kalorienziel des Tages erreicht? Grün bei höchstens 10 % Abweichung, orange bis 20 %, rot bei mehr – egal ob zu viel oder zu wenig gegessen. Die kleine Zahl sind die gegessenen kcal. Tag antippen öffnet das Tagebuch – auch die nächsten 14 Tage, zum Vorausplanen.<br>↺ = Ausgleich: Liegst du an einem Tag drüber, verteilt die App den Überschuss automatisch auf die nächsten Tage (Lauf- und Gym-Tage tragen mehr, höchstens 20 % bzw. 500 kcal pro Tag) und senkt dort dein Ziel. Hältst du diese Ziele, wird der Tag grün ↺. Mehrere Cheat Days hintereinander zählen als Block – verteilt wird erst danach (Pizza-Symbol = als Cheat Day markiert). Ausschalten: Profil → „Überschuss ausgleichen“ oder am jeweiligen Tag.${cnt.a?` Ausgeglichen in diesem Monat: ${cnt.a}.`:""}</p>`}
@@ -2475,7 +2476,7 @@ addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="b30fcd1";
+const APPV="e34958b";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
