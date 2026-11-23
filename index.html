@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=0fed76c"></script>
+<script src="design.js?v=8ff1115"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -688,6 +688,7 @@ input,select,textarea,.inp,textarea.inp{font-size:16px}
 .bgo i{width:100%;aspect-ratio:3/4;border-radius:12px;border:1px solid rgba(255,255,255,.14);display:block}
 .bgo.on i{outline:2px solid var(--acc);outline-offset:2px}
 .bg-glas i{background:radial-gradient(60% 50% at 20% 20%,rgba(61,139,255,.55),transparent),radial-gradient(60% 50% at 90% 70%,rgba(106,92,255,.4),transparent),#03040a}
+.bg-cockpit i{background:#111113;box-shadow:inset 0 0 0 1px #34c759,inset 0 -2px 0 #34c759}
 .bg-matt i{background:linear-gradient(180deg,#141416,#060607);box-shadow:inset 0 -2px 0 #3d8bff}
 .bg-classic i{background:linear-gradient(180deg,#24221e,#141311);border-color:#c2a46d55}
 .bg-classichell i{background:linear-gradient(180deg,#fbf8f2,#efe9de);border-color:rgba(0,0,0,.1)}
@@ -1010,18 +1011,45 @@ html,body,.sheet,.drawer,*{scrollbar-width:none}
 .lbr span:first-child{color:var(--mute)}.lbr span:last-child{text-align:right}
 details.lbrow>summary{list-style:none;cursor:pointer}details.lbrow>summary::-webkit-details-marker{display:none}
 .lbo{padding:2px 0 10px}.lbd{font-size:11px;margin-left:4px}
+
+/* --- Todos: Kategorien einklappen (23.11.2026) --- */
+.tdfold{cursor:pointer;-webkit-tap-highlight-color:transparent}.tdfold .tdh{margin-bottom:8px}
+.tdchev{display:inline-flex;transition:transform .25s}.tdchev .ic{width:16px;height:16px;color:var(--mute)}.tdfold:not(.fo) .tdchev{transform:rotate(90deg)}
+.tdfold.fo .tdh{padding:11px 14px;margin:10px 0;border-radius:16px;background:var(--fill)}
+.tdfold.warn .tdh{background:color-mix(in srgb,var(--r) 16%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--r) 55%,transparent)}
+.tdfold.warn .tdhl{color:var(--r)}
+.tdfold.okc .tdh{background:color-mix(in srgb,#34c759 13%,transparent)}.tdfold.okc .tdhl{opacity:.75}
+.tdwarn{font-style:normal;font-size:12px;font-weight:750;color:#fff;background:var(--r);border-radius:99px;padding:2px 9px}
+.tdokb{display:inline-flex;color:#34c759}.tdokb .ic{width:18px;height:18px}
+/* --- Cockpit (Test) --- */
+.ckh{display:flex;align-items:center;gap:18px}.ckr{flex:0 0 118px}.ckr svg{width:118px;height:118px}
+.ckl{flex:1;display:flex;flex-direction:column;gap:4px}.ckl button{display:flex;align-items:center;gap:9px;padding:9px 0;font:inherit;color:var(--ink);text-align:left}
+.ckl i{width:10px;height:10px;border-radius:50%}.ckl span{flex:1;color:var(--mute);font-size:14px}.ckl b{font-size:15px;font-weight:700}
+.ckg{display:grid;grid-template-columns:1fr 1fr;gap:10px}.ckk{display:flex;flex-direction:column;gap:6px;text-align:left;padding:14px;margin:0}
+.ckk>span{display:flex;align-items:center;gap:6px;color:var(--mute);font-size:13px;font-weight:600}.ckk b{font-size:28px;font-weight:750;letter-spacing:-.02em}.ckk b small{font-size:13px;color:var(--mute);font-weight:600}
+
+/* --- Stil „Cockpit“ (23.11.2026): auf Matt aufgebaut, aber flach, ruhig, große Zahlen; Farbe nur mit Bedeutung --- */
+:root[data-ck]{--card:#111113;--cardbg:#111113;--mute:#8e8e96}
+:root[data-ck] .card::before,:root[data-ck] .card::after{display:none}
+:root[data-ck] :is(.card,.tile,.hint,.dnav,.res){background:#111113;border:0;border-radius:22px;box-shadow:none}
+:root[data-ck] .lt h2{font-size:30px;font-weight:800;letter-spacing:-.03em}
+:root[data-ck] :is(.mcard .mcb b,.ckk b,.hero b,.kv b){font-weight:800;letter-spacing:-.03em}
+:root[data-ck] .btn.p{background:var(--a1);color:#fff;border:0;box-shadow:none}
+:root[data-ck] .tabs{background:rgba(24,24,27,.92);box-shadow:none;border:1px solid rgba(255,255,255,.06)}
+:root[data-ck] .tdh .tdhl{font-size:15px;font-weight:700;text-transform:none;letter-spacing:0}
+:root[data-ck] .cico{opacity:.9}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="gA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--a1)"/><stop offset="1" style="stop-color:var(--a2)"/></linearGradient></defs></svg>
 <div id="app"></div>
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=0fed76c"></script>
-<script src="todos.js?v=0fed76c"></script>
-<script src="gesund.js?v=0fed76c"></script>
-<script src="lauf.js?v=0fed76c"></script>
-<script src="mitteilungen.js?v=0fed76c"></script>
-<script src="suche.js?v=0fed76c"></script>
+<script src="kern.js?v=8ff1115"></script>
+<script src="todos.js?v=8ff1115"></script>
+<script src="gesund.js?v=8ff1115"></script>
+<script src="lauf.js?v=8ff1115"></script>
+<script src="mitteilungen.js?v=8ff1115"></script>
+<script src="suche.js?v=8ff1115"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -1040,9 +1068,9 @@ const $=id=>document.getElementById(id),h=s=>String(s??"").replace(/[&<>"]/g,c=>
 for(const m of ["toLocaleDateString","toLocaleString","toLocaleTimeString"]){const o=Date.prototype[m];Date.prototype[m]=function(...a){if(isNaN(this)){console.warn("Ungültiges Datum",new Error().stack);return"–"}return o.apply(this,a)}}
 const TODAY=()=>EK.day(new Date()),MAXD=()=>EK.add(TODAY(),14); /* bis zu 14 Tage im Voraus eintragen */
 let cur=TODAY(),view=LS.get("view","tag"),range=7,calM=TODAY().slice(0,7),lmTab="eigen",status="",busy=false;
-if(view==="dash")view="stat";if(!["tag","kal","verlauf","rezepte","ideen","lm","profil","meintag","plan","todos","gesund","stat"].includes(view))view="tag";
+if(view==="dash")view="stat";if(!["tag","kal","verlauf","rezepte","ideen","lm","profil","meintag","plan","todos","gesund","stat","cockpit"].includes(view))view="tag";
 /* Einsprung über die Adresse (z. B. aus einer Mitteilung: …/#todos) */
-const HASHV={todos:"todos",meintag:"meintag",training:"meintag",gesund:"gesund",tag:"tag",heute:"tag",stat:"stat",plan:"plan",profil:"profil"};
+const HASHV={cockpit:"cockpit",todos:"todos",meintag:"meintag",training:"meintag",gesund:"gesund",tag:"tag",heute:"tag",stat:"stat",plan:"plan",profil:"profil"};
 if(HASHV[location.hash.slice(1)])view=HASHV[location.hash.slice(1)];
 const n0=v=>v==null||!isFinite(v)?"–":Math.round(v).toLocaleString("de-DE"),n1=v=>v==null||!isFinite(v)?"–":(Math.round(v*10)/10).toLocaleString("de-DE");
 const WDS=["So","Mo","Di","Mi","Do","Fr","Sa"],wd=d=>WDS[new Date(d+"T12:00:00").getDay()],dm=d=>d.slice(8)+"."+d.slice(5,7)+".";
@@ -1197,12 +1225,12 @@ function streaks(){const T=TODAY(),p=prof(),g=G(),memo={},has=d=>{if(!(d in memo
  return{n,best:Math.max(best,n),today:has(T)}}
 
 /* ===== Gerüst ===== */
-const NAV=[["Alltag",[["todos","todo","Todos"]]],
+const NAV=[["Alltag",[["cockpit","target","Cockpit (Test)"],["todos","todo","Todos"]]],
  ["Ernährung",[["tag","book","Tagebuch"],["kal","cal","Kalender"],["verlauf","chart","Verlauf"],["ideen","spark","Ideen – worauf hast du Bock?"],["rezepte","pot","Gerichte"],["lm","apple","Meine Lebensmittel"],["profil","user","Profil, Ziele & Mitteilungen"]]],
  ["Training & Gesundheit",[["meintag","run","Training"],["plan","cal","Trainingsplan"],["gesund","pulse","Gesundheit"],["stat","stat","Statistik"]]]];
-const TITLE={tag:"",kal:"Kalender",verlauf:"Verlauf",rezepte:"Gerichte",ideen:"Ideen",plan:"Trainingsplan",lm:"Meine Lebensmittel",profil:"Profil & Ziele",meintag:"Training",todos:"Todos",gesund:"Gesundheit",stat:"Statistik"};
+const TITLE={tag:"",kal:"Kalender",verlauf:"Verlauf",rezepte:"Gerichte",ideen:"Ideen",plan:"Trainingsplan",lm:"Meine Lebensmittel",profil:"Profil & Ziele",meintag:"Training",todos:"Todos",gesund:"Gesundheit",stat:"Statistik",cockpit:"Cockpit"};
 /* Bereiche mit großem Titel im Inhalt (Kopfzeile bleibt dann schlicht) */
-const BIGT=["todos","meintag","gesund","stat"];
+const BIGT=["todos","meintag","gesund","stat","cockpit"];
 const goHash=g=>{const v=HASHV[String(g).replace(/^#/,"")];if(v){if(v==="tag")cur=TODAY();go(v)}};
 function go(v){if(v!=="tag")MRET=null;if($("sheet").classList.contains("on"))closeSheet();view=v;LS.set("view",v);closeDrawer();render();scrollTo(0,0);
  try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}}
@@ -1225,7 +1253,7 @@ function render(){
  const right=food?streakBtn:view==="todos"?`<button class="ib glassb" data-tdnew="1" aria-label="Neues Todo">${svg("plus")}</button>`:`<span style="min-width:44px"></span>`;
  const open=tdOpen(),on=tabOf(view);
  a.innerHTML=`<div class="top"><button class="ib" data-menu="1" aria-label="Menü">${svg("menu")}<span class="avt" aria-hidden="true">JK</span></button>${head}${right}</div>
- <div class="stat" id="st"></div><main class="v-${view}${render.lv!==view?" anim":""}">${({tag:()=>vTag(sk),kal:vKal,verlauf:vVerlauf,rezepte:vRezepte,ideen:vIdeen,lm:vLm,profil:vProfil,meintag:vTraining,plan:vPlan,todos:vTodos,gesund:vGesund,stat:vStat})[view]()}</main>
+ <div class="stat" id="st"></div><main class="v-${view}${render.lv!==view?" anim":""}">${({tag:()=>vTag(sk),kal:vKal,verlauf:vVerlauf,rezepte:vRezepte,ideen:vIdeen,lm:vLm,profil:vProfil,meintag:vTraining,plan:vPlan,todos:vTodos,gesund:vGesund,stat:vStat,cockpit:vCockpit})[view]()}</main>
  <nav class="tabs"><i class="lamp" aria-hidden="true"></i>${TABS.map(([k,i,l])=>`<button ${k==="mehr"?'data-menu="1"':`data-go="${k}"`} class="${on===k?"on":""}" aria-label="${l}">${svg(i)}<span>${l}</span>${k==="todos"&&open?`<i class="bdg">${open}</i>`:""}</button>`).join("")}</nav>`;
  setStatus();placeLamp();render.lv=view}
 function ringSvg(f,c,big,small){const r=50,C2=2*Math.PI*r,q=Math.max(0,Math.min(1,f||0));
@@ -2453,7 +2481,7 @@ addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="0fed76c";
+const APPV="8ff1115";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;

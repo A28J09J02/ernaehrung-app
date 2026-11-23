@@ -5,7 +5,7 @@
 /* Akzentfarben: a1 = Hauptfarbe (Knöpfe, Licht, Ringe), a2 = zweite Farbe für Verläufe in Diagrammen */
 const THEMES={apple:["Apple","#0a84ff","#5e5ce6"],blau:["Blau","#3d8bff","#6a5cff"],messing:["Messing","#c2a46d","#a08a5c"],salbei:["Salbei","#8fae8b","#6f917c"],marine:["Marine","#7f9cc4","#617ea8"],tanne:["Tanne","#3f6b52","#6b8a62"],indigo:["Indigo","#6d74ff","#4f9dff"],eis:["Eisblau","#4fb6d6","#8b7bff"],violett:["Violett","#a78bfa","#f472b6"],neon:["Neon","#34d399","#22d3ee"],
  pink:["Pink","#f472b6","#a78bfa"],orange:["Orange","#fb923c","#f472b6"],gold:["Gold","#fbbf24","#fb7185"],rot:["Rot","#fb7185","#f59e0b"],weiss:["Weiß","#e5e7eb","#8b7bff"]};
-const BGS={apple:"Apple Health",applehell:"Apple hell",glas:"Glas",matt:"Matt",classic:"Classic",classichell:"Classic hell",hell:"Hell"};
+const BGS={cockpit:"Cockpit",apple:"Apple Health",applehell:"Apple hell",glas:"Glas",matt:"Matt",classic:"Classic",classichell:"Classic hell",hell:"Hell"};
 /* frühere Einstellungen auf die neuen Stile abbilden */
 const BG_ALT={nacht:"glas",schwarz:"matt",grafit:"matt"};
 /* Standard: Apple Health. Einmalig (Merker „ap“) wird auch eine früher gespeicherte Wahl darauf umgestellt – danach bleibt jede Wahl bestehen. */
@@ -13,7 +13,7 @@ const themeGet=()=>{try{const raw=JSON.parse(localStorage.getItem("ern_theme")||
  if(!raw.ap){raw.bg="apple";raw.acc="apple";raw.ap=1;try{localStorage.setItem("ern_theme",JSON.stringify(raw))}catch(e){}}
  return{...raw,acc:raw.acc||"apple",bg:BG_ALT[raw.bg]||raw.bg||"apple"}}catch(e){return{acc:"apple",bg:"apple"}}};
 function themeApply(t){t=t||themeGet();const a=THEMES[t.acc]||THEMES.apple,r=document.documentElement;
- r.style.setProperty("--a1",a[1]);r.style.setProperty("--a2",a[2]);r.dataset.bg=BGS[t.bg]?t.bg:"apple";
+ r.style.setProperty("--a1",a[1]);r.style.setProperty("--a2",a[2]);r.dataset.bg=BGS[t.bg]?(t.bg==="cockpit"?"matt":t.bg):"apple";r.toggleAttribute("data-ck",t.bg==="cockpit");
  /* data-ah = einer der beiden Apple-Health-Stile, data-acc = gewählte Akzentfarbe (färbt dort das Farblicht oben) */
  r.toggleAttribute("data-ah",r.dataset.bg==="apple"||r.dataset.bg==="applehell");r.dataset.acc=THEMES[t.acc]?t.acc:"apple";
  const m=document.querySelectorAll('meta[name="theme-color"]');m.forEach(x=>x.setAttribute("content",r.dataset.bg==="hell"||r.dataset.bg==="applehell"?"#f2f2f7":r.dataset.bg==="glas"?"#02030a":r.dataset.bg==="classic"?"#141311":r.dataset.bg==="classichell"?"#f3eee5":"#000000"));

@@ -90,7 +90,7 @@ const tdLong=d=>{const T=TODAY();return d===T?"heute":d===EK.add(T,1)?"morgen":d
 
 /* ---------- Ansicht ---------- */
 const tdLs=(k,d)=>{try{const v=localStorage.getItem("ern_"+k);return v==null?d:JSON.parse(v)}catch(e){return d}};
-let TDV={tab:"heute",sort:tdLs("td_sort","cat"),calM:null,sel:null,fx:null};
+let TDV={fold:tdLs("td_fold",{}),tab:"heute",sort:tdLs("td_sort","cat"),calM:null,sel:null,fx:null};
 function tdRow(x,d){const it=x.it,done=x.done,auto=it.auto&&tdAutoOk(it,d)&&!tdManual(it,d),cat=tdCat(it.cat);
  const sub=[it.zeit?`${ic("clock")}${h(it.zeit)}`:"",x.over?`<span class="tdover">${ic("warn")}fällig ${tdLong(it.start)}</span>`:TD_DAILY.includes((it.rep||{}).k)?"":`${ic(it.bis?"repeat":"cal")}${h(tdRepText(it))}`,
   it.auto?(auto?`<span class="tdauto">${ic("check")}automatisch erledigt</span>`:`${ic("bolt")}${it.auto==="kcal"?"hakt sich ab, sobald du etwas einträgst":"hakt sich ab, sobald du dich wiegst"}`):"",it.notiz?`${ic("note")}${h(it.notiz)}`:""].filter(Boolean).join("<span>·</span>");
@@ -106,8 +106,9 @@ const tdHead=(c,txt,right)=>`<div class="tdh" style="--cc:${c[3]}"><span class="
 function tdList(d,L){if(!L.length)return"";
  if(TDV.sort==="zeit")return`<div class="card list tdl">${tdSort(L).map(x=>tdRow(x,d)).join("")}</div>`;
  return TD_CATS.map(c=>{const k=c[0],I=L.filter(x=>(x.it.cat||"sonst")===k||(k==="sonst"&&!TD_CATS.some(z=>z[0]===x.it.cat)));if(!I.length)return"";
-  const dn=I.filter(x=>x.done).length;
-  return tdHead(c,null,`<span style="display:flex;align-items:center;gap:8px"><small>${dn}/${I.length}</small><span class="cbar"><i style="width:${dn/I.length*100}%"></i></span></span>`)+`<div class="card list tdl">${tdSort(I).map(x=>tdRow(x,d)).join("")}</div>`}).join("")}
+  const dn=I.filter(x=>x.done).length,op=I.length-dn,fo=!!TDV.fold[k],warn=fo&&op>0,ok=fo&&op===0;
+  const right=`<span style="display:flex;align-items:center;gap:8px">${warn?`<em class="tdwarn">${op} offen</em>`:ok?`<em class="tdokb">${ic("check")}</em>`:`<small>${dn}/${I.length}</small>`}<span class="cbar"><i style="width:${dn/I.length*100}%"></i></span><i class="tdchev">${ic("chev")}</i></span>`;
+  return`<div class="tdfold${fo?" fo":""}${warn?" warn":""}${ok?" okc":""}" data-tdfold="${k}" role="button" aria-expanded="${!fo}">`+tdHead(c,null,right)+`</div>`+(fo?"":`<div class="card list tdl">${tdSort(I).map(x=>tdRow(x,d)).join("")}</div>`)}).join("")}
 function tdRing(n,tot){const q=tot?n/tot:0,r=40,c=2*Math.PI*r,all=tot&&q>=1;
  return`<svg viewBox="0 0 100 100" class="tdring"><circle cx="50" cy="50" r="${r}" fill="none" stroke="var(--fill)" stroke-width="10"/><circle cx="50" cy="50" r="${r}" fill="none" stroke="${all?"var(--g)":"url(#gA)"}" stroke-width="10" stroke-linecap="round" stroke-dasharray="${q*c} ${c}" transform="rotate(-90 50 50)" style="filter:drop-shadow(0 0 6px ${all?"var(--g)":"var(--a1)"});transition:stroke-dasharray .5s"/>
  <text x="50" y="${all?58:56}" text-anchor="middle" font-size="${all?26:23}" font-weight="800" fill="var(--ink)">${all?"✓":`${n}/${tot}`}</text></svg>`}
@@ -251,6 +252,7 @@ document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x
  else if(x=b("[data-tdnew]")){const d=x.dataset.tdnew;tdEdit(null,/^\d{4}-/.test(d)?{start:d}:null)}
  else if(x=b("[data-tdqd]")){const i=document.querySelector("#tdf [name=start]");if(i){i.value=EK.add(TODAY(),+x.dataset.tdqd);tdWdSync(i)}}
  else if(x=b("[data-tdtab]")){TDV.tab=x.dataset.tdtab;render();scrollTo(0,0)}
+ else if(x=b("[data-tdfold]")){const k=x.dataset.tdfold;TDV.fold[k]=!TDV.fold[k];if(!TDV.fold[k])delete TDV.fold[k];LS.set("td_fold",TDV.fold);const y=scrollY;render();scrollTo(0,y)}
  else if(b("[data-tdsort]")){TDV.sort=TDV.sort==="cat"?"zeit":"cat";LS.set("td_sort",TDV.sort);render()}
  else if(x=b("[data-tdcal]")){TDV.calM=x.dataset.tdcal;render()}
  else if(x=b("[data-tdsel]")){TDV.sel=x.dataset.tdsel;render()}
