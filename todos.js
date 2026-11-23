@@ -160,7 +160,7 @@ function tdToggle(id,d){const it=tdItems().find(x=>x.id===id);if(!it)return;
  const v=!was,row=document.querySelector(`[data-tdrow="${CSS.escape(id)}"]`);
  if(!TDV.hold)TDV.hold=new Map();if(!TDV.hold.has(id))TDV.hold.set(id,was||autoOk);
  if(row){row.classList.toggle("done",v);const i=row.querySelector(".tdc i");if(i)i.innerHTML=v?ic("check"):""}
- try{if(navigator.vibrate)navigator.vibrate(8)}catch(e){}
+
  const op={t:"tdck",d,id,v,end:tdEnds(it)};
  /* kurz zeigen, dann einsortieren (erledigte wandern nach unten) */
  change(TD_P,op,true);clearTimeout(tdToggle.t);tdToggle.t=setTimeout(()=>{if(view==="todos"){const y=scrollY;render();if(scrollY!==y)scrollTo(0,y)}},250);

@@ -5,7 +5,7 @@
 /* Akzentfarben: a1 = Hauptfarbe (Knöpfe, Licht, Ringe), a2 = zweite Farbe für Verläufe in Diagrammen */
 const THEMES={apple:["Apple","#0a84ff","#5e5ce6"],blau:["Blau","#3d8bff","#6a5cff"],messing:["Messing","#c2a46d","#a08a5c"],salbei:["Salbei","#8fae8b","#6f917c"],marine:["Marine","#7f9cc4","#617ea8"],tanne:["Tanne","#3f6b52","#6b8a62"],indigo:["Indigo","#6d74ff","#4f9dff"],eis:["Eisblau","#4fb6d6","#8b7bff"],violett:["Violett","#a78bfa","#f472b6"],neon:["Neon","#34d399","#22d3ee"],
  pink:["Pink","#f472b6","#a78bfa"],orange:["Orange","#fb923c","#f472b6"],gold:["Gold","#fbbf24","#fb7185"],rot:["Rot","#fb7185","#f59e0b"],weiss:["Weiß","#e5e7eb","#8b7bff"]};
-const BGS={cockpit:"Cockpit",apple:"Apple Health",applehell:"Apple hell",glas:"Glas",matt:"Matt",classic:"Classic",classichell:"Classic hell",hell:"Hell"};
+const BGS={apple:"Apple Health",applehell:"Apple hell",glas:"Glas",matt:"Matt",classic:"Classic",classichell:"Classic hell",hell:"Hell"};
 /* frühere Einstellungen auf die neuen Stile abbilden */
 const BG_ALT={nacht:"glas",schwarz:"matt",grafit:"matt"};
 /* Standard: Apple Health. Einmalig (Merker „ap“) wird auch eine früher gespeicherte Wahl darauf umgestellt – danach bleibt jede Wahl bestehen. */
@@ -13,7 +13,7 @@ const themeGet=()=>{try{const raw=JSON.parse(localStorage.getItem("ern_theme")||
  if(!raw.ap){raw.bg="apple";raw.acc="apple";raw.ap=1;try{localStorage.setItem("ern_theme",JSON.stringify(raw))}catch(e){}}
  return{...raw,acc:raw.acc||"apple",bg:BG_ALT[raw.bg]||raw.bg||"apple"}}catch(e){return{acc:"apple",bg:"apple"}}};
 function themeApply(t){t=t||themeGet();const a=THEMES[t.acc]||THEMES.apple,r=document.documentElement;
- r.style.setProperty("--a1",a[1]);r.style.setProperty("--a2",a[2]);r.dataset.bg=BGS[t.bg]?(t.bg==="cockpit"?"matt":t.bg):"apple";r.toggleAttribute("data-ck",t.bg==="cockpit");
+ r.style.setProperty("--a1",a[1]);r.style.setProperty("--a2",a[2]);r.dataset.bg=BGS[t.bg]?t.bg:"apple";
  /* data-ah = einer der beiden Apple-Health-Stile, data-acc = gewählte Akzentfarbe (färbt dort das Farblicht oben) */
  r.toggleAttribute("data-ah",r.dataset.bg==="apple"||r.dataset.bg==="applehell");r.dataset.acc=THEMES[t.acc]?t.acc:"apple";
  const m=document.querySelectorAll('meta[name="theme-color"]');m.forEach(x=>x.setAttribute("content",r.dataset.bg==="hell"||r.dataset.bg==="applehell"?"#f2f2f7":r.dataset.bg==="glas"?"#02030a":r.dataset.bg==="classic"?"#141311":r.dataset.bg==="classichell"?"#f3eee5":"#000000"));
@@ -99,15 +99,44 @@ function burst(el,col){if(!el||matchMedia("(prefers-reduced-motion: reduce)").ma
   s.style.cssText=`left:${r.left+r.width/2}px;top:${r.top+r.height/2}px;--dx:${Math.cos(a)*d}px;--dy:${Math.sin(a)*d}px;background:${col||"var(--acc)"}`;
   document.body.appendChild(s);setTimeout(()=>s.remove(),650)}}
 
-/* ---------- Design-Einstellungen (Mehr → Design) ---------- */
-function designCard(){const t=themeGet();
+/* ---------- Design-Einstellungen (Mehr → Design) – mit Vorschau ----------
+   Eine Auswahl wird erst nur angezeigt (Vorschau, nicht gespeichert). „App ansehen“ blendet das Fenster aus,
+   die Leiste unten bietet Übernehmen / Verwerfen. */
+let DSP=null; /* {orig, cur} solange eine Vorschau läuft */
+const dsCur=()=>DSP?DSP.cur:themeGet();
+function designCard(){const t=dsCur();
  return`<div class="card" id="dsBox"><h2><span class="ct">${ic("palette")}Design & Farben</span></h2>
  <div class="dsl">Akzentfarbe</div><div class="sw8">${Object.entries(THEMES).map(([k,[l,a1,a2]])=>`<button class="swt${t.acc===k?" on":""}" data-ds-acc="${k}" style="--s1:${a1};--s2:${a2}" aria-label="${l}"><i></i><span>${l}</span></button>`).join("")}</div>
  <div class="dsl">Stil</div><div class="bgsel">${Object.entries(BGS).map(([k,l])=>`<button data-ds-bg="${k}" class="bgo bg-${k}${t.bg===k?" on":""}"><i></i><span>${l}</span></button>`).join("")}</div>
- <p class="s mute" style="margin:10px 0 0">Gilt für dieses Gerät. Die Farbe färbt Knöpfe, Ringe, Diagramme und das Licht in der unteren Leiste.</p></div>`}
+ ${DSP?`<div class="dsprev"><button class="btn w" data-ds-look="1">${ic("grid")}App mit dieser Vorschau ansehen</button><div class="dsrow"><button class="btn p" data-ds-ok="1">Übernehmen</button><button class="btn" data-ds-no="1">Verwerfen</button></div></div>`:""}
+ <p class="s mute" style="margin:10px 0 0">Gilt für dieses Gerät. Auswahl = Vorschau, erst „Übernehmen“ speichert. Die Farbe färbt Knöpfe, Ringe, Diagramme und das Licht in der unteren Leiste.</p></div>`}
 function openDesign(){if(typeof closeDrawer==="function")closeDrawer();const sh=document.getElementById("sheet");sh.classList.add("on");
  sh.innerHTML=`<div class="top"><button class="ib" data-close="1" aria-label="Schließen">${ic("x")}</button><h1>Design</h1><span style="min-width:44px"></span></div><main>${designCard()}</main>`}
-document.addEventListener("click",ev=>{if(ev.target.closest("[data-design]"))return openDesign();const x=ev.target.closest("[data-ds-acc],[data-ds-bg]");if(!x)return;
- if(x.dataset.dsAcc)themeSet({acc:x.dataset.dsAcc});else{const b=x.dataset.dsBg,cur=themeGet(),F=k=>k==="classic"||k==="classichell"?"c":k==="apple"||k==="applehell"?"a":"o",nf=F(b),of=F(cur.bg);
-  themeSet(nf!==of?{bg:b,acc:nf==="a"?"apple":nf==="c"?(b==="classic"?"messing":"tanne"):"blau"}:{bg:b})}
+function dsBar(on){let b=document.getElementById("dsBar");if(!on){if(b)b.remove();return}
+ if(!b){b=document.createElement("div");b.id="dsBar";document.body.appendChild(b)}
+ b.innerHTML=`<span>Design-Vorschau</span><button class="btn sm p" data-ds-ok="1">Übernehmen</button><button class="btn sm" data-ds-no="1">Verwerfen</button><button class="btn sm" data-ds-back="1">Ändern</button>`}
+function dsEnd(keep){if(DSP){if(keep)themeSet(DSP.cur);else themeApply(DSP.orig)}DSP=null;dsBar(false);if(typeof placeLamp==="function")placeLamp()}
+document.addEventListener("click",ev=>{
+ if(ev.target.closest("[data-design]"))return openDesign();
+ if(ev.target.closest("[data-ds-ok]")){dsEnd(true);const b=document.getElementById("dsBox");if(b)b.outerHTML=designCard();else openDesign();return}
+ if(ev.target.closest("[data-ds-no]")){dsEnd(false);const b=document.getElementById("dsBox");if(b)b.outerHTML=designCard();return}
+ if(ev.target.closest("[data-ds-look]")){document.getElementById("sheet").classList.remove("on");dsBar(true);return}
+ if(ev.target.closest("[data-ds-back]")){openDesign();dsBar(false);dsBar(true);return}
+ const x=ev.target.closest("[data-ds-acc],[data-ds-bg]");if(!x)return;
+ if(!DSP){const o=themeGet();DSP={orig:o,cur:o}}
+ let p;if(x.dataset.dsAcc)p={acc:x.dataset.dsAcc};else{const b=x.dataset.dsBg,cur=DSP.cur,F=k=>k==="classic"||k==="classichell"?"c":k==="apple"||k==="applehell"?"a":"o",nf=F(b),of=F(cur.bg);
+  p=nf!==of?{bg:b,acc:nf==="a"?"apple":nf==="c"?(b==="classic"?"messing":"tanne"):"blau"}:{bg:b}}
+ DSP.cur={...DSP.cur,...p};themeApply(DSP.cur);
  const b=document.getElementById("dsBox");if(b)b.outerHTML=designCard();if(typeof placeLamp==="function")placeLamp()});
+
+/* ---------- Haptisches Feedback ----------
+   Android: navigator.vibrate. iPhone (Safari/Home-Bildschirm-App) kennt vibrate nicht – dort löst ein unsichtbarer
+   Schalter (<input switch>, iOS 17.4+) beim Antippen den gleichen leichten Tick aus wie ein echter Schalter.
+   Nur direkt aus einem Tipp heraus; schlägt es fehl, passiert still nichts. Abschaltbar: localStorage ern_haptik = "0". */
+function haptic(){try{if(localStorage.getItem("ern_haptik")==="0")return;
+ if(navigator.vibrate){navigator.vibrate(10);return}
+ let l=document.getElementById("hpt");
+ if(!l){l=document.createElement("label");l.id="hpt";l.setAttribute("aria-hidden","true");l.style.cssText="position:fixed;left:-99px;top:-99px;opacity:0;pointer-events:none";l.innerHTML='<input type="checkbox" switch tabindex="-1">';document.body.appendChild(l)}
+ l.click()}catch(e){}}
+/* Wo es sinnvoll ist: Abhaken, untere Leiste, Haupt-Knöpfe, Umschalter, Kategorien, Mahlzeit „+“ */
+document.addEventListener("click",ev=>{if(ev.target.closest&&ev.target.closest(".tabs button,.tdc,[data-gym],[data-tdfold],.btn.p,.seg button,[data-ds-ok],[data-planorig],.mplus,[data-day]"))haptic()},true);

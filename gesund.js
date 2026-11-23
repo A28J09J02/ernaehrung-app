@@ -323,28 +323,3 @@ document.addEventListener("click",ev=>{const t=ev.target;let x;
  else if(x=t.closest("[data-str]")){GZ.sr=+x.dataset.str;LS.set("st_r",GZ.sr);render()}
  else if(t.closest("[data-tdweight]"))tdWeight()});
 
-/* ===================== Cockpit (Testansicht, 23.11.2026) =====================
-   Ein Bildschirm für „Was ist heute dran?“: Tagesringe, nächste Aufgabe, vier Kennzahlen.
-   Erreichbar über Menü → Cockpit (Test); ersetzt keinen bestehenden Reiter. */
-function vCockpit(){
- const T=TODAY(),L=tdDay(T),nd=L.filter(x=>x.done).length,i=info(T),t=i.t,kq=t.kcal?i.s.kcal/t.kcal:0,left=t.kcal-i.s.kcal;
- const p=C.store?planDay(T):null,acts=p?planActs(T,p):[],tr=p&&p.type!=="rest",trDone=tr&&acts.length>0;
- const hr=new Date().getHours(),gr=hr<11?"Guten Morgen":hr<18?"Hallo":"Guten Abend";
- const rg=[{q:L.length?nd/L.length:0,c:"#34c759"},{q:Math.min(kq,1),c:"#0a84ff"},{q:tr?(trDone?1:0):1,c:"#ff9f0a"}];
- let o=`<div class="lt"><div><h2>${gr}, Jonas</h2><small>${new Date(T+"T12:00:00").toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long"})}</small></div></div>`;
- o+=`<div class="card ckh"><div class="ckr">${gzRings(rg)}</div><div class="ckl">
-  <button data-go="todos"><i style="background:#34c759"></i><span>Todos</span><b>${nd}/${L.length}</b></button>
-  <button data-go="tag"><i style="background:#0a84ff"></i><span>Kalorien</span><b>${n0(Math.abs(left))} ${left>=0?"übrig":"zu viel"}</b></button>
-  <button data-go="meintag"><i style="background:#ff9f0a"></i><span>Training</span><b>${tr?(trDone?"erledigt":"offen"):"Ruhetag"}</b></button></div></div>`;
- /* Als Nächstes */
- const nx=tdSort(L.filter(x=>!x.done)).slice(0,3);
- o+=`<div class="tdh"><span class="tdhl">Als Nächstes</span><button class="lnk2" data-go="todos">Alle Todos ›</button></div>`;
- if(tr&&!trDone)o+=`<div class="card slim ckn" data-go="meintag"><h2>Training heute<small>${ic("chev")}</small></h2>${gzPlanCard(T,false)}</div>`;
- o+=nx.length?`<div class="card list tdl">${nx.map(x=>tdRow(x,T)).join("")}</div>`:`<div class="card tddone">${ic("party")}<b>${L.length?"Alle Todos erledigt":"Heute keine Todos"}</b></div>`;
- /* Kennzahlen */
- o+=`<div class="tdh"><span class="tdhl">Körper heute</span><button class="lnk2" data-go="gesund">Mehr ›</button></div><div class="ckg">${["schlaf","bb","rhr","gewicht"].filter(k=>GZM[k]).map(k=>{const M=GZM[k],l=gzLastM(k),rt=l?gzRate(k,l.v,l.d,l.r):null;
-  return`<button class="card ckk gztap" data-gzm="${k}"><span>${ic(M.i)}${M.t}</span><b>${l?M.f(l.v):"–"}${l&&M.u?`<small> ${M.u==="h"?"Std.":M.u}</small>`:""}</b>${rt&&rt[0]!=="n"?tone(rt[0],rt[1]):""}</button>`}).join("")}</div>`;
-const sk=streaks(),wm=EK.monday(T);let so=0,ist=0;for(let k=0;k<7;k++){const d=EK.add(wm,k);if(d>T)break;const q=planDay(d);if(q&&q.type!=="rest"){so++;if(planActs(d,q).length)ist++}}
- o+=`<div class="ckg"><div class="card ckk"><span>${ic("flame")}Streak</span><b>${sk.n}<small> Tage</small></b>${tone(sk.today?"g":"y",sk.today?"heute eingetragen":"heute noch offen")}</div>
-  <button class="card ckk gztap" data-go="plan"><span>${ic("run")}Woche</span><b>${ist}<small> / ${so} Einheiten</small></b>${so?tone(ist>=so?"g":"y",ist>=so?"im Plan":"bis jetzt"):""}</button></div>`;
- return o+`<p class="foot">Testansicht – sag mir, was bleiben soll.</p>`}
