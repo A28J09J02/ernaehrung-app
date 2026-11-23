@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=4c71f9a"></script>
+<script src="design.js?v=9f341b5"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -1033,12 +1033,12 @@ details.lbrow>summary{list-style:none;cursor:pointer}details.lbrow>summary::-web
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=4c71f9a"></script>
-<script src="todos.js?v=4c71f9a"></script>
-<script src="gesund.js?v=4c71f9a"></script>
-<script src="lauf.js?v=4c71f9a"></script>
-<script src="mitteilungen.js?v=4c71f9a"></script>
-<script src="suche.js?v=4c71f9a"></script>
+<script src="kern.js?v=9f341b5"></script>
+<script src="todos.js?v=9f341b5"></script>
+<script src="gesund.js?v=9f341b5"></script>
+<script src="lauf.js?v=9f341b5"></script>
+<script src="mitteilungen.js?v=9f341b5"></script>
+<script src="suche.js?v=9f341b5"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -2227,7 +2227,7 @@ function ptrMove(dy){const e=ptrEl(),d=Math.min(dy*.5,PTH+30);e.className=d>=PTH
 function ptrReset(){if(!PTR)return;PTR.className="";PTR.style.opacity="";PTR.style.transform="";PTR.firstChild.style.transform=""}
 async function ptrRefresh(){if(PTBUSY)return;PTBUSY=true;const e=ptrEl();e.className="run";e.style.opacity="";e.style.transform="";e.firstChild.style.transform="";
  const head=C.head;let msg;
- try{await refreshIfChanged();await flush();const sy=C.store&&C.store.synced,old=sy&&Date.now()/1000-sy>1800;
+ try{await refreshIfChanged();await flush();const sy=C.store&&C.store.synced,old=true;
   if(old&&CFG.token&&!syncSince()){syncGarmin(true);msg="Neu geladen · Garmin-Sync gestartet"}
   else msg=syncSince()?"Neu geladen · Garmin-Sync läuft":C.head!==head?"Neu geladen":"Alles aktuell";
   if(sy)msg+=` · Garmin-Stand ${wd(EK.day(new Date(sy*1000)))} ${hhmm(sy*1000)}`}
@@ -2317,11 +2317,11 @@ document.addEventListener("touchend",()=>sgEnd(true));
 document.addEventListener("touchcancel",()=>sgEnd(false));
 
 /* ===== Garmin-Sync anstoßen ===== */
-/* Automatisch beim Öffnen: Garmin-Stand älter als 15 Min. → Cloud-Sync anstoßen (geplante GitHub-Läufe kommen oft Stunden zu spät).
-   Höchstens alle 10 Min., nie während ein Sync läuft. */
+/* Automatisch beim Öffnen: Garmin-Stand älter als 3 Min. → Cloud-Sync anstoßen (geplante GitHub-Läufe kommen oft Stunden zu spät).
+   Höchstens alle 2 Min., nie während ein Sync läuft. */
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")try{autoSync()}catch(e){}});
-function autoSync(){const sy=C.store&&C.store.synced;if(!sy||!CFG.token||Date.now()/1000-sy<15*60||syncSince())return;
- if(Date.now()-LS.get("autosync",0)<10*60e3)return;LS.set("autosync",Date.now());syncGarmin(true)}
+function autoSync(){const sy=C.store&&C.store.synced;if(!sy||!CFG.token||Date.now()/1000-sy<3*60||syncSince())return;
+ if(Date.now()-LS.get("autosync",0)<2*60e3)return;LS.set("autosync",Date.now());syncGarmin(true)}
 /* Sperre gegen Doppeltipp: Zeitpunkt des Starts in localStorage (max. 5 Min.), vor dem Start Prüfung auf einen schon laufenden Lauf */
 const SYNC_LOCK=5*60e3,syncSince=()=>{const t=LS.get("sync",0);return t&&Date.now()-t<SYNC_LOCK?t:0},hhmm=t=>new Date(t).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});
 async function syncGarmin(auto){closeDrawer();
@@ -2476,7 +2476,7 @@ addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="4c71f9a";
+const APPV="9f341b5";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
