@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=06203ad"></script>
+<script src="design.js?v=4c71f9a"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -1033,12 +1033,12 @@ details.lbrow>summary{list-style:none;cursor:pointer}details.lbrow>summary::-web
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=06203ad"></script>
-<script src="todos.js?v=06203ad"></script>
-<script src="gesund.js?v=06203ad"></script>
-<script src="lauf.js?v=06203ad"></script>
-<script src="mitteilungen.js?v=06203ad"></script>
-<script src="suche.js?v=06203ad"></script>
+<script src="kern.js?v=4c71f9a"></script>
+<script src="todos.js?v=4c71f9a"></script>
+<script src="gesund.js?v=4c71f9a"></script>
+<script src="lauf.js?v=4c71f9a"></script>
+<script src="mitteilungen.js?v=4c71f9a"></script>
+<script src="suche.js?v=4c71f9a"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -2331,15 +2331,15 @@ async function syncGarmin(auto){closeDrawer();
  try{let active=false;
   try{const r=await gh("/actions/workflows/garmin-sync.yml/runs?per_page=5");if(r.ok){const j=await r.json();active=(j.workflow_runs||[]).some(x=>x.status==="queued"||x.status==="in_progress"||x.status==="waiting")}}catch(e){if(e.auth)throw e}
   if(active){if(!auto)toast("Sync läuft bereits – neue Werte in Kürze",3500)}
-  else{const r=await gh("/actions/workflows/garmin-sync.yml/dispatches",{method:"POST",body:JSON.stringify({ref:CFG.branch})});
+  else{const r=await gh("/actions/workflows/garmin-sync.yml/dispatches",{method:"POST",body:JSON.stringify({ref:CFG.branch,inputs:{schnell:"1"}})});
    if(r.status===403){unlock();return toast("Token darf keine Actions starten – Berechtigung „Actions: Read and write“ ergänzen",4500)}
    if(!r.ok){unlock();return toast("Sync konnte nicht gestartet werden ("+r.status+")")}
    /* automatisch: kein Hinweis über dem Inhalt – die Statuszeile zeigt „wird aktualisiert“ */
-   if(!auto)toast("Garmin-Sync gestartet – neue Werte in 1–2 Minuten",3500)}
+   if(!auto)toast("Garmin-Sync gestartet – neue Werte in ca. 1 Minute",3500)}
   setStatus();
   const before=C.store&&C.store.synced;let n=0;
-  const poll=async()=>{if(++n>8){unlock();return setStatus()}try{const st=await getRaw("data/store.json");if(st&&st.synced!==before){unlock();await loadAll();return auto?null:toast("Garmin-Daten aktualisiert")}}catch(e){}setTimeout(poll,30000)};
-  setTimeout(poll,60000)}
+  const poll=async()=>{if(++n>30){unlock();return setStatus()}try{const st=await getRaw("data/store.json");if(st&&st.synced!==before){unlock();await loadAll();return auto?null:toast("Garmin-Daten aktualisiert")}}catch(e){}setTimeout(poll,8000)};
+  setTimeout(poll,20000)}
  catch(e){unlock();toast(e.auth?e.message:"Keine Verbindung")}}
 
 /* ===== Einrichtung ===== */
@@ -2476,7 +2476,7 @@ addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="06203ad";
+const APPV="4c71f9a";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
