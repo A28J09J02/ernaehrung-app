@@ -103,12 +103,17 @@ function tdRow(x,d){const it=x.it,done=x.done,auto=it.auto&&tdAutoOk(it,d)&&!tdM
 const tdHeldDone=x=>TDV.hold&&TDV.hold.has(x.it.id)?TDV.hold.get(x.it.id):x.done;
 const tdSort=L=>L.slice().sort((a,b)=>(tdHeldDone(a)-tdHeldDone(b))||(b.over-a.over)||((a.it.zeit||"99")>(b.it.zeit||"99")?1:(a.it.zeit||"99")<(b.it.zeit||"99")?-1:0)||a.it.t.localeCompare(b.it.t,"de"));
 const tdHead=(c,txt,right)=>`<div class="tdh" style="--cc:${c[3]}"><span class="tdhl"><span class="cico">${ic(c[1])}</span>${txt||c[2]}</span>${right||""}</div>`;
+/* Eingeklappt? Eigene Wahl (gespeichert) gilt zuerst; sonst klappen beim Öffnen der Seite fertige Kategorien von selbst zu. */
+const tdFo=k=>TDV.fold[k]!==undefined?!!TDV.fold[k]:!!(TDV.auto&&TDV.auto[k]);
 function tdList(d,L){if(!L.length)return"";
  if(TDV.sort==="zeit")return`<div class="card list tdl">${tdSort(L).map(x=>tdRow(x,d)).join("")}</div>`;
- return TD_CATS.map(c=>{const k=c[0],I=L.filter(x=>(x.it.cat||"sonst")===k||(k==="sonst"&&!TD_CATS.some(z=>z[0]===x.it.cat)));if(!I.length)return"";
-  const dn=I.filter(x=>x.done).length,op=I.length-dn,fo=!!TDV.fold[k],warn=fo&&op>0,ok=fo&&op===0;
-  const right=`<span style="display:flex;align-items:center;gap:8px">${warn?`<em class="tdwarn">${op} offen</em>`:ok?`<em class="tdokb">${ic("check")}</em>`:`<small>${dn}/${I.length}</small>`}<span class="cbar"><i style="width:${dn/I.length*100}%"></i></span><i class="tdchev">${ic("chev")}</i></span>`;
-  return`<div class="tdfold${fo?" fo":""}${warn?" warn":""}${ok?" okc":""}" data-tdfold="${k}" role="button" aria-expanded="${!fo}">`+tdHead(c,null,right)+`</div>`+(fo?"":`<div class="card list tdl">${tdSort(I).map(x=>tdRow(x,d)).join("")}</div>`)}).join("")}
+ const grp=c=>{const k=c[0];return L.filter(x=>(x.it.cat||"sonst")===k||(k==="sonst"&&!TD_CATS.some(z=>z[0]===x.it.cat)))};
+ if(!TDV.auto){TDV.auto={};for(const c of TD_CATS){const I=grp(c);if(I.length&&I.every(x=>x.done))TDV.auto[c[0]]=true}}
+ return TD_CATS.map(c=>{const k=c[0],I=grp(c);if(!I.length)return"";
+  const dn=I.filter(x=>x.done).length,op=I.length-dn,fo=tdFo(k);
+  /* Zähler, „n offen“ und Haken stehen immer im Markup – welcher zu sehen ist, entscheidet CSS (so klappt die Animation ohne Neuzeichnen) */
+  const right=`<span style="display:flex;align-items:center;gap:8px"><small class="tdn">${dn}/${I.length}</small><em class="tdwarn">${op} offen</em><em class="tdokb">${ic("check")}</em><span class="cbar"><i style="width:${dn/I.length*100}%"></i></span><i class="tdchev">${ic("chev")}</i></span>`;
+  return`<div class="tdfold${fo?" fo":""}${op?" hasop":" alld"}" data-tdfold="${k}" role="button" aria-expanded="${!fo}">`+tdHead(c,null,right)+`<div class="tdwrap"><div class="tdin"><div class="card list tdl">${tdSort(I).map(x=>tdRow(x,d)).join("")}</div></div></div></div>`}).join("")}
 function tdRing(n,tot){const q=tot?n/tot:0,r=40,c=2*Math.PI*r,all=tot&&q>=1;
  return`<svg viewBox="0 0 100 100" class="tdring"><circle cx="50" cy="50" r="${r}" fill="none" stroke="var(--fill)" stroke-width="10"/><circle cx="50" cy="50" r="${r}" fill="none" stroke="${all?"var(--g)":"url(#gA)"}" stroke-width="10" stroke-linecap="round" stroke-dasharray="${q*c} ${c}" transform="rotate(-90 50 50)" style="filter:drop-shadow(0 0 6px ${all?"var(--g)":"var(--a1)"});transition:stroke-dasharray .5s"/>
  <text x="50" y="${all?58:56}" text-anchor="middle" font-size="${all?26:23}" font-weight="800" fill="var(--ink)">${all?"✓":`${n}/${tot}`}</text></svg>`}
@@ -118,14 +123,14 @@ function tdPerfect(){const T=TODAY(),ok=d=>{const L=tdDay(d);return L.length>0&&
 /* nicht-tägliche Termine der nächsten Tage */
 function tdUpcoming(days,from){const T=from||TODAY(),out=[];
  for(let k=1;k<=days;k++){const d=EK.add(T,k);for(const x of tdDay(d)){if(TD_DAILY.includes((x.it.rep||{}).k))continue;out.push({...x,d})}}return out}
-function vTodos(){if(render.lv!=="todos")TDV.hold=null;const T=TODAY(),L=tdDay(T),n=L.filter(x=>x.done).length,open=L.length-n;
+function vTodos(){if(render.lv!=="todos"){TDV.hold=null;TDV.auto=null}const T=TODAY(),L=tdDay(T),n=L.filter(x=>x.done).length,open=L.length-n;
  let o=`<div class="lt"><div><h2>Todos</h2><small>${new Date(T+"T12:00:00").toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long"})}</small></div></div>`;
  o+=`<div class="seg mb12" role="tablist">${[["heute","Heute"],["bald","Demnächst"],["kal","Kalender"],["alle","Alle"]].map(([k,l])=>`<button data-tdtab="${k}" class="${TDV.tab===k?"on":""}">${l}</button>`).join("")}</div>`;
  if(!tdItems().length&&!(C.todos))return o+`<div class="card"><p class="empty" style="margin:0">Todos werden geladen …</p></div>`;
  if(TDV.tab==="heute"){
   const pf=tdPerfect(),ov=L.filter(x=>x.over).length;
   o+=`<div class="card tdhero">${tdRing(n,L.length)}<div><b>${L.length?open?`Noch ${open} offen`:"Alles erledigt":"Heute nichts geplant"}</b><small>${L.length?open?(n?"Weiter so – du bist dran.":"Leg los, der erste Haken zählt."):"Stark. Der Tag gehört dir.":"Tippe oben auf Plus."}</small>
-   <span class="tdmeta">${pf?`<span class="hot">${ic("flame")}${pf} perfekte${pf>1?"":"r"} Tag${pf>1?"e":""}</span>`:""}${ov?`<span style="color:var(--r)">${ic("warn")}${ov} überfällig</span>`:""}<button class="tdsort" data-tdsort="1" aria-label="Sortierung wechseln">${ic(TDV.sort==="cat"?"grid":"clock")}${TDV.sort==="cat"?"Kategorien":"Uhrzeit"}</button></span></div></div>`;
+   <span class="tdmeta">${pf?`<span class="hot">${ic("flame")}${pf} perfekte${pf>1?"":"r"} Tag${pf>1?"e":""}</span>`:""}${ov?`<span style="color:var(--r)">${ic("warn")}${ov} überfällig</span>`:""}<button class="tdsort" data-tdfoldall="1">${ic("up")}Alle zu</button><button class="tdsort" data-tdsort="1" aria-label="Sortierung wechseln">${ic(TDV.sort==="cat"?"grid":"clock")}${TDV.sort==="cat"?"Kategorien":"Uhrzeit"}</button></span></div></div>`;
   if(typeof pnOn==="function"&&pnOk()&&!pnOn()&&!LS.get("pn_hint_x",false))o+=`<div class="hint acc">${ic("bell")}<span><b>Erinnerung einschalten</b><br><small class="mute">Ist um 20 Uhr (Sa/So 21:30) noch etwas offen, meldet sich KingStats – Todos mit Uhrzeit auch genau dann.</small></span><button class="btn sm p" data-pnenable="1">Ein</button><button class="lnk" data-pnhx="1" aria-label="Ausblenden">${ic("x")}</button></div>`;
   const over=L.filter(x=>x.over),rest=L.filter(x=>!x.over);
   if(over.length)o+=`<div class="tdh over" style="--cc:var(--r)"><span class="tdhl"><span class="cico">${ic("warn")}</span>Überfällig</span><small>${over.length}</small></div><div class="card list tdl">${tdSort(over).map(x=>tdRow(x,T)).join("")}</div>`;
@@ -253,7 +258,8 @@ document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x
  else if(x=b("[data-tdqd]")){const i=document.querySelector("#tdf [name=start]");if(i){i.value=EK.add(TODAY(),+x.dataset.tdqd);tdWdSync(i)}}
  else if(x=b("[data-tdtab]")){TDV.tab=x.dataset.tdtab;render();scrollTo(0,0)}
  else if(x=b("[data-planorig]")){const[d,v]=x.dataset.planorig.split("|"),o={...POV()};if(v==="1")o[d]=1;else delete o[d];LS.set("plan_orig",o);const y=scrollY;render();scrollTo(0,y);toast(v==="1"?"Ursprünglicher Plan für diesen Tag":"Anpassung wieder aktiv",2200)}
- else if(x=b("[data-tdfold]")){const k=x.dataset.tdfold;TDV.fold[k]=!TDV.fold[k];if(!TDV.fold[k])delete TDV.fold[k];LS.set("td_fold",TDV.fold);const y=scrollY;render();scrollTo(0,y)}
+ else if(x=b("[data-tdfoldall]")){const E=[...document.querySelectorAll("[data-tdfold]")],zu=E.some(e=>!e.classList.contains("fo"));E.forEach(e=>{e.classList.toggle("fo",zu);e.setAttribute("aria-expanded",!zu);TDV.fold[e.dataset.tdfold]=zu});LS.set("td_fold",TDV.fold);x.innerHTML=ic(zu?"down":"up")+(zu?"Alle auf":"Alle zu")}
+ else if(x=b("[data-tdfold]")){const k=x.dataset.tdfold,fo=!x.classList.contains("fo");x.classList.toggle("fo",fo);x.setAttribute("aria-expanded",!fo);TDV.fold[k]=fo;LS.set("td_fold",TDV.fold)}
  else if(b("[data-tdsort]")){TDV.sort=TDV.sort==="cat"?"zeit":"cat";LS.set("td_sort",TDV.sort);render()}
  else if(x=b("[data-tdcal]")){TDV.calM=x.dataset.tdcal;render()}
  else if(x=b("[data-tdsel]")){TDV.sel=x.dataset.tdsel;render()}

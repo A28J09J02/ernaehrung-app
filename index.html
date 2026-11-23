@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=7dba287"></script>
+<script src="design.js?v=884b629"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -1011,15 +1011,17 @@ html,body,.sheet,.drawer,*{scrollbar-width:none}
 details.lbrow>summary{list-style:none;cursor:pointer}details.lbrow>summary::-webkit-details-marker{display:none}
 .lbo{padding:2px 0 10px}.lbd{font-size:11px;margin-left:4px}
 
-/* --- Todos: Kategorien einklappen (23.11.2026) --- */
-.tdfold{cursor:pointer;-webkit-tap-highlight-color:transparent}.tdfold .tdh{margin-bottom:8px}
-.tdchev{display:inline-flex;transition:transform .25s}.tdchev .ic{width:16px;height:16px;color:var(--mute)}.tdfold:not(.fo) .tdchev{transform:rotate(90deg)}
-.tdfold.fo .tdh{padding:11px 14px;margin:10px 0;border-radius:16px;background:var(--fill)}
-.tdfold.warn .tdh{background:color-mix(in srgb,var(--r) 16%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--r) 55%,transparent)}
-.tdfold.warn .tdhl{color:var(--r)}
-.tdfold.okc .tdh{background:color-mix(in srgb,#34c759 13%,transparent)}.tdfold.okc .tdhl{opacity:.75}
+/* --- Todos: Kategorien einklappen (verbessert 23.11.2026): sanftes Auf-/Zuklappen, Zustand per Klasse --- */
+.tdfold{-webkit-tap-highlight-color:transparent}.tdfold>.tdh{cursor:pointer;margin-bottom:8px;transition:background .25s,box-shadow .25s,padding .25s,border-radius .25s}
+.tdchev{display:inline-flex;transition:transform .28s}.tdchev .ic{width:16px;height:16px;color:var(--mute)}.tdfold:not(.fo) .tdchev{transform:rotate(90deg)}
+.tdwrap{display:grid;grid-template-rows:1fr;transition:grid-template-rows .32s cubic-bezier(.2,.8,.2,1),opacity .25s}.tdin{overflow:hidden;min-height:0}
+.tdfold.fo .tdwrap{grid-template-rows:0fr;opacity:0}.tdfold.fo>.tdh{padding:11px 14px;border-radius:16px;background:var(--fill)}
+.tdwarn,.tdokb{display:none}.tdfold.fo.hasop .tdwarn{display:inline-block}.tdfold.fo.alld .tdokb{display:inline-flex}.tdfold.fo.hasop .tdn,.tdfold.fo.alld .tdn{display:none}
+.tdfold.fo.hasop>.tdh{background:color-mix(in srgb,var(--r) 16%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--r) 55%,transparent)}
+.tdfold.fo.hasop .tdhl{color:var(--r)}
+.tdfold.fo.alld>.tdh{background:color-mix(in srgb,#34c759 13%,transparent)}.tdfold.fo.alld .tdhl{opacity:.75}
 .tdwarn{font-style:normal;font-size:12px;font-weight:750;color:#fff;background:var(--r);border-radius:99px;padding:2px 9px}
-.tdokb{display:inline-flex;color:#34c759}.tdokb .ic{width:18px;height:18px}
+.tdokb{color:#34c759}.tdokb .ic{width:18px;height:18px}
 #dsBar{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 14px);z-index:400;display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:20px;background:rgba(40,40,44,.94);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:#fff;font-size:13px;font-weight:650}
 #dsBar span{flex:1}.dsprev{margin-top:14px;display:flex;flex-direction:column;gap:8px}.dsrow{display:flex;gap:8px}.dsrow .btn{flex:1}
 </style></head><body>
@@ -1028,12 +1030,12 @@ details.lbrow>summary{list-style:none;cursor:pointer}details.lbrow>summary::-web
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=7dba287"></script>
-<script src="todos.js?v=7dba287"></script>
-<script src="gesund.js?v=7dba287"></script>
-<script src="lauf.js?v=7dba287"></script>
-<script src="mitteilungen.js?v=7dba287"></script>
-<script src="suche.js?v=7dba287"></script>
+<script src="kern.js?v=884b629"></script>
+<script src="todos.js?v=884b629"></script>
+<script src="gesund.js?v=884b629"></script>
+<script src="lauf.js?v=884b629"></script>
+<script src="mitteilungen.js?v=884b629"></script>
+<script src="suche.js?v=884b629"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -2469,7 +2471,7 @@ addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="7dba287";
+const APPV="884b629";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
