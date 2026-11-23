@@ -252,6 +252,7 @@ document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x
  else if(x=b("[data-tdnew]")){const d=x.dataset.tdnew;tdEdit(null,/^\d{4}-/.test(d)?{start:d}:null)}
  else if(x=b("[data-tdqd]")){const i=document.querySelector("#tdf [name=start]");if(i){i.value=EK.add(TODAY(),+x.dataset.tdqd);tdWdSync(i)}}
  else if(x=b("[data-tdtab]")){TDV.tab=x.dataset.tdtab;render();scrollTo(0,0)}
+ else if(x=b("[data-planorig]")){const[d,v]=x.dataset.planorig.split("|"),o={...POV()};if(v==="1")o[d]=1;else delete o[d];LS.set("plan_orig",o);const y=scrollY;render();scrollTo(0,y);toast(v==="1"?"Ursprünglicher Plan für diesen Tag":"Anpassung wieder aktiv",2200)}
  else if(x=b("[data-tdfold]")){const k=x.dataset.tdfold;TDV.fold[k]=!TDV.fold[k];if(!TDV.fold[k])delete TDV.fold[k];LS.set("td_fold",TDV.fold);const y=scrollY;render();scrollTo(0,y)}
  else if(b("[data-tdsort]")){TDV.sort=TDV.sort==="cat"?"zeit":"cat";LS.set("td_sort",TDV.sort);render()}
  else if(x=b("[data-tdcal]")){TDV.calM=x.dataset.tdcal;render()}

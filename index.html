@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=8ff1115"></script>
+<script src="design.js?v=a3cfb28"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -1044,12 +1044,12 @@ details.lbrow>summary{list-style:none;cursor:pointer}details.lbrow>summary::-web
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=8ff1115"></script>
-<script src="todos.js?v=8ff1115"></script>
-<script src="gesund.js?v=8ff1115"></script>
-<script src="lauf.js?v=8ff1115"></script>
-<script src="mitteilungen.js?v=8ff1115"></script>
-<script src="suche.js?v=8ff1115"></script>
+<script src="kern.js?v=a3cfb28"></script>
+<script src="todos.js?v=a3cfb28"></script>
+<script src="gesund.js?v=a3cfb28"></script>
+<script src="lauf.js?v=a3cfb28"></script>
+<script src="mitteilungen.js?v=a3cfb28"></script>
+<script src="suche.js?v=a3cfb28"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -1535,9 +1535,13 @@ const isRunA=a=>/running/.test(a.type||""),isGymA=a=>/strength|fitness_equipment
 const isSportA=a=>isRunA(a)||isGymA(a)||(!/cycling|e_bike|walking|motorcycl/.test(a.type||"")&&a.min>=20)||(/cycling/.test(a.type||"")&&a.min>=30);
 const planHit=(pd,a)=>!pd?isSportA(a):pd.type==="run"||pd.type==="race"?isRunA(a):pd.type==="gym"?isGymA(a):isSportA(a);
 const planActs=(d,pd)=>(C.store&&C.store.acts||[]).filter(a=>a.date===d&&planHit(pd,a));
-function planDay(d){const P=C.plan&&C.plan.days||{},p=P[d];if(!p)return null;let n={...p};
- for(const x of(C.anp&&C.anp.items||[]).filter(y=>y.date===d)){const j=x.jetzt||{};if(j.type&&j.type!==p.type&&j.type!=="rest")continue;
+const POV=()=>LS.get("plan_orig",{});
+function planDay(d){const P=C.plan&&C.plan.days||{},p=P[d];if(!p)return null;let n={...p},ch=false;
+ for(const x of(C.anp&&C.anp.items||[]).filter(y=>y.date===d)){const j=x.jetzt||{};if(j.type&&j.type!==p.type&&j.type!=="rest")continue;ch=true;
   ["title","dur","km","desc"].forEach(f=>{if(j[f]!==undefined)n[f]=j[f]});if(j.type==="rest")n.type="rest";if(x.zusatz)n.desc=(n.desc||"")+" · Zusatz: "+x.zusatz;n.adj=x.grund||"angepasst"}
+ /* „Alten Plan machen“: der Nutzer wählt für diesen Tag den ursprünglichen Plan (nur auf diesem Gerät gemerkt) */
+ if(ch&&POV()[d])return{...p,orig:true};
+ if(ch)n.hasAdj=true;
  return n}
 const lastV=(f,maxAge=3)=>{const D=C.store&&C.store.days||{};for(let k=0;k<=maxAge;k++){const d=EK.add(TODAY(),-k);if(D[d]&&D[d][f]!=null)return{v:D[d][f],d,row:D[d]}}return null};
 const avgV=(f,n)=>{const D=C.store&&C.store.days||{},v=[];for(let k=1;k<=n;k++){const x=D[EK.add(TODAY(),-k)];if(x&&x[f]!=null)v.push(x[f])}return v.length>=7?v.reduce((a,b)=>a+b,0)/v.length:null};
@@ -2481,7 +2485,7 @@ addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="8ff1115";
+const APPV="a3cfb28";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
