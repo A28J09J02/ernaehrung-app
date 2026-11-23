@@ -40,7 +40,7 @@ const ICN={
  todo:'<rect x="4" y="4" width="16" height="16" rx="5"/><path d="M8.5 12.2l2.4 2.4 4.6-4.8"/>',
  pulse:'<path d="M3 12h4l2-5 4 10 2-5h6"/>',
  stat:'<path d="M4 20h16"/><rect x="5" y="11" width="3" height="6" rx="1"/><rect x="10.5" y="7" width="3" height="10" rx="1"/><rect x="16" y="4" width="3" height="13" rx="1"/>',
- plus:'<path d="M12 5v14M5 12h14"/>',bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/>',
  flame:'<path d="M12 21c-4 0-6.5-2.6-6.5-6.2 0-3.4 2.4-5.2 3.6-8.3.4 2 1.6 3 2.6 3.4.3-2.6 1.6-5 3.6-6.4-.3 3 2.7 5.6 2.7 10 0 4.4-2.6 7.5-6 7.5z"/><path d="M12 21c-1.7 0-2.8-1.2-2.8-2.9 0-1.9 1.6-2.6 2.2-4.3 1.6 1 3.4 2.4 3.4 4.4 0 1.6-1.1 2.8-2.8 2.8z"/>',
  pizza:'<path d="M12 21L4 6.5C9 3.8 15 3.8 20 6.5z"/><path d="M5.6 9.3c4-1.9 8.8-1.9 12.8 0"/><circle cx="11" cy="11.5" r="1.1"/><circle cx="13.6" cy="15" r="1"/>',
  clip:'<rect x="5" y="4" width="14" height="17" rx="3"/><path d="M9 4.5V3h6v1.5M9 10h6M9 14h6M9 18h3"/>',

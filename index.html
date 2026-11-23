@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=e34958b"></script>
+<script src="design.js?v=7291cc8"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -1033,12 +1033,12 @@ details.lbrow>summary{list-style:none;cursor:pointer}details.lbrow>summary::-web
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=e34958b"></script>
-<script src="todos.js?v=e34958b"></script>
-<script src="gesund.js?v=e34958b"></script>
-<script src="lauf.js?v=e34958b"></script>
-<script src="mitteilungen.js?v=e34958b"></script>
-<script src="suche.js?v=e34958b"></script>
+<script src="kern.js?v=7291cc8"></script>
+<script src="todos.js?v=7291cc8"></script>
+<script src="gesund.js?v=7291cc8"></script>
+<script src="lauf.js?v=7291cc8"></script>
+<script src="mitteilungen.js?v=7291cc8"></script>
+<script src="suche.js?v=7291cc8"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -1240,7 +1240,7 @@ function render(){
    long=new Date(cur+"T12:00:00").toLocaleDateString("de-DE",{weekday:"short",day:"numeric",month:"long"});
    return`<button class="ib" data-day="-1" aria-label="Vortag">‹</button><button class="dtl" data-day="0" aria-label="Zurück zu heute"><b>${rel||long}</b>${rel?`<small>${long}</small>`:""}</button><button class="ib" data-day="1" aria-label="Folgetag" ${cur>=MAXD()?"disabled":""}>›</button>`})()
   :`<h1 class="${BIGT.includes(view)?"sm":""}${TITLE[view].length>14?" long":""}">${TITLE[view]}</h1>`;
- const right=food?streakBtn:view==="todos"?`<button class="ib glassb" data-tdnew="1" aria-label="Neues Todo">${svg("plus")}</button>`:`<span style="min-width:44px"></span>`;
+ const right=food?streakBtn:view==="todos"?`<span style="display:flex;gap:6px"><button class="ib glassb" data-tdvoice="1" aria-label="Todos per Sprache">${svg("mic")}</button><button class="ib glassb" data-tdnew="1" aria-label="Neues Todo">${svg("plus")}</button></span>`:`<span style="min-width:44px"></span>`;
  const open=tdOpen(),on=tabOf(view);
  a.innerHTML=`<div class="top"><button class="ib" data-menu="1" aria-label="Menü">${svg("menu")}<span class="avt" aria-hidden="true">JK</span></button>${head}${right}</div>
  <div class="stat" id="st"></div><main class="v-${view}${render.lv!==view?" anim":""}">${({tag:()=>vTag(sk),kal:vKal,verlauf:vVerlauf,rezepte:vRezepte,ideen:vIdeen,lm:vLm,profil:vProfil,meintag:vTraining,plan:vPlan,todos:vTodos,gesund:vGesund,stat:vStat})[view]()}</main>
@@ -2476,7 +2476,7 @@ addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="e34958b";
+const APPV="7291cc8";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;

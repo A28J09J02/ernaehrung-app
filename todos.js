@@ -266,3 +266,109 @@ document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x
  else if(x=b("[data-tdidea]")){const[t2,c,rp,ex]=TD_IDEAS[+x.dataset.tdidea];tdEdit(null,{t:t2,cat:c,rep:{...rp},start:TODAY(),...ex})}});
 document.addEventListener("submit",ev=>{const id=ev.target.getAttribute&&ev.target.getAttribute("id");
  if(id==="tdf"){ev.preventDefault();tdSave(ev.target)}else if(id==="tdwf"){ev.preventDefault();tdWeightSave(ev.target)}});
+
+/* ===== Spracheingabe =====
+   Diktierter/getippter Text → mehrere Todos. Regeln (ohne KI, alles auf dem Gerät):
+   1. Uhrzeit („um 21:30“, „21 Uhr 30“) und Datum („morgen“, „übermorgen“, „am Freitag“, „am 24.11.“, „in 3 Tagen“) werden zu Marken.
+   2. Einleitung („Trag … ein“), Füllwörter (äh, also, genau, halt …) und Tageszeit-Wörter fliegen raus.
+   3. Zerlegt wird an Komma, Punkt, „plus/außerdem/dann/noch“ und an „und“, wenn davor UND danach ein Tätigkeitswort (-en) steht
+      („Müll kaufen und Shaker kaufen“ = 2 Todos, „Waschgel und Creme kaufen“ = 1 Todo).
+   4. Ein Datum gilt für alle Teile davor, bis ein neues Datum kommt; ohne Datum: heute. */
+const TV_WB="(?:(?<![\\p{L}\\p{N}_])|(?![\\p{L}\\p{N}_]))",rx=(src,f)=>new RegExp(src.replace(/\\b/g,TV_WB),(f||"")+"u");
+const TV_FILL=rx(String.raw`\b(?:äh+m?|ähm|öhm|hm+|also|genau|halt|eben|irgendwie|quasi|sozusagen|ja|na|okay|ok|bitte|mal|doch|eigentlich|vielleicht|auch|einmal|weiteres|weiterer|weitere|zusätzliches|zusätzliche|zusätzlich|nächstes)\b`,"gi");
+const TV_DAYW=["montag","dienstag","mittwoch","donnerstag","freitag","samstag","sonntag"];
+function tvAddDays(iso,n){const d=new Date(iso+"T12:00:00");d.setDate(d.getDate()+n);const p=x=>String(x).padStart(2,"0");return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())}
+function tvWd(iso){return(new Date(iso+"T12:00:00").getDay()+6)%7}
+function tvCat(t){const s=t.toLowerCase();
+ if(/kauf|besorg|einkauf|bestell|abholen/.test(s))return"einkauf";
+ if(/mail|anruf|ruf |termin|arzt|bewerb|frist|kündig|bezahl|überweis|praktikum|antwort/.test(s))return"termine";
+ if(/garmin|training|gym|lauf|joggen|gewicht|dehn|stretch|schlaf|sport|padel|kite/.test(s))return"koerper";
+ if(/essen|kochen|prep|trinken|kreatin|vitamin|kalorien|protein/.test(s))return"essen";
+ if(/aufräum|putz|spül|wäsche|müll|staub|saug|bett|pflanzen|handy|zimmer|wohnung|ordnung/.test(s))return"haushalt";
+ return"sonst"}
+function tvParse(text,today){
+ let s=" "+String(text||"").replace(/\s+/g," ").trim()+" ",pre="";
+ const tz=(h,m)=>{h=+h;m=m==null||m===""?0:+m;return h<=23&&m<=59?"⟦T"+String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")+"⟧":null};
+ const rep=(re,fn)=>{s=s.replace(re,(...a)=>fn(...a)||a[0])};
+ /* Uhrzeit */
+ rep(rx(String.raw`\bum\s+halb\s+(\d{1,2})\b`,"gi"),(m,h)=>tz((+h+23)%24,30));
+ rep(rx(String.raw`\b(?:um\s+)?(\d{1,2})\s*uhr\s*(\d{2})\b`,"gi"),(m,h,mi)=>tz(h,mi));
+ rep(rx(String.raw`\b(?:um\s+)?(\d{1,2})[:.](\d{2})(?:\s*uhr)?(?!\d)`,"gi"),(m,h,mi)=>/[:]/.test(m)||/uhr/i.test(m)||/^um/i.test(m)?tz(h,mi):null);
+ rep(rx(String.raw`\b(?:um\s+)?(\d{1,2})\s*uhr\b`,"gi"),(m,h)=>tz(h,0));
+ rep(rx(String.raw`\bum\s+(\d{1,2})(?![\d.:⟦])`,"gi"),(m,h)=>tz(h,0));
+ /* Datum */
+ const dz=iso=>"⟦D"+iso+"⟧";
+ rep(rx(String.raw`\b(?:am\s+)?(\d{1,2})\.\s?(\d{1,2})\.(?:\s?(\d{4}))?(?!\d)`,"gi"),(m,d,mo,y)=>{d=+d;mo=+mo;if(d<1||d>31||mo<1||mo>12)return null;
+  let yy=y?+y:+today.slice(0,4),iso=yy+"-"+String(mo).padStart(2,"0")+"-"+String(d).padStart(2,"0");if(!y&&iso<today)iso=(yy+1)+iso.slice(4);return dz(iso)});
+ rep(rx(String.raw`\bam\s+(\d{1,2})\.(?!\d)`,"gi"),(m,d)=>{d=+d;if(d<1||d>31)return null;let[y,mo]=[+today.slice(0,4),+today.slice(5,7)],iso=()=>y+"-"+String(mo).padStart(2,"0")+"-"+String(d).padStart(2,"0");
+  if(iso()<today){mo++;if(mo>12){mo=1;y++}}return dz(iso())});
+ rep(rx(String.raw`\bübermorgen\b`,"gi"),()=>dz(tvAddDays(today,2)));
+ rep(rx(String.raw`\bmorgen\b`,"gi"),()=>dz(tvAddDays(today,1)));
+ rep(rx(String.raw`\bheute\b`,"gi"),()=>dz(today));
+ rep(rx(String.raw`\bin\s+(\d{1,2})\s+tagen\b`,"gi"),(m,n)=>dz(tvAddDays(today,+n)));
+ rep(rx(String.raw`\bin\s+einer\s+woche\b`,"gi"),()=>dz(tvAddDays(today,7)));
+ rep(rx(String.raw`\b(?:am\s+|nächsten\s+|kommenden\s+)?(montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag)\b`,"gi"),(m,w)=>{
+  const t=TV_DAYW.indexOf(w.toLowerCase());let n=(t-tvWd(today)+7)%7;if(n===0)n=7;return dz(tvAddDays(today,n))});
+ s=s.replace(rx(String.raw`\b(?:für|am|bis|auf|gegen)\s+(?=⟦D)`,"gi"),"").replace(rx(String.raw`\bum\s+(?=⟦T)`,"gi"),"");
+ /* Einleitung */
+ const pm=s.match(rx(String.raw`^\s*(?:(?:also|äh+m?|ähm|genau|okay|ok|hey|bitte|mal|ja)\s*[,.]?\s*)*(?:trag|trage|leg|lege|füg|füge|schreib|schreibe|setz|setze|speicher|speichere)\w*\b[^:.]*?(?:\bein\b|\bhinzu\b|\bauf\b|\bdrauf\b|\ban\b)\s*[:,.]?\s*`,"i"));
+ if(pm){pre=pm[0];s=" "+s.slice(pm[0].length)}
+ s=s.replace(rx(String.raw`\b(?:erinner\w*|vergiss\w*)\s+mich\s+(?:daran|an|nicht)?\s*,?`,"gi")," ").replace(rx(String.raw`\b(?:ich\s+)?(?:muss|will|möchte|sollte|soll|werde)\b`,"gi")," ").replace(rx(String.raw`\bdass\s+ich\b`,"gi")," ");
+ s=s.replace(rx(String.raw`\b(?:to-?dos?|aufgaben?|liste)\b[:,]?`,"gi")," ").replace(rx(String.raw`\b(?:abends?|nachmittags?|vormittags?|morgens|früh|mittags?|nachts?)\b`,"gi")," ");
+ s=s.replace(TV_FILL," ").replace(rx(String.raw`\bnoch\s+(?:ein|eine|einen)\b`,"gi"),", ").replace(rx(String.raw`\b(?:plus|außerdem|sowie|dann|danach|als\s+nächstes)\b`,"gi"),", ").replace(rx(String.raw`\bnoch\b`,"gi")," ");
+ const strip=x=>x.replace(/⟦[DT][^⟧]*⟧/g," ").replace(/[^\p{L}\p{N}\s-]/gu," ").trim();
+ const inf=w=>w&&w.length>4&&/(en|ern|eln)$/i.test(w);
+ const lastW=x=>{const a=strip(x).split(/\s+/);return a[a.length-1]};
+ /* Zerlegen */
+ let hard=s.split(/\s*(?:[,;\n]|\.(?=\s|$)|!|\?)\s*/).map(x=>x.trim()).filter(Boolean),segs=[];
+ for(const h of hard){const parts=h.split(/\s+und\s+/i);let cur=parts[0];
+  for(let i=1;i<parts.length;i++){if((inf(lastW(cur))&&inf(lastW(parts[i])))||(/⟦[DT]/.test(parts[i])&&/⟦[DT]/.test(cur))){segs.push(cur);cur=parts[i]}else cur+=" und "+parts[i]}segs.push(cur)}
+ const preD=(pre.match(/⟦D([^⟧]+)⟧/)||[])[1]||"",preT=(pre.match(/⟦T([^⟧]+)⟧/)||[])[1]||"";
+ let items=segs.map(g=>{const d=(g.match(/⟦D([^⟧]+)⟧/)||[])[1]||"",z=(g.match(/⟦T([^⟧]+)⟧/)||[])[1]||"";
+  let t=g.replace(/⟦[DT][^⟧]*⟧/g," ").replace(/\s+/g," ").replace(/^[\s,.:;-]+|[\s,.:;-]+$/g,"").replace(/^(?:und|zu|ich|mich|dann|noch)\s+/i,"").replace(/\s+(?:ein|bitte|und)$/i,"").trim();
+  return{t,d,z}}).filter(x=>strip(x.t).length>1&&!/^(?:das|dies|diese[rs]?|es|so|wäre|ist|sind|wichtig|finde|danke|super|cool|perfekt|gut|passt|fertig|ende|stopp|ok|okay)(?![\p{L}])/iu.test(x.t));
+ /* Datum verteilen: vom vorherigen, sonst vom nächsten datierten Teil, sonst aus der Einleitung, sonst heute */
+ let prev="";for(const it of items){if(it.d)prev=it.d;else it.d2=prev}
+ let nxt="";for(let i=items.length-1;i>=0;i--){const it=items[i];if(it.d)nxt=it.d;else if(!it.d2)it.d2=nxt||""}
+ return items.map(it=>{const t=it.t.charAt(0).toUpperCase()+it.t.slice(1),z=it.z||preT||"";
+  return{t:t.slice(0,80),start:it.d||it.d2||preD||today,zeit:z||"",cat:tvCat(t)}})}
+
+/* Oberfläche: Sprechen/Diktieren → Vorschau → anlegen */
+const TVS={rows:[],rec:null};
+function tvDateLabel(iso){const T=TODAY();return iso===T?"Heute":iso===EK.add(T,1)?"Morgen":iso===EK.add(T,2)?"Übermorgen":tdLong(iso)}
+function tvPreview(){const box=document.getElementById("tvprev"),ta=document.getElementById("tvtext");if(!box||!ta)return;
+ TVS.rows=tvParse(ta.value,TODAY());
+ box.innerHTML=TVS.rows.length?TVS.rows.map((r,i)=>`<div class="card tvr" data-tvrow="${i}"><div class="frow"><input class="inp" data-tvt="${i}" maxlength="80" value="${h(r.t)}"><button class="ib" type="button" data-tvx="${i}" aria-label="Entfernen">${ic("x")}</button></div>
+  <div class="frow"><span>${ic(tdCat(r.cat)[1])} ${h(tdCat(r.cat)[2])}</span><span><input class="inp sm2" type="date" data-tvd="${i}" value="${h(r.start)}"> <input class="inp sm2" type="time" data-tvz="${i}" value="${h(r.zeit)}"></span></div></div>`).join("")
+  +`<button class="btn p w mt12" type="button" data-tvgo="1">${TVS.rows.length===1?"Todo anlegen":TVS.rows.length+" Todos anlegen"}</button>`
+  :`<p class="s mute" style="margin:8px 4px">Sag oder tippe zum Beispiel: „Morgen Müllbeutel kaufen und Shaker kaufen, Handy aufräumen. Mail um 21:30 Uhr.“</p>`}
+function tvOpen(){const sh=$("sheet");sh.classList.add("on");
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+ sh.innerHTML=`<div class="top"><button class="ib" data-close="1" aria-label="Schließen">${ic("x")}</button><h1>Per Sprache</h1><span style="min-width:44px"></span></div><main>
+ <div class="card"><textarea id="tvtext" class="inp" rows="4" placeholder="Hier diktieren oder tippen …" autocomplete="off"></textarea>
+ ${SR?`<button class="btn w mt8" type="button" data-tvrec="1" id="tvrec">${ic("mic")}Aufnahme starten</button>`:""}
+ <p class="s mute" style="margin:10px 0 0">${SR?"Oder die Mikrofon-Taste der iPhone-Tastatur benutzen.":"Mikrofon-Taste der iPhone-Tastatur benutzen (unten rechts) und einfach sprechen."} „Äh“, „also“, „genau“ und Einleitungen wie „trag ein“ werden entfernt. Du siehst vor dem Anlegen alles und kannst es ändern.</p></div>
+ <div id="tvprev" class="mt12"></div></main>`;
+ tvPreview();setTimeout(()=>{const t=document.getElementById("tvtext");t&&t.focus()},150)}
+function tvRec(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition,btn=document.getElementById("tvrec"),ta=document.getElementById("tvtext");if(!SR||!btn||!ta)return;
+ if(TVS.rec){try{TVS.rec.stop()}catch(e){}return}
+ const r=new SR();r.lang="de-DE";r.interimResults=true;r.continuous=true;const base=ta.value?ta.value.trim()+" ":"";TVS.rec=r;
+ btn.innerHTML=ic("mic")+"Stopp – ich höre zu …";
+ r.onresult=e=>{let t="";for(let i=0;i<e.results.length;i++)t+=e.results[i][0].transcript+" ";ta.value=base+t.trim();tvPreview()};
+ r.onerror=e=>{const b=document.getElementById("tvrec");TVS.rec=null;if(b)b.innerHTML=ic("mic")+"Aufnahme starten";toast(e.error==="not-allowed"||e.error==="service-not-allowed"?"Mikrofon hier nicht erlaubt – nimm die Mikrofon-Taste der Tastatur":"Aufnahme fehlgeschlagen – Mikrofon-Taste der Tastatur nutzen",3600)};
+ r.onend=()=>{TVS.rec=null;const b=document.getElementById("tvrec");if(b)b.innerHTML=ic("mic")+"Aufnahme starten"};
+ try{r.start()}catch(e){TVS.rec=null}}
+function tvSave(){const T=TODAY(),rows=TVS.rows.filter(r=>r.t&&r.t.trim());if(!rows.length)return toast("Nichts zum Anlegen");
+ for(const r of rows){const it={id:"td"+EK.uid(),t:r.t.trim().slice(0,80),cat:r.cat||"sonst",rep:{k:"einmal"},start:/^\d{4}-\d\d-\d\d$/.test(r.start)?r.start:T,ts:Date.now()};
+  if(/^\d\d:\d\d$/.test(r.zeit))it.zeit=r.zeit;change(TD_P,{t:"tdset",it},true)}
+ if(TVS.rec){try{TVS.rec.stop()}catch(e){}}
+ closeSheet();render();toast(rows.length===1?`„${rows[0].t}“ angelegt`:`${rows.length} Todos angelegt`)}
+document.addEventListener("input",ev=>{const t=ev.target;if(t.id==="tvtext"){clearTimeout(tvPreview.t);tvPreview.t=setTimeout(tvPreview,250);return}
+ const g=a=>t.getAttribute(a);let i;
+ if((i=g("data-tvt"))!=null)TVS.rows[+i].t=t.value;else if((i=g("data-tvd"))!=null)TVS.rows[+i].start=t.value;else if((i=g("data-tvz"))!=null)TVS.rows[+i].zeit=t.value});
+document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x;
+ if(b("[data-tdvoice]"))tvOpen();
+ else if(b("[data-tvrec]"))tvRec();
+ else if(x=b("[data-tvx]")){TVS.rows.splice(+x.dataset.tvx,1);const box=document.getElementById("tvprev");if(box){const keep=TVS.rows.slice();box.innerHTML="";TVS.rows=keep;
+   box.innerHTML=keep.length?keep.map((r,i)=>`<div class="card tvr"><div class="frow"><input class="inp" data-tvt="${i}" maxlength="80" value="${h(r.t)}"><button class="ib" type="button" data-tvx="${i}" aria-label="Entfernen">${ic("x")}</button></div><div class="frow"><span>${ic(tdCat(r.cat)[1])} ${h(tdCat(r.cat)[2])}</span><span><input class="inp sm2" type="date" data-tvd="${i}" value="${h(r.start)}"> <input class="inp sm2" type="time" data-tvz="${i}" value="${h(r.zeit)}"></span></div></div>`).join("")+`<button class="btn p w mt12" type="button" data-tvgo="1">${keep.length===1?"Todo anlegen":keep.length+" Todos anlegen"}</button>`:""}}
+ else if(b("[data-tvgo]"))tvSave()});
