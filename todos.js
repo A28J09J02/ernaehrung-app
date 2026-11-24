@@ -94,7 +94,9 @@ let TDV={fold:tdLs("td_fold",{}),tab:"heute",sort:tdLs("td_sort","cat"),calM:nul
 function tdRow(x,d){const it=x.it,done=x.done,auto=it.auto&&tdAutoOk(it,d)&&!tdManual(it,d),cat=tdCat(it.cat);
  const sub=[it.zeit?`${ic("clock")}${h(it.zeit)}`:"",x.over?`<span class="tdover">${ic("warn")}fällig ${tdLong(it.start)}</span>`:TD_DAILY.includes((it.rep||{}).k)?"":`${ic(it.bis?"repeat":"cal")}${h(tdRepText(it))}`,
   it.auto?(auto?`<span class="tdauto">${ic("check")}automatisch erledigt</span>`:`${ic("bolt")}${it.auto==="kcal"?"hakt sich ab, sobald du etwas einträgst":"hakt sich ab, sobald du dich wiegst"}`):"",it.notiz?`${ic("note")}${h(it.notiz)}`:""].filter(Boolean).join("<span>·</span>");
- return`<div class="tdrw td-sw" style="--cc:${cat[3]}">
+ const ser=(it.rep||{}).k!=="einmal",fl=TDV.flash&&TDV.flash.id===it.id&&TDV.flash.until>Date.now();
+ return`<div class="tdrw td-sw${fl?" tdflash":""}" style="--cc:${cat[3]}"${ser?' data-tdser="1"':""}>
+ <div class="tdbg" aria-hidden="true"><button type="button" data-tdswdel="${h(it.id)}" tabindex="-1">${ic("trash")}<span>${ser?"Serie löschen":"Löschen"}</span></button></div>
  <div class="tdr td${done?" done":""}${x.over?" over":""}" data-tdrow="${h(it.id)}"><button class="tdc" data-tdck="${h(it.id)}|${d}" aria-label="${done?"Nicht erledigt":"Erledigt"}: ${h(it.t)}"><i>${done?ic("check"):""}</i></button>
  <div class="tdt" data-tdopen="${h(it.id)}|${d}"><b>${h(it.t)}</b>${sub?`<small>${sub}</small>`:""}</div>${TDV.sort==="zeit"?`<span class="tdcat" title="${cat[2]}">${ic(cat[1])}</span>`:""}<button class="tdmore" data-tdedit="${h(it.id)}" aria-label="Ändern">${ic("chev")}</button></div></div>`}
 /* offene nach Uhrzeit, dann Titel – erledigte nach unten */
@@ -123,7 +125,7 @@ function tdPerfect(){const T=TODAY(),ok=d=>{const L=tdDay(d);return L.length>0&&
 /* nicht-tägliche Termine der nächsten Tage */
 function tdUpcoming(days,from){const T=from||TODAY(),out=[];
  for(let k=1;k<=days;k++){const d=EK.add(T,k);for(const x of tdDay(d)){if(TD_DAILY.includes((x.it.rep||{}).k))continue;out.push({...x,d})}}return out}
-function vTodos(){if(render.lv!=="todos"){TDV.hold=null;TDV.auto=null}const T=TODAY(),L=tdDay(T),n=L.filter(x=>x.done).length,open=L.length-n;
+function vTodos(){TDSW.open=null;if(render.lv!=="todos"){TDV.hold=null;TDV.auto=null}const T=TODAY(),L=tdDay(T),n=L.filter(x=>x.done).length,open=L.length-n;
  let o=`<div class="lt"><div><h2>Todos</h2><small>${new Date(T+"T12:00:00").toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long"})}</small></div></div>`;
  o+=`<div class="seg mb12" role="tablist">${[["heute","Heute"],["bald","Demnächst"],["kal","Kalender"],["alle","Alle"]].map(([k,l])=>`<button data-tdtab="${k}" class="${TDV.tab===k?"on":""}">${l}</button>`).join("")}</div>`;
  if(!tdItems().length&&!(C.todos))return o+`<div class="card"><p class="empty" style="margin:0">Todos werden geladen …</p></div>`;
@@ -136,8 +138,8 @@ function vTodos(){if(render.lv!=="todos"){TDV.hold=null;TDV.auto=null}const T=TO
   if(over.length)o+=`<div class="tdh over" style="--cc:var(--r)"><span class="tdhl"><span class="cico">${ic("warn")}</span>Überfällig</span><small>${over.length}</small></div><div class="card list tdl">${tdSort(over).map(x=>tdRow(x,T)).join("")}</div>`;
   if(L.length&&!open)o+=`<div class="card tddone">${ic("party")}<b>Alles erledigt für heute</b><small class="mute">Morgen geht's weiter.</small></div>`;
   o+=tdList(T,rest)||(over.length?"":`<div class="card"><p class="empty" style="margin:0">Für heute steht nichts an. Tippe oben auf Plus, um etwas anzulegen.</p></div>`);
-  const up=tdUpcoming(14).slice(0,4);
-  if(up.length)o+=tdHead(["","cal","Demnächst","var(--a1)"],null,`<button class="lnk2" data-tdtab="bald">Alle ›</button>`)+`<div class="card list">${up.map(x=>`<div class="tdup" data-tdopen="${h(x.it.id)}|${x.d}"><span class="tdd"><b>${+x.d.slice(8)}</b><small>${TD_WD[(tdDate(x.d).getDay()+6)%7]}</small></span><span><b>${h(x.it.t)}</b><small>${tdLong(x.d)}${x.it.zeit?" · "+h(x.it.zeit):""}${x.it.bis?" · bis erledigt":""}</small></span></div>`).join("")}</div>`;
+  let up=tdUpcoming(14);const fx=TDV.flash&&TDV.flash.until>Date.now()?up.find(x=>x.it.id===TDV.flash.id):null;up=up.slice(0,4);if(fx&&!up.includes(fx))up[3]=fx;
+  if(up.length)o+=tdHead(["","cal","Demnächst","var(--a1)"],null,`<button class="lnk2" data-tdtab="bald">Alle ›</button>`)+`<div class="card list">${up.map(x=>`<div class="tdup${x===fx||(TDV.flash&&TDV.flash.id===x.it.id&&TDV.flash.until>Date.now())?" tdflash":""}" data-tdopen="${h(x.it.id)}|${x.d}"><span class="tdd"><b>${+x.d.slice(8)}</b><small>${TD_WD[(tdDate(x.d).getDay()+6)%7]}</small></span><span><b>${h(x.it.t)}</b><small>${tdLong(x.d)}${x.it.zeit?" · "+h(x.it.zeit):""}${x.it.bis?" · bis erledigt":""}</small></span></div>`).join("")}</div>`;
   return o}
  if(TDV.tab==="bald"){const up=tdUpcoming(60);if(!up.length)return o+`<div class="card"><p class="empty" style="margin:0">In den nächsten 60 Tagen steht nichts mit Datum an. Termine legst du über Plus an – z. B. „Abo kündigen“ am 18., monatlich bis erledigt.</p></div>`;
   let last="";for(const x of up){if(x.d!==last){if(last)o+=`</div>`;o+=`<div class="tdh"><span class="tdhl">${tdLong(x.d)[0].toUpperCase()+tdLong(x.d).slice(1)}</span><small>${new Date(x.d+"T12:00:00").toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long"})}</small></div><div class="card list tdl">`;last=x.d}
@@ -178,7 +180,10 @@ function tdFlip(){const pos=new Map([...document.querySelectorAll("[data-tdrow]"
   const w=e.closest(".sw")||e;w.style.transition="none";w.style.transform=`translateY(${d}px)`;w.style.position="relative";w.style.zIndex="2";
   requestAnimationFrame(()=>requestAnimationFrame(()=>{w.style.transition="transform .42s cubic-bezier(.2,.85,.25,1)";w.style.transform="";setTimeout(()=>{w.style.transition="";w.style.zIndex=""},450)}))})}
 function tdDel(id){const it=tdItems().find(x=>x.id===id);if(!it)return;if($("sheet").classList.contains("on"))closeSheet();
- change(TD_P,{t:"tddel",id});toast(`„${it.t}“ gelöscht`,4500,"Rückgängig",()=>change(TD_P,{t:"tdset",it}))}
+ const days=Object.entries(TD().done||{}).filter(([,L])=>L.includes(id)).map(([d])=>d),fe=(TD().fertig||{})[id];
+ change(TD_P,{t:"tddel",id});
+ toast(`„${it.t}“ gelöscht`+((it.rep||{}).k!=="einmal"?` (${tdRepText(it)})`:""),5000,"Rückgängig",()=>{change(TD_P,{t:"tdset",it},true);
+  days.forEach(d=>change(TD_P,{t:"tdck",d,id,v:true,end:false},true));if(fe)change(TD_P,{t:"tdck",d:fe,id,v:true,end:true},true);render()})}
 
 /* ---------- Gewicht eintragen ---------- */
 function tdWeight(){const sh=$("sheet"),T=TODAY(),last=GW();sh.classList.add("on");
@@ -223,7 +228,7 @@ function tdEdit(id,preset){const T=TODAY(),old=id?tdItems().find(x=>x.id===id):n
  </form>
  ${old?"":`<div class="sec">Schnell anlegen</div><div class="chips sug">${TD_IDEAS.filter(([t])=>!tdItems().some(i=>i.t===t)).map(([t,c,rp],k)=>`<button class="chip2" type="button" data-tdidea="${k}" style="--cc:${tdCat(c)[3]}">${ic(tdCat(c)[1])}<span>${h(t)}<small>${h(tdRepText({rep:rp,start:T}))}</small></span></button>`).join("")}</div>`}
  </main>`;
- if(!old&&!preset)setTimeout(()=>{const i=sh.querySelector("[name=t]");i&&i.focus()},120)}
+ tdQdSync();if(!old&&!preset)setTimeout(()=>{const i=sh.querySelector("[name=t]");i&&i.focus()},120)}
 function tdSave(f){const E=f.elements,t=E.t.value.trim();if(!t)return toast("Bitte einen Titel eingeben");
  const k=(f.querySelector("[name=rep]:checked")||{}).value||"einmal",start=E.start.value||TODAY();
  if(!/^\d{4}-\d\d-\d\d$/.test(start))return toast("Bitte ein gültiges Datum wählen");
@@ -233,7 +238,24 @@ function tdSave(f){const E=f.elements,t=E.t.value.trim();if(!t)return toast("Bit
  const it={id:old?old.id:"td"+EK.uid(),t:t.slice(0,80),cat:(f.querySelector("[name=cat]:checked")||{}).value||"sonst",rep,start,ts:Date.now()};
  if(zeit)it.zeit=zeit;if(k!=="einmal"&&E.bis.checked)it.bis=true;if(!TD_DAILY.includes(k)&&+E.vor.value>0)it.vor=+E.vor.value;
  if(E.auto.value)it.auto=E.auto.value;const nz=E.notiz.value.trim();if(nz)it.notiz=nz.slice(0,200);
- change(TD_P,{t:"tdset",it});closeSheet();toast(old?"Gespeichert":`„${it.t}“ angelegt · ${tdRepText(it)}`)}
+ change(TD_P,{t:"tdset",it},!!old);closeSheet();
+ if(old)tdEdited(old,it);else toast(`„${it.t}“ angelegt · ${tdRepText(it)}`)}
+/* Nach dem Ändern sichtbar machen, was passiert ist: verschobene Todos zeigen kurz „→ Morgen“ und gleiten aus der Liste,
+   danach leuchtet die Zeile dort auf, wo das Todo jetzt steht (Demnächst). Dazu Meldung mit „Rückgängig“. */
+function tdShown(id){const T=TODAY(),pick=L=>L.some(x=>x.it.id===id);
+ if(view!=="todos")return true;
+ if(TDV.tab==="heute")return pick(tdDay(T));if(TDV.tab==="kal")return pick(tdDay(TDV.sel||T));
+ if(TDV.tab==="bald")return tdUpcoming(60).some(x=>x.it.id===id);return true}
+function tdEdited(old,it){const moved=old.start!==it.start,row=document.querySelector(`[data-tdrow="${CSS.escape(it.id)}"]`),rw=row&&row.closest(".tdrw");
+ const changed=moved||old.t!==it.t||JSON.stringify(old.rep)!==JSON.stringify(it.rep)||old.zeit!==it.zeit||old.cat!==it.cat;
+ const word=moved?tdLong(it.start):"",msg=moved?`„${it.t}“ → ${word}`:changed?`„${it.t}“ aktualisiert`:"Keine Änderung";
+ const fin=()=>{TDV.flash={id:it.id,until:Date.now()+2400};if(view==="todos"){const y=scrollY;render();if(scrollY!==y)scrollTo(0,y)}};
+ if(changed)toast(msg,5000,"Rückgängig",()=>{TDV.flash=null;change(TD_P,{t:"tdset",it:old})});
+ if(moved&&rw&&!tdShown(it.id)){rw.classList.add("tdmv");
+  rw.insertAdjacentHTML("beforeend",`<div class="tdmvb">${ic("cal")}<b>${h(word[0].toUpperCase()+word.slice(1))}</b></div>`);
+  setTimeout(()=>{rw.style.height=rw.offsetHeight+"px";void rw.offsetHeight;rw.classList.add("tdcol")},720);
+  setTimeout(fin,1000)}
+ else fin()}
 /* Zutaten aus Gerichten/Ideen als Einkaufs-Todos (ersetzt die frühere Einkaufsliste) */
 function tdShop(list,von){const T=TODAY(),have=new Set(tdItems().filter(x=>x.cat==="einkauf"&&!tdFertig(x)).map(x=>EK.norm(x.t)));let n=0;
  for(const z of list){if(!z||!z.name)continue;const nm=shopName(z.name),amt=z.stk?`${n1(z.stk)} Stück`:z.g?`${n0(rg(z.g))} g`:"",t=(amt?amt+" ":"")+nm;
@@ -243,7 +265,43 @@ function tdShop(list,von){const T=TODAY(),have=new Set(tdItems().filter(x=>x.cat
 /* Wochentag folgt dem Datum, solange nur ein Wochentag gewählt ist */
 function tdWdSync(i){const f=i.form,c=[...f.querySelectorAll("[name=wd]")];if(c.filter(z=>z.checked).length>1||!/^\d{4}-\d\d-\d\d$/.test(i.value))return;
  const w=(tdDate(i.value).getDay()+6)%7;c.forEach((z,k)=>z.checked=k===w)}
-document.addEventListener("change",ev=>{if(ev.target.name==="start"&&ev.target.form&&ev.target.form.id==="tdf")tdWdSync(ev.target)});
+function tdQdSync(){const i=document.querySelector("#tdf [name=start]");if(!i)return;
+ document.querySelectorAll("#tdf [data-tdqd]").forEach(b=>b.classList.toggle("on",i.value===EK.add(TODAY(),+b.dataset.tdqd)))}
+document.addEventListener("change",ev=>{if(ev.target.name==="start"&&ev.target.form&&ev.target.form.id==="tdf"){tdWdSync(ev.target);tdQdSync()}});
+/* ---------- Wischen zum Löschen ----------
+   Zeile nach links ziehen: dahinter wird rot „Löschen“ sichtbar. Kurz ziehen und loslassen = Knopf bleibt offen (Antippen löscht),
+   weit ziehen (über die halbe Breite) oder schnell wischen = Todo fliegt raus, Zeilen darunter rücken nach. „Rückgängig“ in der Meldung.
+   Wiederkehrende Todos (täglich, wöchentlich …) löschen nie per Wisch-Schwung, nur über den offenen Knopf „Serie löschen“. */
+const TDSW={a:null,open:null,t:0},TD_SWO=92;
+function tdSwPos(rw,x,anim){const r=rw.querySelector(".tdr");if(!r)return;rw.classList.toggle("sw-anim",!!anim);clearTimeout(rw._swt);if(x<0)rw.classList.add("sw-on");else if(anim)rw._swt=setTimeout(()=>rw.classList.remove("sw-on"),330);else rw.classList.remove("sw-on");
+ r.style.transform=x?`translateX(${x}px)`:"";rw.style.setProperty("--sw",Math.max(0,-x)+"px");if(!x||x>-TD_SWO*1.2)rw.classList.remove("sw-go")}
+function tdSwClose(anim=true){const o=TDSW.open;TDSW.open=null;if(o&&o.isConnected)tdSwPos(o,0,anim)}
+function tdSwDelete(rw){const r=rw.querySelector("[data-tdrow]"),id=r&&r.dataset.tdrow;if(!id||rw.classList.contains("tdcol"))return;
+ if(TDSW.open===rw)TDSW.open=null;haptic();
+ const W=rw.offsetWidth;tdSwPos(rw,-W,true);rw.classList.add("sw-go");
+ setTimeout(()=>{rw.style.height=rw.offsetHeight+"px";void rw.offsetHeight;rw.classList.add("tdcol")},170);
+ setTimeout(()=>tdDel(id),480)}
+document.addEventListener("touchstart",ev=>{const t=ev.target,rw=t.closest&&t.closest(".tdrw"),T=ev.touches[0];
+ if(TDSW.open&&rw!==TDSW.open)tdSwClose();
+ TDSW.a=null;if(!rw||ev.touches.length>1||t.closest(".tdbg")||rw.classList.contains("tdcol"))return;
+ TDSW.a={rw,x:T.clientX,y:T.clientY,t:Date.now(),base:rw===TDSW.open?-TD_SWO:0,dx:0,fx:0,lock:null,go:false,W:rw.offsetWidth,ser:rw.hasAttribute("data-tdser")}},{passive:true});
+document.addEventListener("touchmove",ev=>{const a=TDSW.a;if(!a)return;const T=ev.touches[0],dx=T.clientX-a.x,dy=T.clientY-a.y;
+ if(a.lock==null){if(Math.abs(dx)<8&&Math.abs(dy)<8)return;a.lock=Math.abs(dx)>Math.abs(dy)*1.4?"x":"y";if(a.lock==="x"){a.rw.classList.add("sw-drag");a.rw.classList.remove("sw-anim")}}
+ if(a.lock!=="x")return;
+ let x=a.base+dx;if(x>0)x*=.12;const W=a.W;if(-x>W)x=-(W+(-x-W)*.15);if(a.ser&&-x>TD_SWO*1.35)x=-(TD_SWO*1.35+(-x-TD_SWO*1.35)*.25);
+ a.fx=dx;a.dx=x;tdSwPos(a.rw,x,false);
+ const go=!a.ser&&-x>W*.5;if(go!==a.go){a.go=go;a.rw.classList.toggle("sw-go",go);if(go)haptic()}},{passive:true});
+document.addEventListener("touchend",()=>{const a=TDSW.a;TDSW.a=null;if(!a||a.lock!=="x")return;const rw=a.rw,x=a.dx,dt=Math.max(1,Date.now()-a.t);
+ rw.classList.remove("sw-drag");TDSW.t=Date.now();
+ const flick=!a.ser&&a.base===0&&a.fx<-70&&-a.fx/dt>.55;
+ if(!a.ser&&(-x>a.W*.5||flick))return tdSwDelete(rw);
+ if(-x>TD_SWO*.5){tdSwPos(rw,-TD_SWO,true);TDSW.open=rw}else{tdSwPos(rw,0,true);if(TDSW.open===rw)TDSW.open=null}});
+document.addEventListener("touchcancel",()=>{const a=TDSW.a;TDSW.a=null;if(a&&a.lock==="x"){a.rw.classList.remove("sw-drag");tdSwPos(a.rw,a.base,true)}});
+/* Nach einem Wisch kein versehentliches Öffnen; offene Zeile: Antippen schließt nur */
+document.addEventListener("click",ev=>{const t=ev.target,rw=t.closest&&t.closest(".tdrw"),bg=t.closest&&t.closest(".tdbg");
+ if(rw&&!bg&&Date.now()-TDSW.t<450){ev.stopPropagation();ev.preventDefault();return}
+ if(TDSW.open&&!bg){const same=rw===TDSW.open;tdSwClose();if(same){ev.stopPropagation();ev.preventDefault()}}},true);
+
 /* ---------- Ereignisse ---------- */
 document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x;
  const sw=b(".swc");if(sw&&(sw.dataset.swopen||Date.now()-(+sw.dataset.swiped||0)<350))return;
@@ -255,11 +313,12 @@ document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x
  else if(x=b("[data-tdedit]"))tdEdit(x.dataset.tdedit);
  else if(x=b("[data-tddel]"))tdDel(x.dataset.tddel);
  else if(x=b("[data-tdnew]")){const d=x.dataset.tdnew;tdEdit(null,/^\d{4}-/.test(d)?{start:d}:null)}
- else if(x=b("[data-tdqd]")){const i=document.querySelector("#tdf [name=start]");if(i){i.value=EK.add(TODAY(),+x.dataset.tdqd);tdWdSync(i)}}
+ else if(x=b("[data-tdqd]")){const i=document.querySelector("#tdf [name=start]");if(i){i.value=EK.add(TODAY(),+x.dataset.tdqd);tdWdSync(i);tdQdSync()}}
  else if(x=b("[data-tdtab]")){TDV.tab=x.dataset.tdtab;render();scrollTo(0,0)}
  else if(x=b("[data-planorig]")){const[d,v]=x.dataset.planorig.split("|"),o={...POV()};if(v==="1")o[d]=1;else delete o[d];LS.set("plan_orig",o);const y=scrollY;render();scrollTo(0,y);toast(v==="1"?"Ursprünglicher Plan für diesen Tag":"Anpassung wieder aktiv",2200)}
  else if(x=b("[data-tdfoldall]")){const E=[...document.querySelectorAll("[data-tdfold]")],zu=E.some(e=>!e.classList.contains("fo"));E.forEach(e=>{e.classList.toggle("fo",zu);e.setAttribute("aria-expanded",!zu);TDV.fold[e.dataset.tdfold]=zu});LS.set("td_fold",TDV.fold);x.innerHTML=ic(zu?"down":"up")+(zu?"Alle auf":"Alle zu")}
- else if(x=b("[data-tdfold]")){const k=x.dataset.tdfold,fo=!x.classList.contains("fo");x.classList.toggle("fo",fo);x.setAttribute("aria-expanded",!fo);TDV.fold[k]=fo;LS.set("td_fold",TDV.fold)}
+ else if(x=b("[data-tdswdel]")){const rw=x.closest(".tdrw");rw?tdSwDelete(rw):tdDel(x.dataset.tdswdel)}
+ else if((x=b("[data-tdfold]"))&&b(".tdfold>.tdh")){const k=x.dataset.tdfold,fo=!x.classList.contains("fo");x.classList.toggle("fo",fo);x.setAttribute("aria-expanded",!fo);TDV.fold[k]=fo;LS.set("td_fold",TDV.fold)}
  else if(b("[data-tdsort]")){TDV.sort=TDV.sort==="cat"?"zeit":"cat";LS.set("td_sort",TDV.sort);render()}
  else if(x=b("[data-tdcal]")){TDV.calM=x.dataset.tdcal;render()}
  else if(x=b("[data-tdsel]")){TDV.sel=x.dataset.tdsel;render()}

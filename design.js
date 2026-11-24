@@ -36,6 +36,7 @@ const ICN={
  spark:'<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M18.5 15l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/>',
  copy:'<rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
  sync:'<path d="M20 12a8 8 0 0 1-14 5M4 12a8 8 0 0 1 14-5"/><path d="M18 3v4h-4M6 21v-4h4"/>',
+ trash:'<path d="M4.5 7h15M9.5 7V5.2c0-.7.5-1.2 1.2-1.2h2.6c.7 0 1.2.5 1.2 1.2V7M6.5 7l.8 11.3c.1 1 .9 1.7 1.9 1.7h5.6c1 0 1.8-.7 1.9-1.7L17.5 7M10 11v5.5M14 11v5.5"/>',
  check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',x:'<path d="M6 6l12 12M18 6L6 18"/>',
  todo:'<rect x="4" y="4" width="16" height="16" rx="5"/><path d="M8.5 12.2l2.4 2.4 4.6-4.8"/>',
  pulse:'<path d="M3 12h4l2-5 4 10 2-5h6"/>',
@@ -139,4 +140,4 @@ function haptic(){try{if(localStorage.getItem("ern_haptik")==="0")return;
  if(!l){l=document.createElement("label");l.id="hpt";l.setAttribute("aria-hidden","true");l.style.cssText="position:fixed;left:-99px;top:-99px;opacity:0;pointer-events:none";l.innerHTML='<input type="checkbox" switch tabindex="-1">';document.body.appendChild(l)}
  l.click()}catch(e){}}
 /* Wo es sinnvoll ist: Abhaken, untere Leiste, Haupt-Knöpfe, Umschalter, Kategorien, Mahlzeit „+“ */
-document.addEventListener("click",ev=>{if(ev.target.closest&&ev.target.closest(".tabs button,.tdc,[data-gym],[data-tdfold],.btn.p,.seg button,[data-ds-ok],[data-planorig],.mplus,[data-day]"))haptic()},true);
+document.addEventListener("click",ev=>{if(ev.target.closest&&ev.target.closest(".tabs button,.tdc,[data-gym],.tdfold>.tdh,.btn.p,.seg button,[data-ds-ok],[data-planorig],.mplus,[data-day]"))haptic()},true);

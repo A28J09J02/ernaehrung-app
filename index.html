@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=9f341b5"></script>
+<script src="design.js?v=680441a"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -736,7 +736,7 @@ input,select,textarea,.inp,textarea.inp{font-size:16px}
 :root:is([data-bg="classic"],[data-bg="classichell"]) .streak{color:var(--gold);border:1px solid var(--edge);background:transparent}
 :root:is([data-bg="classic"],[data-bg="classichell"]) .drawer .ttl .ic{color:var(--gold);filter:none}
 :root:is([data-bg="classic"],[data-bg="classichell"]) .drawer .ttl{font-family:var(--serif);font-weight:500}
-/* Todos: keine Wisch-Zeilen mehr, kein seitliches Verschieben – Löschen im Bearbeiten-Fenster */
+/* Todos: seitliches Wischen nur auf den Zeilen (Löschen), Seite selbst bleibt fest */
 main.v-todos{overflow-x:clip;touch-action:pan-y}
 .tdrw+.tdrw{border-top:1px solid var(--line)}
 .tdr{display:flex;align-items:center;gap:13px;padding:10px 0;min-height:54px;width:100%}
@@ -1021,6 +1021,26 @@ details.lbrow>summary{list-style:none;cursor:pointer}details.lbrow>summary::-web
 .tdwarn,.tdokb{display:none}.tdfold.fo.hasop .tdwarn{display:inline-block}.tdfold.fo.alld .tdokb{display:inline-flex}.tdfold.fo.hasop .tdn,.tdfold.fo.alld .tdn{display:none}
 .tdfold.fo.hasop>.tdh{box-shadow:inset 4px 0 0 var(--r);border-color:color-mix(in srgb,var(--r) 40%,transparent)}
 .tdfold.fo.alld>.tdh{opacity:.72}
+/* Todos: Wischen zum Löschen, „verschoben“-Marke, Hervorhebung, größere Haken-Fläche */
+.tdc::after{content:"";position:absolute;inset:-12px -8px}
+.tdrw{position:relative}.tdrw:is(.sw-on,.tdcol,.tdmv){overflow:hidden}.tdrw .tdr{position:relative;touch-action:pan-y;will-change:transform}
+.tdrw.sw-anim .tdr{transition:transform .3s cubic-bezier(.2,.85,.25,1)}
+.tdbg{position:absolute;top:0;bottom:0;right:0;width:var(--sw,0px);background:color-mix(in srgb,var(--r) 86%,#d00000);border-radius:14px;overflow:hidden;visibility:hidden}
+.tdrw.sw-on .tdbg{visibility:visible}.tdrw.sw-anim .tdbg{transition:width .3s cubic-bezier(.2,.85,.25,1),background .2s}
+.tdbg button{position:absolute;left:0;top:0;bottom:0;width:92px;border:0;background:none;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:inherit;font-size:12px;font-weight:700;white-space:nowrap}
+.tdbg .ic{width:22px;height:22px;transition:transform .2s cubic-bezier(.3,1.6,.5,1)}
+.tdrw.sw-go .tdbg{background:color-mix(in srgb,var(--r) 62%,#e00000)}.tdrw.sw-go .tdbg .ic{transform:scale(1.3)}
+.tdrw.sw-drag .tdr{opacity:.96}
+.tdrw.tdcol{height:0!important;opacity:0;border-top-width:0;transition:height .28s cubic-bezier(.4,0,.2,1),opacity .22s}
+.tdrw.tdmv .tdr{transition:transform .4s cubic-bezier(.2,.85,.25,1),opacity .4s;transform:translateX(34px);opacity:.3}
+.tdmvb{position:absolute;right:6px;top:50%;display:flex;align-items:center;gap:6px;padding:7px 13px 7px 10px;border-radius:99px;background:var(--acc);color:#fff;font-size:13.5px;opacity:0;transform:translateY(-50%) scale(.7);animation:tdbpop .42s .06s cubic-bezier(.3,1.5,.5,1) forwards;box-shadow:0 4px 16px color-mix(in srgb,var(--acc) 45%,transparent)}
+.tdmvb .ic{width:15px;height:15px}.tdmvb b{font-weight:700}
+@keyframes tdbpop{to{opacity:1;transform:translateY(-50%) scale(1)}}
+.tdflash{animation:tdfl 2.2s ease-out}.tdup.tdflash{border-radius:12px}
+@keyframes tdfl{0%,35%{background:color-mix(in srgb,var(--acc) 26%,transparent)}100%{background:transparent}}
+.tdqd .chip2.on{background:color-mix(in srgb,var(--a1,var(--acc)) 26%,var(--card));border-color:color-mix(in srgb,var(--a1,var(--acc)) 60%,transparent)}
+:root[data-ah] .tdqd .chip2.on{background:var(--acc);color:#fff}
+@media(prefers-reduced-motion:reduce){.tdrw .tdr,.tdbg,.tdrw.tdcol,.tdmvb,.tdflash{animation-duration:.01s!important;transition-duration:.01s!important}}
 .tdwarn{font-style:normal;font-size:12px;font-weight:750;color:#fff;background:var(--r);border-radius:99px;padding:2px 9px}
 .tdokb{color:#34c759}.tdokb .ic{width:18px;height:18px}
 .gzswitch{background:color-mix(in srgb,var(--a1) 18%,transparent);color:var(--a1);border:1px solid color-mix(in srgb,var(--a1) 45%,transparent);font-weight:700;min-height:46px;display:flex;align-items:center;justify-content:center;gap:8px}.gzswitch .ic{width:18px;height:18px}
@@ -1033,12 +1053,12 @@ details.lbrow>summary{list-style:none;cursor:pointer}details.lbrow>summary::-web
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=9f341b5"></script>
-<script src="todos.js?v=9f341b5"></script>
-<script src="gesund.js?v=9f341b5"></script>
-<script src="lauf.js?v=9f341b5"></script>
-<script src="mitteilungen.js?v=9f341b5"></script>
-<script src="suche.js?v=9f341b5"></script>
+<script src="kern.js?v=680441a"></script>
+<script src="todos.js?v=680441a"></script>
+<script src="gesund.js?v=680441a"></script>
+<script src="lauf.js?v=680441a"></script>
+<script src="mitteilungen.js?v=680441a"></script>
+<script src="suche.js?v=680441a"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -2476,7 +2496,7 @@ addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="9f341b5";
+const APPV="680441a";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
