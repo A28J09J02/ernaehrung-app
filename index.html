@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=17c666e"></script>
+<script src="design.js?v=2af1fda"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -179,7 +179,7 @@ video{width:100%;border-radius:var(--rad);background:#000;aspect-ratio:3/4;objec
 .ringnote{margin:6px 0 0;text-align:center}.centernote{margin:8px 0 0;text-align:center}.block{display:block}
 .row.mb{margin:0 0 12px}.mt10{margin-top:10px}.p6{margin:0 0 6px}
 .btn.sm{padding:4px 10px;font-size:13px}.west{margin-top:10px;display:grid;gap:4px}
-.burn .na b{color:var(--mute)}.burn.b4{grid-template-columns:repeat(4,1fr);gap:4px}.burn.b4 b{font-size:17px}
+.burn .na b{color:var(--mute)}.wkbar{position:relative;height:14px;border-radius:99px;background:var(--grid);margin:16px 0 14px}.wkbar i{position:absolute;left:0;top:0;bottom:0;min-width:14px;border-radius:99px;background:var(--acc)}.wkbar s{position:absolute;top:-4px;bottom:-4px;width:3px;margin-left:-1.5px;border-radius:2px;background:var(--ink);opacity:.75}.wkr{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;margin-top:8px}.burn.b4{grid-template-columns:repeat(4,1fr);gap:4px}.burn.b4 b{font-size:17px}
 main.slide-l{animation:sl .22s ease}main.slide-r{animation:sr .22s ease}
 main.dragx{will-change:transform}main.snap{transition:transform .28s cubic-bezier(.2,.9,.3,1.15)}
 #dhint{position:fixed;top:50%;z-index:40;padding:8px 13px;border-radius:999px;background:var(--card);color:var(--mute);font-size:14px;font-weight:600;
@@ -1053,12 +1053,12 @@ details.lbrow>summary{list-style:none;cursor:pointer}details.lbrow>summary::-web
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=17c666e"></script>
-<script src="todos.js?v=17c666e"></script>
-<script src="gesund.js?v=17c666e"></script>
-<script src="lauf.js?v=17c666e"></script>
-<script src="mitteilungen.js?v=17c666e"></script>
-<script src="suche.js?v=17c666e"></script>
+<script src="kern.js?v=2af1fda"></script>
+<script src="todos.js?v=2af1fda"></script>
+<script src="gesund.js?v=2af1fda"></script>
+<script src="lauf.js?v=2af1fda"></script>
+<script src="mitteilungen.js?v=2af1fda"></script>
+<script src="suche.js?v=2af1fda"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -1359,41 +1359,35 @@ function cheatHint(i){const c=i.ch;if(!c)return"";
 function cheatNote(i){if(i.d<TODAY()||!cheatSet().has(i.d))return"";
  return`<div class="hint acc">${ic("pizza")}<span><b>Cheat Day</b> – dein Ziel wird ${i.d===TODAY()?"heute":"an diesem Tag"} nicht gesenkt. ${ausOn()?"Was über dem Ziel liegt, wird erst nach dem letzten Cheat Day verteilt.":"Der Ausgleich ist ausgeschaltet."}<br><button class="btn sm mt8" data-cheat="${i.d}|0">Aufheben</button></span></div>`}
 /* Eingespart (unter dem eigenen Ziel): senkt den offenen Ausgleich der Folgetage; alles darüber ist Bonus und wird nicht übertragen (zählt in der Wochenbilanz) */
-function savingHint(i){const c=i.cr;if(!c||c.saved<50)return"";const live=i.d===TODAY(),pre=live?"Stand jetzt: ":"",end=live?" Gilt endgültig mit Tagesende.":"";
- if(c.used>=1){const to=c.to.filter(([,a])=>a>=1).map(([d,a])=>`${ddm(d)} +${n0(a)}`).join(" · ");
-  return`<div class="hint acc">↺<span>${pre}<b>${n0(c.saved)} kcal unter deinem Ziel.</b> ${c.used>=c.saved-1?"Das senkt":`${n0(c.used)} davon senken`} den offenen Ausgleich – dort darfst du mehr essen: ${to}.${c.bonus>=50?` Die übrigen ${n0(c.bonus)} kcal sind Bonus und werden nicht übertragen.`:""}${end}</span></div>`}
- return`<div class="hint acc"><span>${pre}<b>${n0(c.saved)} kcal unter deinem Ziel</b> – das ist Bonus. Es ist kein Ausgleich offen, und eingesparte kcal werden nicht auf andere Tage übertragen. Sie zählen in der Wochenbilanz.${end}</span></div>`}
+function savingHint(i){const c=i.cr;if(!c||c.saved<50)return"";
+ const to=c.to.filter(([,a])=>a>=1).map(([d,a])=>`${ddm(d)} +${n0(a)}`).join(" · ");
+ return`<div class="hint acc">↺<span><b>${n0(c.saved)} kcal gespart</b>${c.used>=1?` – mehr erlaubt: ${to}`:" – Bonus, nichts offen"}${c.used>=1&&c.bonus>=50?` · ${n0(c.bonus)} Bonus`:""}</span></div>`}
 /* Ausgleichstag: warum das Ziel niedriger ist und wie es leichter geht */
-function carrierNote(i){const ez=i.t.eased||[],ezs=ez.reduce((a,[,x])=>a+x,0),ezd=ez.map(([d])=>ddm(d)).join(" und ");
- if(!i.t.aus)return ezs>=1?`<div class="hint acc">↺<span><b>Ausgleich erledigt</b> – durch deine Einsparung am ${ezd} entfallen die ${n0(ezs)} kcal Ausgleich an diesem Tag.</span></div>`:"";
- const pl=planDay(i.d),rest=pl&&pl.type==="rest",from=(i.t.carry||[]).map(([d,a])=>`${n0(a)} kcal von ${ddm(d)}`).join(" und ");
+function carrierNote(i){const ez=i.t.eased||[],ezs=ez.reduce((a,[,x])=>a+x,0);
+ if(!i.t.aus)return ezs>=1?`<div class="hint acc">↺<span><b>Kein Ausgleich nötig</b> – du hast ihn schon eingespart.</span></div>`:"";
+ const pl=planDay(i.d),rest=pl&&pl.type==="rest",from=(i.t.carry||[]).map(([d])=>ddm(d)).join(" und ").replace(/\.$/,"");
  return`<div class="card acc"><h2>↺ Ausgleich ${i.d>=TODAY()?"geplant":""}<small>−${n0(i.t.aus)} kcal</small></h2>
- <p class="s p6">Dein Ziel ist um ${n0(i.t.aus)} kcal niedriger (${from}).${ezs>=1?` Ohne deine Einsparung am ${ezd} wären es ${n0(i.t.aus+ezs)} kcal.`:""} Statt weniger zu essen geht auch mehr Bewegung – sie hebt dein Ziel automatisch wieder an:</p>
- <div class="s mute">${ic("walk")} 45 Min Spaziergang ≈ 150 kcal${rest?" (heute Ruhetag – nur locker)":` · ${ic("bike")} 30 Min lockeres Rad ≈ 200 kcal · ${ic("gym")} 15 Min länger im Gym ≈ 70 kcal`} – als Aktivität auf der Uhr aufzeichnen.</div>
- ${i.d>=TODAY()?`<button class="btn w mt10" data-cheat="${i.d}|1">${ic("pizza")} ${i.d===TODAY()?"Heute ist":"Das wird"} auch ein Cheat Day – Ziel nicht senken</button><p class="s mute" style="margin:6px 0 0">Mehrere Cheat Days hintereinander zählen zusammen: Der Ausgleich startet dann erst danach.</p>`:""}</div>`}
+ <p class="s p6">Von ${from}${ezs>=1?` (durch deine Einsparung von ${n0(i.t.aus+ezs)} gesenkt)`:""}. Mit Bewegung hebst du dein Ziel wieder an: ${rest?"45 Min Spaziergang ≈ 150 kcal":"30 Min lockeres Rad ≈ 200 kcal"} (auf der Uhr aufzeichnen).</p>
+ ${i.d>=TODAY()?`<button class="btn w mt10" data-cheat="${i.d}|1">${ic("pizza")} ${i.d===TODAY()?"Heute ist":"Das wird"} auch ein Cheat Day</button>`:""}</div>`}
 /* Woche Mo–So: Bilanz gegessen gegen Garmin-Verbrauch und gegen das Wochenziel */
 function weekCard(){const T=TODAY(),mon=EK.monday(T),p=prof(),adj=EK.goalAdj(p),sun=EK.add(mon,6);
  let bal=0,n=0,plan=0;for(let k=0;k<7;k++){const d=EK.add(mon,k);if(d>=T)break;const i=info(d);if(!i.full)continue;n++;
   const use=i.gk!=null?i.gk:i.t.orig-adj;bal+=i.s.kcal-use;plan+=adj}
  if(!n)return"";
- const goal=7*adj,diff=bal-plan,sg=v=>v===0?"0":(v>0?"+":"−")+n0(Math.abs(v)),kgS=v=>(v>0?"+":"−")+n1(Math.abs(v)/7700)+" kg",
-  /* offener Ausgleich bis Sonntag (steckt schon in den Zielen) und Tage ab heute bis Sonntag */
-  open=Math.round(Object.entries(AUSR.share).filter(([d])=>d>=T&&d<=sun).reduce((a,[,v])=>a+v,0)),
+ /* alles in Gramm Körpergewicht: 7.700 kcal ≈ 1 kg Körperfett; erst runden, dann rechnen – damit die Zahlen auf der Karte zusammenpassen */
+ const g=v=>Math.round(-v/7.7),fg=x=>{x=Math.abs(x);return x>=1000?n1(x/1000)+" kg":n0(x)+" g"},
+  loss=adj<0,open=Math.round(Object.entries(AUSR.share).filter(([d])=>d>=T&&d<=sun).reduce((a,[,v])=>a+v,0)),
   rem=Math.round((new Date(sun+"T12:00:00")-new Date(T+"T12:00:00"))/864e5)+1,
-  /* Prognose: bis Sonntag jeden Tag das Ziel treffen (Plan-Defizit je Tag, dazu der offene Ausgleich) */
-  proj=bal+rem*adj-open,loss=adj<0,
-  fill=loss?Math.max(0,Math.min(1,bal/goal)):0,tick=loss?Math.max(0,Math.min(1,plan/goal)):0,
-  bar=loss?`<div style="position:relative"><div class="bar"><i style="width:${fill*100}%;background:${diff>200?"var(--y)":"var(--g)"}"></i></div><span style="position:absolute;left:calc(${tick*100}% - 1px);top:1px;height:17px;width:2px;background:var(--ink);opacity:.6"></span></div>`:"",
-  st=diff>200?`<b>Rückstand: ${n0(diff)} kcal.</b> ${open>0?`Der offene Ausgleich (${n0(open)} kcal) steckt schon in den Zielen der nächsten Tage; den Rest holst du nur auf, wenn du unter deinem Ziel bleibst.`:"Das holst du nur auf, wenn du unter deinem Ziel bleibst."}`:
-   diff<-200?`<b>Bonus: ${n0(-diff)} kcal</b> mehr Defizit als der Plan bisher vorsieht. Er wird nicht auf andere Tage übertragen – du kommst damit einfach schneller zum Ziel.`:"Du liegst im Plan.";
- return`<div class="card"><h2>Diese Woche <small>${n} Tag${n>1?"e":""} erfasst · in kcal</small></h2><div class="wt">
- <div><span>Bisher</span><b class="${diff>200?"warn":""}">${sg(bal)}</b></div>
- <div><span>Plan bis gestern</span><b>${sg(plan)}</b></div>
- <div><span>Wochenziel</span><b>${sg(goal)}</b></div></div>
- ${bar?`<div style="margin-top:12px">${bar}</div>`:""}
- <p class="s ${diff>200?"warn":"mute"} centernote">${st}</p>
- ${loss&&rem>0?`<p class="s centernote" style="margin-top:6px">Wenn du bis Sonntag jeden Tag dein Ziel triffst, landest du bei etwa <b>${sg(proj)} kcal</b> (≈ ${kgS(proj)}).</p>`:""}
- <p class="s mute centernote" style="margin-top:6px">Bisher = gegessen − Garmin-Verbrauch (Minus = Defizit, gut), Mo bis gestern${n>=4?` ≈ ${kgS(bal)}`:""}. Wochenziel = 7 Tage Plan-Defizit${loss?` ≈ ${kgS(goal)}`:""}. Der Strich im Balken zeigt, wo der Plan heute stehen sollte.</p></div>`}
+  gB=g(bal),gP=g(plan),gG=g(7*adj),gX=g(bal+rem*adj-open),dg=gP-gB,
+  fill=loss?Math.max(0,Math.min(1,gB/gG)):0,tick=loss?Math.max(0,Math.min(1,gP/gG)):0,
+  verd=dg>26?["Hinter dem Plan",fg(dg),"var(--y)"]:dg<-26?["Vor dem Plan",fg(dg),"var(--g)"]:["Genau im Plan","","var(--g)"];
+ return`<div class="card"><h2>Diese Woche <small>${n} von 7 Tagen</small></h2>
+ <div class="wt"><div><span>Bisher ${gB>=0?"abgenommen":"zugenommen"}</span><b>${fg(gB)}</b></div>${loss?`<div><span>Wochenziel</span><b>${fg(gG)}</b></div>`:""}</div>
+ ${loss?`<div class="wkbar"><i style="width:${fill*100}%"></i><s style="left:${tick*100}%"></s></div>
+ <div class="wkr"><span>Soll bis jetzt <small class="mute">(Strich)</small></span><b>${fg(gP)}</b></div>
+ <div class="wkr"><span>${verd[0]}</span><b style="color:${verd[2]}">${verd[1]}</b></div>
+ <div class="wkr"><span>Prognose bis Sonntag</span><b>≈ ${fg(gX)}${gX<0?" zugenommen":""}</b></div>`:""}
+ <p class="s mute" style="margin:10px 0 0">Rechnerisch aus gegessen − Garmin-Verbrauch, Mo bis gestern (7.700 kcal ≈ 1 kg). Prognose: du triffst jeden Tag dein Ziel.</p></div>`}
 /* Heute, aber der letzte Garmin-Sync ist von gestern → Ziel noch ohne heutige Aktivkalorien */
 const noGarmin=i=>{const sy=C.store&&C.store.synced?new Date(C.store.synced*1000):null;return i.d===TODAY()&&sy&&EK.day(sy)!==i.d};
 /* Verbrannt laut Garmin – Aktivkalorien hervorgehoben */
@@ -2515,7 +2509,7 @@ addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="17c666e";
+const APPV="2af1fda";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
