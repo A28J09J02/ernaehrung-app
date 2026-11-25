@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=680441a"></script>
+<script src="design.js?v=b0d4570"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -179,7 +179,7 @@ video{width:100%;border-radius:var(--rad);background:#000;aspect-ratio:3/4;objec
 .ringnote{margin:6px 0 0;text-align:center}.centernote{margin:8px 0 0;text-align:center}.block{display:block}
 .row.mb{margin:0 0 12px}.mt10{margin-top:10px}.p6{margin:0 0 6px}
 .btn.sm{padding:4px 10px;font-size:13px}.west{margin-top:10px;display:grid;gap:4px}
-.burn .na b{color:var(--mute)}
+.burn .na b{color:var(--mute)}.burn.b4{grid-template-columns:repeat(4,1fr);gap:4px}.burn.b4 b{font-size:17px}
 main.slide-l{animation:sl .22s ease}main.slide-r{animation:sr .22s ease}
 main.dragx{will-change:transform}main.snap{transition:transform .28s cubic-bezier(.2,.9,.3,1.15)}
 #dhint{position:fixed;top:50%;z-index:40;padding:8px 13px;border-radius:999px;background:var(--card);color:var(--mute);font-size:14px;font-weight:600;
@@ -1053,12 +1053,12 @@ details.lbrow>summary{list-style:none;cursor:pointer}details.lbrow>summary::-web
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=680441a"></script>
-<script src="todos.js?v=680441a"></script>
-<script src="gesund.js?v=680441a"></script>
-<script src="lauf.js?v=680441a"></script>
-<script src="mitteilungen.js?v=680441a"></script>
-<script src="suche.js?v=680441a"></script>
+<script src="kern.js?v=b0d4570"></script>
+<script src="todos.js?v=b0d4570"></script>
+<script src="gesund.js?v=b0d4570"></script>
+<script src="lauf.js?v=b0d4570"></script>
+<script src="mitteilungen.js?v=b0d4570"></script>
+<script src="suche.js?v=b0d4570"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -1208,14 +1208,15 @@ const entries=d=>(C.months[d.slice(0,7)]||{})[d]||[];
 let AUSR={share:{},cheats:{},carry:{}};
 function calcAus(){const p=prof(),g=G(),L=[];
  for(let k=-45;k<=14;k++){const d=EK.add(TODAY(),k),e=entries(d),eaten=EK.sum(e).kcal,target=EK.target(p,g,d).kcal;L.push({d,has:e.length>0&&EK.voll(eaten,target),eaten,target,w:EK.weight(planDay(d))})}
- AUSR=EK.ausgleich(L,TODAY(),EK.ausSet(C.profil))}
+ /* live: der heutige Tag zählt schon jetzt als Einsparung („Stand jetzt“), wenn er unter dem Ziel liegt – das senkt den offenen Ausgleich der Folgetage */
+ AUSR=EK.ausgleich(L,TODAY(),EK.ausSet(C.profil),{live:true})}
 function info(d){const e=entries(d),s=EK.sum(e),p=prof(),t0=EK.target(p,G(),d),gd=C.store&&C.store.days[d],done=d<TODAY();
- const aus=Math.round(AUSR.share[d]||0),t={...t0,kcal:t0.kcal-aus,aus,orig:t0.kcal,carry:AUSR.carry[d]||null},m=EK.macros(p,t.kcal),ch=AUSR.cheats[d]||null;
+ const aus=Math.round(AUSR.share[d]||0),t={...t0,kcal:t0.kcal-aus,aus,orig:t0.kcal,carry:AUSR.carry[d]||null,eased:AUSR.eased[d]||null},m=EK.macros(p,t.kcal),ch=AUSR.cheats[d]||null,cr=d<=TODAY()?AUSR.credits[d]||null:null;
  /* full: genug eingetragen (ab 50 % des Ziels, EK.voll) – nur volle Tage bekommen eine Ampel und zählen in Streak/Statistik */
  const full=e.length>0&&EK.voll(s.kcal,t0.kcal),part=e.length>0&&!full&&done;
  let kg=full&&done?EK.ampel("kcal",s.kcal,t.kcal):null,grade=full&&done?EK.dayGrade(s,t,m):null;
  if(ch&&ch.state==="full"&&full){kg="g";if(grade!=="g")grade=EK.ampel("p",s.p,m.p)==="r"?"y":"g"}
- return{d,e,s,t,m,p,has:e.length>0,full,part,done,gk:gd?gd.kcal:null,ga:gd?gd.kcal_active:null,grade,kg,ch}}
+ return{d,e,s,t,m,p,has:e.length>0,full,part,done,gk:gd?gd.kcal:null,ga:gd?gd.kcal_active:null,grade,kg,ch,cr}}
 const liveAmp=(k,v,goal,done)=>{const a=EK.ampel(k,v,goal);if(done||!a)return a;if(k==="p"||k==="fib")return a==="g"?"g":"acc";return v>goal?a:"acc"};
 const AMPT={g:"Ziel erreicht",y:"Knapp daneben",r:"Deutlich daneben"};
 /* Tagesziele für die Erinnerungen (tools/ern_voll.py): Die Workflows können den Rechenkern nicht ausführen,
@@ -1276,16 +1277,14 @@ function vTag(sk=streaks()){
  const i=info(cur),t=i.t,left=t.kcal-i.s.kcal,ka=i.has?(i.done?i.kg:(i.s.kcal<=t.kcal?"g":"r")):null,T=TODAY();
  const src={formel:"Formel",yazio:"Yazio",garmin:"Garmin"}[t.src];
  let o=`${cur!==T?`<button class="today" data-day="0">↩ Zurück zu heute</button>`:""}${cur>T?`<div class="fr">Vorausplanen – Einträge zählen erst an diesem Tag</div>`:""}`;
- o+=partHint(i)+cheatHint(i)+cheatNote(i);
+ o+=partHint(i)+cheatHint(i)+cheatNote(i)+savingHint(i);
  if(cur===T&&!sk.today&&sk.n>0)o+=`<div class="hint">${ic("flame")}<span>Trag heute etwas ein, damit deine <b>${sk.n}-Tage-Streak</b> weiterläuft.</span></div>`;
  const mac=[["p","Protein","var(--p)"],["c","Kohlenhydrate","var(--c)"],["f","Fett","var(--f)"]].map(([k,l,c])=>{const v=i.s[k],g=i.m[k],a=i.has?liveAmp(k,v,g,i.done):null;
   return`<div><small>${l}</small><b>${n0(v)} <small>/ ${n0(g)} g</small></b><div class="bar"><i style="width:${Math.min(100,g?v/g*100:0)}%;background:${a==="r"||a==="y"?COL[a]:c}"></i></div></div>`}).join("");
  const more=[["fib","Ballaststoffe"],["sug","Zucker"],["salt","Salz"]].map(([k,l])=>{const v=i.s[k],g=i.m[k],a=i.has?liveAmp(k,v,g,i.done):null,lim=k!=="fib";
   return`<div class="mrow"><div class="t"><span>${l}</span><span><b>${n1(v)}</b> ${lim?"/ max. ":"/ "}${n1(g)} g</span></div><div class="bar"><i style="width:${Math.min(100,g?v/g*100:0)}%;background:${a?COL[a]:"var(--grid)"}"></i></div></div>`}).join("");
- const zl=i.d>T&&t.aus?`Ausgleich −${n0(t.aus)}`:"";
  o+=`<div class="card"><div class="hero">${ringSvg(t.kcal?i.s.kcal/t.kcal:0,ka?COL[ka]:"var(--grid)",n0(Math.abs(left)),left>=0?"kcal übrig":"kcal zu viel")}
-  <div class="kv"><div><span class="mute">Ziel${noGarmin(i)?" (vorläufig)":""}</span><b>${n0(t.kcal)}</b></div>${i.d<=T&&t.train?`<div class="s"><span class="mute">davon aktiv</span><span style="color:var(--c)">+ ${ic("flame")} ${n0(t.train)}</span></div>`:""}<div><span class="mute">Gegessen</span><b>${n0(i.s.kcal)}</b></div>
-  ${zl?`<div class="s mute block">${zl}</div>`:""}
+  <div class="kv">${t.aus?`<div><span class="mute">Normales Ziel</span><b>${n0(t.orig)}</b></div><div class="s"><span class="mute">↺ Ausgleich</span><span style="color:var(--y)">− ${n0(t.aus)}</span></div>`:""}<div><span class="mute">Ziel${noGarmin(i)?" (vorläufig)":""}</span><b>${n0(t.kcal)}</b></div>${i.d<=T&&t.train?`<div class="s"><span class="mute">davon aktiv</span><span style="color:var(--c)">+ ${ic("flame")} ${n0(t.train)}</span></div>`:""}<div><span class="mute">Gegessen</span><b>${n0(i.s.kcal)}</b></div>
   ${i.done&&i.kg?`<div><span class="chip" style="--c0:${COL[i.kg]}">${i.ch&&i.ch.state==="full"?"Ausgeglichen ↺":AMPT[i.kg]}</span></div>`:""}</div></div>
   ${i.d>T?`<p class="s mute ringnote">Aktivkalorien kommen am Tag selbst dazu.</p>`:""}
   <div class="mac">${mac}</div>
@@ -1351,40 +1350,54 @@ function cheatHint(i){const c=i.ch;if(!c)return"";
  if(c.state==="off")return`<div class="hint acc">${ic("pizza")}<span><b>${n0(c.need)} kcal über dem Ziel</b> – wird nicht ausgeglichen, die nächsten Tage behalten ihr normales Ziel.<br><button class="btn sm mt8" data-ausday="${i.d}|1">Doch auf die Folgetage verteilen</button></span></div>`;
  const list=c.carriers.map(([d,a])=>`${ddm(d)} −${n0(a)}`).join(" · ");
  const st=c.state==="full"?`<b>Ausgeglichen!</b> Die ${n0(c.need)} kcal über dem Ziel sind über die Folgetage wieder drin.`:
-  c.state==="run"?`<b>${n0(c.need)} kcal über dem Ziel</b> – kein Problem: automatisch verteilt auf ${list}. Halte dort dein (etwas niedrigeres) Ziel, dann ist der Tag wieder grün.`:
-  `<b>${n0(c.need)} kcal über dem Ziel</b> – verteilt auf ${list||"–"}${c.left?`; ${n0(c.left)} kcal ließen sich nicht mehr unterbringen`:""}. Ein Ausgleichstag ohne vollständige Einträge (unter 50 % des Ziels) zählt nicht.`;
+  c.state==="run"?`<b>${n0(c.need)} kcal über dem Ziel</b> – kein Problem: automatisch verteilt auf ${list}.${c.paid>=1?` ${n0(c.paid)} kcal davon hast du schon durch Einsparung wieder drin.`:""} Halte dort dein (etwas niedrigeres) Ziel, dann ist der Tag wieder grün.`:
+  `<b>${n0(c.need)} kcal über dem Ziel</b> – verteilt auf ${list||"–"}${c.left?`; ${n0(c.left)} kcal ließen sich nicht mehr unterbringen`:""}${c.paid>=1?`; ${n0(c.paid)} kcal davon durch Einsparung ausgeglichen`:""}. Ein Ausgleichstag ohne vollständige Einträge (unter 50 % des Ziels) zählt nicht.`;
  /* mehrere Cheat Days hintereinander: verteilt wird erst nach dem letzten */
  const blk=c.carriers.length&&c.carriers[0][0]>EK.add(i.d,1)&&c.state==="run"?` Der Ausgleich beginnt erst nach dem letzten Cheat Day.`:"";
  return`<div class="hint acc">↺<span>${st}${blk}${c.state!=="full"?`<br><button class="btn sm mt8" data-ausday="${i.d}|0">Nicht ausgleichen</button>`:""}</span></div>`}
 /* Markierter Cheat Day (heute/künftig): Ziel bleibt ungesenkt */
 function cheatNote(i){if(i.d<TODAY()||!cheatSet().has(i.d))return"";
  return`<div class="hint acc">${ic("pizza")}<span><b>Cheat Day</b> – dein Ziel wird ${i.d===TODAY()?"heute":"an diesem Tag"} nicht gesenkt. ${ausOn()?"Was über dem Ziel liegt, wird erst nach dem letzten Cheat Day verteilt.":"Der Ausgleich ist ausgeschaltet."}<br><button class="btn sm mt8" data-cheat="${i.d}|0">Aufheben</button></span></div>`}
+/* Eingespart (unter dem eigenen Ziel): senkt den offenen Ausgleich der Folgetage; alles darüber ist Bonus und wird nicht übertragen (zählt in der Wochenbilanz) */
+function savingHint(i){const c=i.cr;if(!c||c.saved<50)return"";const live=i.d===TODAY(),pre=live?"Stand jetzt: ":"",end=live?" Gilt endgültig mit Tagesende.":"";
+ if(c.used>=1){const to=c.to.filter(([,a])=>a>=1).map(([d,a])=>`${ddm(d)} +${n0(a)}`).join(" · ");
+  return`<div class="hint acc">↺<span>${pre}<b>${n0(c.saved)} kcal unter deinem Ziel.</b> ${c.used>=c.saved-1?"Das senkt":`${n0(c.used)} davon senken`} den offenen Ausgleich – dort darfst du mehr essen: ${to}.${c.bonus>=50?` Die übrigen ${n0(c.bonus)} kcal sind Bonus und werden nicht übertragen.`:""}${end}</span></div>`}
+ return`<div class="hint acc"><span>${pre}<b>${n0(c.saved)} kcal unter deinem Ziel</b> – das ist Bonus. Es ist kein Ausgleich offen, und eingesparte kcal werden nicht auf andere Tage übertragen. Sie zählen in der Wochenbilanz.${end}</span></div>`}
 /* Ausgleichstag: warum das Ziel niedriger ist und wie es leichter geht */
-function carrierNote(i){if(!i.t.aus)return"";const pl=planDay(i.d),rest=pl&&pl.type==="rest",from=(i.t.carry||[]).map(([d,a])=>`${n0(a)} kcal von ${ddm(d)}`).join(" und ");
+function carrierNote(i){const ez=i.t.eased||[],ezs=ez.reduce((a,[,x])=>a+x,0),ezd=ez.map(([d])=>ddm(d)).join(" und ");
+ if(!i.t.aus)return ezs>=1?`<div class="hint acc">↺<span><b>Ausgleich erledigt</b> – durch deine Einsparung am ${ezd} entfallen die ${n0(ezs)} kcal Ausgleich an diesem Tag.</span></div>`:"";
+ const pl=planDay(i.d),rest=pl&&pl.type==="rest",from=(i.t.carry||[]).map(([d,a])=>`${n0(a)} kcal von ${ddm(d)}`).join(" und ");
  return`<div class="card acc"><h2>↺ Ausgleich ${i.d>=TODAY()?"geplant":""}<small>−${n0(i.t.aus)} kcal</small></h2>
- <p class="s p6">Dein Ziel ist um ${n0(i.t.aus)} kcal niedriger (${from}). Statt weniger zu essen geht auch mehr Bewegung – sie hebt dein Ziel automatisch wieder an:</p>
+ <p class="s p6">Dein Ziel ist um ${n0(i.t.aus)} kcal niedriger (${from}).${ezs>=1?` Ohne deine Einsparung am ${ezd} wären es ${n0(i.t.aus+ezs)} kcal.`:""} Statt weniger zu essen geht auch mehr Bewegung – sie hebt dein Ziel automatisch wieder an:</p>
  <div class="s mute">${ic("walk")} 45 Min Spaziergang ≈ 150 kcal${rest?" (heute Ruhetag – nur locker)":` · ${ic("bike")} 30 Min lockeres Rad ≈ 200 kcal · ${ic("gym")} 15 Min länger im Gym ≈ 70 kcal`} – als Aktivität auf der Uhr aufzeichnen.</div>
  ${i.d>=TODAY()?`<button class="btn w mt10" data-cheat="${i.d}|1">${ic("pizza")} ${i.d===TODAY()?"Heute ist":"Das wird"} auch ein Cheat Day – Ziel nicht senken</button><p class="s mute" style="margin:6px 0 0">Mehrere Cheat Days hintereinander zählen zusammen: Der Ausgleich startet dann erst danach.</p>`:""}</div>`}
 /* Woche Mo–So: Bilanz gegessen gegen Garmin-Verbrauch und gegen das Wochenziel */
 function weekCard(){const T=TODAY(),mon=EK.monday(T),p=prof(),rate=p.rate!=null?+p.rate:null;
  let bal=0,n=0,plan=0;for(let k=0;k<7;k++){const d=EK.add(mon,k);if(d>=T)break;const i=info(d);if(!i.full)continue;n++;
   const use=i.gk!=null?i.gk:i.t.orig-EK.goalAdj(p);bal+=i.s.kcal-use;plan+=EK.goalAdj(p)}
- if(!n)return"";const kg=bal/7700,okc=bal<=plan+200;
+ if(!n)return"";const kg=bal/7700,diff=bal-plan,open=Math.round(Object.entries(AUSR.share).filter(([d])=>d>=T).reduce((a,[,v])=>a+v,0)),
+  kgS=Math.abs(kg)<.1?`${kg>0?"+":"−"}${n0(Math.abs(kg)*1000)}`:`${kg>0?"+":"−"}${n1(Math.abs(kg))}`,kgU=Math.abs(kg)<.1?"g":"kg",
+  /* Rückstand = so viel Defizit fehlt zum Plan; Bonus = so viel mehr Defizit als geplant (wird nicht auf andere Tage übertragen) */
+  sub=diff>200?`<div class="wt" style="margin-top:12px"><div><span>Rückstand zum Plan</span><b class="warn">${n0(diff)}</b> <small class="mute">kcal</small></div><div><span>Offener Ausgleich ↺</span><b>${n0(open)}</b> <small class="mute">kcal</small></div></div>`:
+   diff<-200?`<div class="wt" style="margin-top:12px"><div><span>Bonus</span><b style="color:var(--g)">+ ${n0(-diff)}</b> <small class="mute">kcal</small></div></div>`:"",
+  txt=diff>200?`Dir fehlen ${n0(diff)} kcal Defizit zum Plan.${open>0?` Der offene Ausgleich (${n0(open)} kcal) steckt schon in den Zielen der nächsten Tage.`:""} Den Rest holst du nur auf, wenn du unter deinem Ziel bleibst.`:
+   diff<-200?`Mehr Defizit als der Plan bisher vorsieht – das ist dein Bonus. Er wird nicht auf andere Tage übertragen, du kommst damit einfach schneller zum Ziel.`:"Du liegst im Plan.";
  return`<div class="card"><h2>Diese Woche <small>${n} Tag${n>1?"e":""} erfasst</small></h2><div class="wt">
  <div><span>Bilanz</span><b class="${bal>0&&rate!=null&&rate<0?"warn":""}">${bal>0?"+":"−"}${n0(Math.abs(bal))}</b> <small class="mute">kcal</small></div>
- <div><span>≈ Körpergewicht</span><b>${kg>0?"+":"−"}${n1(Math.abs(kg))}</b> <small class="mute">kg</small></div>
- <div><span>Plan bisher</span><b>${plan>0?"+":plan<0?"−":""}${n0(Math.abs(plan))}</b> <small class="mute">kcal</small></div></div>
- <p class="s ${okc?"mute":"warn"} centernote">${okc?"Du liegst im Plan.":"Noch über dem Plan – der Ausgleich der nächsten Tage holt das auf."} Bilanz = gegessen − Garmin-Verbrauch.</p></div>`}
+ <div><span>≈ Körpergewicht</span><b>${kgS}</b> <small class="mute">${kgU}</small></div>
+ <div><span>Plan bisher</span><b>${plan>0?"+":plan<0?"−":""}${n0(Math.abs(plan))}</b> <small class="mute">kcal</small></div></div>${sub}
+ <p class="s ${diff>200?"warn":"mute"} centernote">${txt}</p>
+ <p class="s mute centernote" style="margin-top:6px">Bilanz = gegessen − Garmin-Verbrauch (Minus = Defizit), Mo bis gestern. Plan = dein Zieltempo für diese Tage.</p></div>`}
 /* Heute, aber der letzte Garmin-Sync ist von gestern → Ziel noch ohne heutige Aktivkalorien */
 const noGarmin=i=>{const sy=C.store&&C.store.synced?new Date(C.store.synced*1000):null;return i.d===TODAY()&&sy&&EK.day(sy)!==i.d};
 /* Verbrannt laut Garmin – Aktivkalorien hervorgehoben */
 /* So entsteht das Tagesziel: Grundziel (inkl. Ausgleich) + Aktivkalorien = Ziel heute */
-function burnRow(i){const t=i.t;if(i.d>TODAY())return"";const grund=t.kcal-t.train,bonusL=t.bonusAll?"aktiv verbrannt":"Training";
+function burnRow(i){const t=i.t;if(i.d>TODAY())return"";const grund=(t.aus?t.orig:t.kcal)-t.train,bonusL=t.bonusAll?"aktiv verbrannt":"Training";
  const sy=C.store&&C.store.synced?new Date(C.store.synced*1000):null,isT=i.d===TODAY(),
   /* Der letzte Sync stammt von einem früheren Tag: für heute gibt es noch keine Garmin-Werte – nicht „0 · Stand 22:52“ zeigen */
   noData=isT&&sy&&EK.day(sy)!==i.d,
   syn=isT&&sy?(noData?"noch keine Werte von heute<br>letzter Sync "+sy.toLocaleString("de-DE",{weekday:"short",hour:"2-digit",minute:"2-digit"}):"Stand "+sy.toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})):"";
- return`<div class="burn"><div><b>${n0(grund)}</b><span>Grundziel${t.aus?`<br>inkl. −${n0(t.aus)} Ausgleich`:""}</span></div>
+ return`<div class="burn${t.aus?" b4":""}"><div><b>${n0(grund)}</b><span>Grundziel</span></div>${t.aus?`<div><b style="color:var(--y)">− ${n0(t.aus)}</b><span>↺ Ausgleich</span></div>`:""}
  <div class="fire${noData?" na":""}"><b>+ ${ic("flame")} ${noData?"–":n0(t.train)}</b><span>${noData?"":bonusL}${syn?`${noData?"":"<br>"}${syn}`:""}</span></div>
  <div><b>= ${n0(t.kcal)}</b><span>dein Ziel ${isT?(noData?"(vorläufig)":"heute"):""}</span></div></div>`}
 /* Gewicht: Wochen bis zum Ziel – nach Plan-Tempo und nach deinem echten Schnitt der letzten 14 Tage */
@@ -1421,7 +1434,7 @@ function vKal(){
  <div class="card"><div class="dnav" style="border:0;margin-bottom:8px"><button class="ib" data-cal="${pm}" aria-label="Vormonat">‹</button><button class="calttl" data-cal="${T.slice(0,7)}" aria-label="Zurück zum aktuellen Monat"><b>${MON[m-1]} ${y}</b>${calM!==T.slice(0,7)?`<em>Heute</em>`:""}</button><button class="ib" data-cal="${nm}" aria-label="Folgemonat" ${nm>MAXD().slice(0,7)?"disabled":""}>›</button></div>
  <div class="cal">${cells}</div>
  <div class="leg"><span><i style="background:var(--g)"></i>Ziel ±10 % (${cnt.g})</span><span><i style="background:var(--y)"></i>±20 % (${cnt.y})</span><span><i style="background:var(--r)"></i>deutlich daneben (${cnt.r})</span><span><i style="background:var(--acc-bg)"></i>heute/geplant</span><span><i class="lu"></i>zu wenig eingetragen${cnt.u?` (${cnt.u})`:""}</span><span><i style="background:var(--grid)"></i>nicht erfasst</span></div></div>
- <p class="foot">Farbe = Kalorienziel des Tages erreicht? Grün bei höchstens 10 % Abweichung, orange bis 20 %, rot bei mehr – egal ob zu viel oder zu wenig gegessen. Die kleine Zahl sind die gegessenen kcal. Tag antippen öffnet das Tagebuch – auch die nächsten 14 Tage, zum Vorausplanen.<br>↺ = Ausgleich: Liegst du an einem Tag drüber, verteilt die App den Überschuss automatisch auf die nächsten Tage (Lauf- und Gym-Tage tragen mehr, höchstens 20 % bzw. 500 kcal pro Tag) und senkt dort dein Ziel. Hältst du diese Ziele, wird der Tag grün ↺. Mehrere Cheat Days hintereinander zählen als Block – verteilt wird erst danach (Pizza-Symbol = als Cheat Day markiert). Ausschalten: Profil → „Überschuss ausgleichen“ oder am jeweiligen Tag.${cnt.a?` Ausgeglichen in diesem Monat: ${cnt.a}.`:""}</p>`}
+ <p class="foot">Farbe = Kalorienziel des Tages erreicht? Grün bei höchstens 10 % Abweichung, orange bis 20 %, rot bei mehr – egal ob zu viel oder zu wenig gegessen. Die kleine Zahl sind die gegessenen kcal. Tag antippen öffnet das Tagebuch – auch die nächsten 14 Tage, zum Vorausplanen.<br>↺ = Ausgleich: Liegst du an einem Tag drüber, verteilt die App den Überschuss automatisch auf die nächsten Tage (Lauf- und Gym-Tage tragen mehr, höchstens 20 % bzw. 500 kcal pro Tag) und senkt dort dein Ziel. Hältst du diese Ziele, wird der Tag grün ↺. Liegst du an einem Ausgleichstag unter deinem gesenkten Ziel, sinkt der noch offene Ausgleich der Folgetage um diese Einsparung (dort darfst du mehr essen); was darüber hinausgeht, ist Bonus und wird nicht übertragen. Mehrere Cheat Days hintereinander zählen als Block – verteilt wird erst danach (Pizza-Symbol = als Cheat Day markiert). Ausschalten: Profil → „Überschuss ausgleichen“ oder am jeweiligen Tag.${cnt.a?` Ausgeglichen in diesem Monat: ${cnt.a}.`:""}</p>`}
 
 /* ===== Verlauf ===== */
 function vVerlauf(){
@@ -2496,7 +2509,7 @@ addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="680441a";
+const APPV="b0d4570";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;

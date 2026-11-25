@@ -100,6 +100,8 @@ const EK=(()=>{
     folgenden 3 Tage verteilt und senkt dort das Ziel. Tage mit mehr Training (Plan: Lauf-km, Gym) tragen mehr.
     Pro Tag höchstens 20 % des Ziels bzw. 500 kcal; reicht das nicht, wird auf bis zu 7 Tage verlängert.
     Liegt ein Ausgleichstag selbst wieder drüber, wird dessen Überschuss ebenso weiterverteilt – es geht nichts verloren.
+    Liegt ein Tag UNTER seinem angepassten Ziel, senkt das den noch offenen Ausgleich der Folgetage (siehe saving()); was darüber
+    hinausgeht, ist Bonus und wird nicht übertragen. opt.live=true: der laufende Tag wird schon als Einsparung mitgerechnet (Vorschau).
     Mehrere Cheat Days hintereinander zählen als Block: Ein Cheat Day trägt selbst nie einen Ausgleich (sein Ziel wird
     nicht gesenkt) – verteilt wird erst auf die Tage NACH dem letzten Cheat Day. Cheat Day ist ein abgeschlossener Tag,
     der über seinem eigenen (ungesenkten) Ziel liegt (außerhalb ±10 %), oder ein im Profil markierter Tag (auch heute/künftig).
@@ -114,14 +116,30 @@ const EK=(()=>{
  function weight(pd){if(!pd)return 1;if(pd.type==="rest")return .6;if((pd.type==="run"||pd.type==="race")&&pd.km)return Math.min(3,1+pd.km/10);
   if(pd.type==="gym")return 1.5;if(pd.type==="flex")return 1.2;return 1}
  const ausSet=p=>({on:!(p&&p.ausgleich===false),tage:(p&&p.ausTage)||{},cheat:new Set((p&&p.cheat)||[])});
- function ausgleich(days,today,set){
-  set=set||{};const on=set.on!==false,tage=set.tage||{},mark=set.cheat||new Set();
-  const L=days.slice().sort((a,b)=>a.d<b.d?-1:1),idx=Object.fromEntries(L.map((x,i)=>[x.d,i])),share={},cheats={},carry={};
+ function ausgleich(days,today,set,opt){
+  set=set||{};opt=opt||{};const on=set.on!==false,tage=set.tage||{},mark=set.cheat||new Set();
+  const L=days.slice().sort((a,b)=>a.d<b.d?-1:1),idx=Object.fromEntries(L.map((x,i)=>[x.d,i])),share={},cheats={},carry={},credits={},eased={};
   const isCheat=x=>mark.has(x.d)||(x.d<today&&x.has&&x.eaten>x.target&&ampel("kcal",x.eaten,x.target)!=="g");
+  /* Eingespart: Liegt ein vollständig eingetragener Tag UNTER seinem (angepassten) Ziel, senkt das den noch offenen Ausgleich
+     der Folgetage – im Verhältnis zu dem, was dort noch offen ist (dort darfst du entsprechend mehr essen). Höchstens so viel wie
+     offen ist, pro Tag nie mehr als die Verteil-Grenze (20 % des Ziels bzw. 500 kcal). Der Rest ist „Bonus“: wird NICHT auf andere
+     Tage übertragen (du willst abnehmen), zählt aber in der Wochenbilanz. credits[Tag]={saved,used,bonus,to:[[Tag,kcal]]},
+     eased[Tag]=[[Spartag,kcal]] = um wie viel der Ausgleich dieses Tages dadurch kleiner wurde. */
+  function saving(i){const x=L[i],adjT=x.target-(share[x.d]||0);
+   if(!x.has||mark.has(x.d)||!(x.eaten<adjT))return;
+   const saved=Math.round(adjT-x.eaten);if(saved<1)return;
+   const ys=L.slice(i+1).filter(y=>(share[y.d]||0)>0),tot=ys.reduce((a,y)=>a+share[y.d],0),use=Math.max(0,Math.min(saved,AUS.CAP,x.target*AUS.PCT,tot)),to=[];
+   if(use>0)for(const y of ys){const old=share[y.d],cut=use*old/tot,f=(old-cut)/old;
+    share[y.d]=old-cut;
+    for(const z of carry[y.d]||[])z[1]*=f;
+    for(const s of new Set((carry[y.d]||[]).map(z=>z[0]))){const c=cheats[s],e=c&&c.carriers.find(q=>q[0]===y.d);if(e){const a=e[1];e[1]=a*f;c.paid=(c.paid||0)+a-e[1]}}
+    (eased[y.d]=eased[y.d]||[]).push([x.d,cut]);to.push([y.d,cut])}
+   credits[x.d]={saved,used:Math.round(use),bonus:saved-Math.round(use),to}}
   for(let i=0;i<L.length;i++){const x=L[i];if(x.d>=today)break;
+   saving(i);
    const adjT=x.target-(share[x.d]||0);
    if(!x.has||!(x.eaten>adjT)||ampel("kcal",x.eaten,adjT)==="g")continue;
-   let rest=Math.round(x.eaten-adjT);const c={need:rest,carriers:[],left:0};cheats[x.d]=c;
+   let rest=Math.round(x.eaten-adjT);const c={need:rest,carriers:[],left:0,paid:0};cheats[x.d]=c;
    /* verteilen? Ausnahme des Tages geht vor; ein Tag, der selbst einen Ausgleich trägt, reicht seinen Rest immer weiter */
    const dist=tage[x.d]!=null?!!tage[x.d]:(on||(share[x.d]||0)>0);
    if(!dist){c.state="off";c.until=x.d;continue}
@@ -134,13 +152,18 @@ const EK=(()=>{
      share[y.d]=(share[y.d]||0)+amt;given+=amt;const ex=c.carriers.find(z=>z[0]===y.d);if(ex)ex[1]+=amt;else c.carriers.push([y.d,amt]);
      (carry[y.d]=carry[y.d]||[]).push([x.d,amt])}
     rest-=given;if(given===0)continue}
-   c.left=rest>10?rest:0;
+   c.left=rest>10?rest:0}
+  /* laufender Tag (nur Vorschau „Stand jetzt“): zählt nur als Einsparung, nie als neuer Überschuss – der wird erst am Tagesende verteilt */
+  if(opt.live&&idx[today]!=null)saving(idx[today]);
+  /* Zustand erst jetzt: Einsparungen können spätere Beträge verkleinern oder ganz auflösen (dann „Ausgeglichen“) */
+  for(const k in cheats){const c=cheats[k];if(c.state==="off")continue;
+   c.carriers=c.carriers.filter(z=>z[1]>=1);
    const done=c.carriers.filter(([d])=>d<today),logged=done.filter(([d])=>L[idx[d]]&&L[idx[d]].has);
    c.state=c.left>0?"part":done.length<c.carriers.length?"run":logged.length===done.length?"full":"part";
-   c.until=c.carriers.length?c.carriers[c.carriers.length-1][0]:x.d}
-  /* carry: zusammengefasst je Tag & Überschuss-Tag */
-  for(const k in carry){const m={};for(const[d,a]of carry[k])m[d]=(m[d]||0)+a;carry[k]=Object.entries(m)}
-  return{share,cheats,carry}}
+   c.until=c.carriers.length?c.carriers[c.carriers.length-1][0]:k}
+  /* carry: zusammengefasst je Tag & Überschuss-Tag; Reste unter 1 kcal fallen weg */
+  for(const k in carry){const m={};for(const[d,a]of carry[k])m[d]=(m[d]||0)+a;carry[k]=Object.entries(m).filter(([,a])=>a>=1);if(!(share[k]>=1)||!carry[k].length){delete carry[k];delete share[k]}}
+  return{share,cheats,carry,credits,eased}}
  /* Lebensmittel-Bewertung (eigene, einfache Punkteregel – keine Wissenschaft, nur Orientierung). Grundlage: Nährwerte je 100 g.
     Punkte: Protein-Anteil an den kcal ≥ 30 % +2, ≥ 20 % +1, < 8 % −1 · leicht (≤ 100 kcal) +1, sehr kaloriendicht (≥ 400 kcal) −1 ·
     Ballaststoffe ≥ 3 g je 100 kcal oder ≥ 6 g +1 · Zucker > 22,5 g −2, > 12,5 g −1 (Ampelgrenzen der britischen Lebensmittelbehörde FSA);
