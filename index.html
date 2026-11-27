@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=2af1fda"></script>
+<script src="design.js?v=b23c11a"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -23,7 +23,7 @@ body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 input,textarea,.sel{-webkit-user-select:text;user-select:text}
 button{transition:opacity .12s,transform .12s}button:active{opacity:.6}.btn:active,.mpl:active,.mpb:active,.plus:active,.qb:active,.res:active,.gx:active{transform:scale(.97)}
 .tg{gap:12px}.tg input{flex:none}
-html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;font-variant-numeric:tabular-nums;overscroll-behavior-y:none}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif;font-variant-numeric:tabular-nums}
 body{padding:env(safe-area-inset-top) 0 calc(78px + env(safe-area-inset-bottom))}
 button,input,select{font:inherit;color:inherit}button{cursor:pointer}
 .top{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
@@ -79,7 +79,9 @@ details.more{margin-top:10px;font-size:14px}details.more summary{color:var(--acc
 .sw .bg{position:absolute;inset:0;background:var(--r);display:flex;justify-content:flex-end;align-items:center}
 .sw .bg button{border:0;background:none;color:#fff;font-weight:600;height:100%;width:92px}
 .swc{position:relative;background:var(--card);display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;width:100%;border:0;text-align:left;transition:transform .2s;touch-action:pan-y}
-.swc.drag{transition:none}
+.swc.drag{transition:none}.swc{transition:transform .32s cubic-bezier(.2,.85,.25,1)}
+.sw.sw-go .bg{filter:brightness(.82)}.sw .bg button{transition:transform .2s cubic-bezier(.3,1.6,.5,1)}.sw.sw-go .bg button{transform:scale(1.12)}
+.sw.sw-col{height:0!important;opacity:0;border-top-width:0;transition:height .25s cubic-bezier(.4,0,.2,1),opacity .2s}
 .swc span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis}.swc small{color:var(--mute)}
 .btn{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:11px 14px;font-weight:600}
 .btn.p{background:var(--acc);border-color:var(--acc);color:#fff}.btn.d{color:var(--r)}.btn.w{width:100%}
@@ -180,12 +182,12 @@ video{width:100%;border-radius:var(--rad);background:#000;aspect-ratio:3/4;objec
 .row.mb{margin:0 0 12px}.mt10{margin-top:10px}.p6{margin:0 0 6px}
 .btn.sm{padding:4px 10px;font-size:13px}.west{margin-top:10px;display:grid;gap:4px}
 .burn .na b{color:var(--mute)}.wkbar{position:relative;height:14px;border-radius:99px;background:var(--grid);margin:16px 0 14px}.wkbar i{position:absolute;left:0;top:0;bottom:0;min-width:14px;border-radius:99px;background:var(--acc)}.wkbar s{position:absolute;top:-4px;bottom:-4px;width:3px;margin-left:-1.5px;border-radius:2px;background:var(--ink);opacity:.75}.wkr{display:flex;justify-content:space-between;align-items:baseline;font-size:15px;margin-top:8px}.burn.b4{grid-template-columns:repeat(4,1fr);gap:4px}.burn.b4 b{font-size:17px}
-main.slide-l{animation:sl .22s ease}main.slide-r{animation:sr .22s ease}
+main.slide-l{animation:sl .34s cubic-bezier(.2,.85,.25,1)}main.slide-r{animation:sr .34s cubic-bezier(.2,.85,.25,1)}main.pgout{transition:transform .11s ease-in,opacity .11s ease-in}
 main.dragx{will-change:transform}main.snap{transition:transform .28s cubic-bezier(.2,.9,.3,1.15)}
 #dhint{position:fixed;top:50%;z-index:40;padding:8px 13px;border-radius:999px;background:var(--card);color:var(--mute);font-size:14px;font-weight:600;
  box-shadow:0 4px 16px rgba(0,0,0,.14);pointer-events:none;opacity:0;transform:translateY(-50%) scale(.85);transition:opacity .15s,transform .15s,background .15s,color .15s}
 #dhint.l{left:10px}#dhint.r{right:10px}#dhint.on{opacity:1;transform:translateY(-50%) scale(1)}#dhint.go{background:var(--acc);color:#fff;transform:translateY(-50%) scale(1.06)}
-@keyframes sl{from{transform:translateX(40px);opacity:.3}to{transform:none;opacity:1}}@keyframes sr{from{transform:translateX(-40px);opacity:.3}to{transform:none;opacity:1}}
+@keyframes sl{from{transform:translateX(72px);opacity:0}to{transform:none;opacity:1}}@keyframes sr{from{transform:translateX(-72px);opacity:0}to{transform:none;opacity:1}}
 /* Suchergebnisse */
 .res{border-left:4px solid var(--src,var(--line));padding:11px 12px 11px 12px;align-items:stretch}
 .res .nm{font-size:16px;font-weight:600;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -1047,18 +1049,33 @@ details.lbrow>summary{list-style:none;cursor:pointer}details.lbrow>summary::-web
 .calttl{display:flex;align-items:center;gap:8px;font:inherit;color:inherit}.calttl em{font-style:normal;font-size:12px;font-weight:700;color:var(--a1);background:color-mix(in srgb,var(--a1) 16%,transparent);border-radius:99px;padding:3px 10px}
 #dsBar{position:fixed;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 14px);z-index:400;display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:20px;background:rgba(40,40,44,.94);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);color:#fff;font-size:13px;font-weight:650}
 #dsBar span{flex:1}.dsprev{margin-top:14px;display:flex;flex-direction:column;gap:8px}.dsrow{display:flex;gap:8px}.dsrow .btn{flex:1}
+
+/* ===== App-Gefühl: Übergänge, Druck-Rückmeldung, Gummiband ===== */
+#app>main.anim.tnl{animation:tnl .38s cubic-bezier(.2,.85,.25,1)}#app>main.anim.tnr{animation:tnr .38s cubic-bezier(.2,.85,.25,1)}
+@keyframes tnl{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:none}}@keyframes tnr{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:none}}
+#app>main.anim>:nth-child(-n+7){animation:cin .46s cubic-bezier(.2,.85,.25,1) backwards}
+#app>main.anim>:nth-child(2){animation-delay:.04s}#app>main.anim>:nth-child(3){animation-delay:.08s}#app>main.anim>:nth-child(4){animation-delay:.12s}#app>main.anim>:nth-child(5){animation-delay:.16s}#app>main.anim>:nth-child(6){animation-delay:.2s}#app>main.anim>:nth-child(7){animation-delay:.24s}
+@keyframes cin{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+.mrw,.drawer .it{transition:transform .26s cubic-bezier(.2,.85,.25,1),opacity .15s,background .2s}
+.mrw:active,.drawer .it:active,.today:active,.streak:active{transform:scale(.975)}
+.tdt:active{opacity:.6}
+button:active{opacity:.7}
+.sheet.ghost{pointer-events:none;animation:ghout .28s cubic-bezier(.4,0,.9,.5) forwards!important}
+@keyframes ghout{from{transform:none}to{transform:translateY(100%)}}:root[data-ah] .sheet.ghost{animation-name:ghoutx!important}@keyframes ghoutx{from{transform:none}to{transform:translateX(100%)}}
+@media(prefers-reduced-motion:reduce){#app>main.anim>*,main.pgout,.sheet.ghost{animation-duration:.01s!important;transition-duration:.01s!important}}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="gA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--a1)"/><stop offset="1" style="stop-color:var(--a2)"/></linearGradient></defs></svg>
 <div id="app"></div>
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=2af1fda"></script>
-<script src="todos.js?v=2af1fda"></script>
-<script src="gesund.js?v=2af1fda"></script>
-<script src="lauf.js?v=2af1fda"></script>
-<script src="mitteilungen.js?v=2af1fda"></script>
-<script src="suche.js?v=2af1fda"></script>
+<script src="kern.js?v=b23c11a"></script>
+<script src="todos.js?v=b23c11a"></script>
+<script src="gesund.js?v=b23c11a"></script>
+<script src="lauf.js?v=b23c11a"></script>
+<script src="mitteilungen.js?v=b23c11a"></script>
+<script src="suche.js?v=b23c11a"></script>
+<script src="gefuehl.js?v=b23c11a"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -1215,7 +1232,7 @@ function info(d){const e=entries(d),s=EK.sum(e),p=prof(),t0=EK.target(p,G(),d),g
  /* full: genug eingetragen (ab 50 % des Ziels, EK.voll) – nur volle Tage bekommen eine Ampel und zählen in Streak/Statistik */
  const full=e.length>0&&EK.voll(s.kcal,t0.kcal),part=e.length>0&&!full&&done;
  let kg=full&&done?EK.ampel("kcal",s.kcal,t.kcal):null,grade=full&&done?EK.dayGrade(s,t,m):null;
- if(ch&&ch.state==="full"&&full){kg="g";grade="g"}
+ if(ch&&ch.state==="full"&&full){kg="g";if(grade!=="g")grade=EK.ampel("p",s.p,m.p)==="r"?"y":"g"}
  return{d,e,s,t,m,p,has:e.length>0,full,part,done,gk:gd?gd.kcal:null,ga:gd?gd.kcal_active:null,grade,kg,ch,cr}}
 const liveAmp=(k,v,goal,done)=>{const a=EK.ampel(k,v,goal);if(done||!a)return a;if(k==="p"||k==="fib")return a==="g"?"g":"acc";return v>goal?a:"acc"};
 const AMPT={g:"Ziel erreicht",y:"Knapp daneben",r:"Deutlich daneben"};
@@ -1243,7 +1260,8 @@ const TITLE={tag:"",kal:"Kalender",verlauf:"Verlauf",rezepte:"Gerichte",ideen:"I
 const BIGT=["todos","meintag","gesund","stat"];
 const goHash=g=>{const v=HASHV[String(g).replace(/^#/,"")];if(v){if(v==="tag")cur=TODAY();go(v)}};
 let BACKV="tag";
-function go(v){if(v==="kal"&&view!=="kal")BACKV=view;if(v!=="tag")MRET=null;if($("sheet").classList.contains("on"))closeSheet();view=v;LS.set("view",v);closeDrawer();render();scrollTo(0,0);
+const TABORD=["tag","meintag","todos","gesund"],SCRM={};
+function go(v){const pv=view;if(v==="kal"&&view!=="kal")BACKV=view;SCRM[view]={y:scrollY,t:Date.now()};if(v!=="tag")MRET=null;if($("sheet").classList.contains("on"))closeSheet();view=v;LS.set("view",v);closeDrawer();render();{const m=SCRM[v];if(v===pv)scrollTo({top:0,behavior:"smooth"});else scrollTo(0,m&&Date.now()-m.t<300000&&TABORD.includes(v)?m.y:0)}
  try{history.replaceState(null,"",location.pathname+location.search)}catch(e){}}
 function openDrawer(){const d=$("drawer");d.innerHTML=`<div class="ttl">${ic("crown")}KingStats</div>`+NAV.map(([g,L])=>`<div class="hd">${g}</div>`+L.map(([k,i,l])=>`<button class="it ${view===k?"on":""}" data-go="${k}">${svg(i)}${l}${k==="todos"&&tdOpen()?` <i class="dbdg">${tdOpen()}</i>`:""}</button>`).join("")).join("")+
  `<div class="hd">App</div><button class="it" data-design="1">${svg("palette")}Design & Farben</button><div class="hd">Garmin</div>${syncSince()?`<button class="it" disabled>${svg("sync")}Sync läuft … seit ${hhmm(syncSince())}</button>`:`<button class="it" data-sync="1">${svg("sync")}Jetzt synchronisieren</button>`}<p class="foot" style="margin:6px 10px">${C.store&&C.store.synced?"Letzter Stand: "+new Date(C.store.synced*1000).toLocaleString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}):""}</p>`;
@@ -1252,6 +1270,7 @@ function closeDrawer(){$("drawer").classList.remove("on");$("scrim").classList.r
 /* Untere Leiste – auf allen Seiten gleich. „Mehr“ öffnet das Seitenmenü mit allen übrigen Bereichen. */
 const TABS=[["tag","book","Heute"],["meintag","run","Training"],["todos","todo","Todos"],["gesund","pulse","Gesundheit"],["mehr","grid","Mehr"]];
 const tabOf=v=>v==="plan"?"meintag":TABS.some(t=>t[0]===v)?v:"mehr";
+function tabDir(a,b){const i=TABORD.indexOf(a),j=TABORD.indexOf(b);return i<0||j<0||i===j?"":j>i?" tnl":" tnr"}
 function render(){
  if(!CFG.token)return;if(!/^\d{4}-\d\d-\d\d$/.test(cur)||isNaN(new Date(cur+"T12:00:00")))cur=TODAY();calcAus();
  const a=$("app"),T=TODAY(),food=["tag","kal","verlauf","rezepte","ideen","lm","profil"].includes(view),sk=streaks();
@@ -1264,7 +1283,7 @@ function render(){
  const right=food?streakBtn:view==="todos"?`<span style="display:flex;gap:6px"><button class="ib glassb" data-tdvoice="1" aria-label="Todos per Sprache">${svg("mic")}</button><button class="ib glassb" data-tdnew="1" aria-label="Neues Todo">${svg("plus")}</button></span>`:`<span style="min-width:44px"></span>`;
  const open=tdOpen(),on=tabOf(view);
  a.innerHTML=`<div class="top"><button class="ib" data-menu="1" aria-label="Menü">${svg("menu")}<span class="avt" aria-hidden="true">JK</span></button>${head}${right}</div>
- <div class="stat" id="st"></div><main class="v-${view}${render.lv!==view?" anim":""}">${({tag:()=>vTag(sk),kal:vKal,verlauf:vVerlauf,rezepte:vRezepte,ideen:vIdeen,lm:vLm,profil:vProfil,meintag:vTraining,plan:vPlan,todos:vTodos,gesund:vGesund,stat:vStat})[view]()}</main>
+ <div class="stat" id="st"></div><main class="v-${view}${render.lv!==view?" anim"+tabDir(render.lv,view):""}">${({tag:()=>vTag(sk),kal:vKal,verlauf:vVerlauf,rezepte:vRezepte,ideen:vIdeen,lm:vLm,profil:vProfil,meintag:vTraining,plan:vPlan,todos:vTodos,gesund:vGesund,stat:vStat})[view]()}</main>
  <nav class="tabs"><i class="lamp" aria-hidden="true"></i>${TABS.map(([k,i,l])=>`<button ${k==="mehr"?'data-menu="1"':`data-go="${k}"`} class="${on===k?"on":""}" aria-label="${l}">${svg(i)}<span>${l}</span>${k==="todos"&&open?`<i class="bdg">${open}</i>`:""}</button>`).join("")}</nav>`;
  setStatus();placeLamp();render.lv=view}
 function ringSvg(f,c,big,small){const r=50,C2=2*Math.PI*r,q=Math.max(0,Math.min(1,f||0));
@@ -1415,7 +1434,7 @@ function actsRow(d){if(!C.store||d>TODAY())return"";const gd=C.store.days[d]||{}
  ${A.map(a=>`<div><i>${EMO[a.type]||ic("bolt")}</i><span><b>${Math.round(a.min)} min</b>${a.km?" · "+n1(a.km)+" km":""} · ${n0(Math.max(0,(a.kcal||0)-(a.bmr||0)))} kcal</span></div>`).join("")}</div>`}
 /* Tag wechseln (Pfeile, Wischen); null = heute */
 function shiftDay(v){const old=cur;cur=v==null?TODAY():EK.add(cur,v);if(cur>MAXD())cur=MAXD();if(cur===old&&v!=null)return;render();
- const m=document.querySelector("main");if(m&&v!=null){m.classList.add(v>0?"slide-l":"slide-r");setTimeout(()=>m.classList.remove("slide-l","slide-r"),260)}}
+ const m=document.querySelector("main");if(m&&v!=null){m.classList.add(v>0?"slide-l":"slide-r");setTimeout(()=>m.classList.remove("slide-l","slide-r"),360)}}
 const swRow=(attr,inner,delAttr)=>`<div class="sw"><div class="bg"><button ${delAttr}>Löschen</button></div><button class="swc" ${attr}>${inner}</button></div>`;
 function delEntry(id){const e=entries(cur).find(x=>x.id===id);if(!e)return;const d=cur;
  change(pMonth(d),{t:"del",d,id});toast(`„${e.name}“ gelöscht`,4500,"Rückgängig",()=>change(pMonth(d),{t:"add",d,e}))}
@@ -1433,8 +1452,8 @@ function vKal(){
  return`<div class="card"><div class="kp"><div><b class="ct">${ic("flame")}${sk.n}</b><span>Streak aktuell</span></div><div><b>${sk.best}</b><span>Rekord (Tage)</span></div><div><b>${cnt.g}</b><span>Tage im Ziel</span></div></div></div>
  <div class="card"><div class="dnav" style="border:0;margin-bottom:8px"><button class="ib" data-cal="${pm}" aria-label="Vormonat">‹</button><button class="calttl" data-cal="${T.slice(0,7)}" aria-label="Zurück zum aktuellen Monat"><b>${MON[m-1]} ${y}</b>${calM!==T.slice(0,7)?`<em>Heute</em>`:""}</button><button class="ib" data-cal="${nm}" aria-label="Folgemonat" ${nm>MAXD().slice(0,7)?"disabled":""}>›</button></div>
  <div class="cal">${cells}</div>
- <div class="leg"><span><i style="background:var(--g)"></i>Ziel erreicht / darunter (${cnt.g})</span><span><i style="background:var(--y)"></i>knapp drüber (${cnt.y})</span><span><i style="background:var(--r)"></i>deutlich daneben (${cnt.r})</span><span><i style="background:var(--acc-bg)"></i>heute/geplant</span><span><i class="lu"></i>zu wenig eingetragen${cnt.u?` (${cnt.u})`:""}</span><span><i style="background:var(--grid)"></i>nicht erfasst</span></div></div>
- <p class="foot">Farbe = Kalorienziel des Tages erreicht? Grün bis 10 % über dem Ziel – darunter immer grün, auch bei 500 oder 1000 kcal weniger. Orange bis 100 kcal mehr, rot bei mehr. Nur die Kalorien zählen. Die kleine Zahl sind die gegessenen kcal. Tag antippen öffnet das Tagebuch – auch die nächsten 14 Tage, zum Vorausplanen.<br>↺ = Ausgleich: Liegst du an einem Tag drüber, verteilt die App den Überschuss automatisch auf die nächsten Tage (Lauf- und Gym-Tage tragen mehr, höchstens 20 % bzw. 500 kcal pro Tag) und senkt dort dein Ziel. Hältst du diese Ziele, wird der Tag grün ↺. Liegst du an einem Ausgleichstag unter deinem gesenkten Ziel, sinkt der noch offene Ausgleich der Folgetage um diese Einsparung (dort darfst du mehr essen); was darüber hinausgeht, ist Bonus und wird nicht übertragen. Mehrere Cheat Days hintereinander zählen als Block – verteilt wird erst danach (Pizza-Symbol = als Cheat Day markiert). Ausschalten: Profil → „Überschuss ausgleichen“ oder am jeweiligen Tag.${cnt.a?` Ausgeglichen in diesem Monat: ${cnt.a}.`:""}</p>`}
+ <div class="leg"><span><i style="background:var(--g)"></i>Ziel ±10 % (${cnt.g})</span><span><i style="background:var(--y)"></i>±20 % (${cnt.y})</span><span><i style="background:var(--r)"></i>deutlich daneben (${cnt.r})</span><span><i style="background:var(--acc-bg)"></i>heute/geplant</span><span><i class="lu"></i>zu wenig eingetragen${cnt.u?` (${cnt.u})`:""}</span><span><i style="background:var(--grid)"></i>nicht erfasst</span></div></div>
+ <p class="foot">Farbe = Kalorienziel des Tages erreicht? Grün bei höchstens 10 % Abweichung, orange bis 20 %, rot bei mehr – egal ob zu viel oder zu wenig gegessen. Die kleine Zahl sind die gegessenen kcal. Tag antippen öffnet das Tagebuch – auch die nächsten 14 Tage, zum Vorausplanen.<br>↺ = Ausgleich: Liegst du an einem Tag drüber, verteilt die App den Überschuss automatisch auf die nächsten Tage (Lauf- und Gym-Tage tragen mehr, höchstens 20 % bzw. 500 kcal pro Tag) und senkt dort dein Ziel. Hältst du diese Ziele, wird der Tag grün ↺. Liegst du an einem Ausgleichstag unter deinem gesenkten Ziel, sinkt der noch offene Ausgleich der Folgetage um diese Einsparung (dort darfst du mehr essen); was darüber hinausgeht, ist Bonus und wird nicht übertragen. Mehrere Cheat Days hintereinander zählen als Block – verteilt wird erst danach (Pizza-Symbol = als Cheat Day markiert). Ausschalten: Profil → „Überschuss ausgleichen“ oder am jeweiligen Tag.${cnt.a?` Ausgeglichen in diesem Monat: ${cnt.a}.`:""}</p>`}
 
 /* ===== Verlauf ===== */
 function vVerlauf(){
@@ -1452,7 +1471,7 @@ function vVerlauf(){
   <p class="s mute" style="margin:8px 0 0">Balken = gegessen · Strich = Ziel · <span style="color:var(--g)">${cnt.g} grün</span> · <span style="color:var(--y)">${cnt.y} orange</span> · <span style="color:var(--r)">${cnt.r} rot</span></p></div>
  <div class="card">${L.slice().reverse().map(x=>`<div class="drow" data-open="${x.d}"><span>${wd(x.d)} ${dm(x.d)}</span><span>${x.has?`<b>${n0(x.s.kcal)}</b> <span class="mute">/ ${n0(x.t.kcal)} kcal · P ${n0(x.s.p)} g${x.part?" · zu wenig eingetragen":""}</span>`:`<span class="mute">nicht erfasst</span>`}</span>
   <span>${x.done&&x.grade?`<span class="chip" style="--c0:${COL[x.grade]}">${x.grade==="g"?ic("check"):x.grade==="y"?ic("warn"):ic("x")}</span>`:""}</span></div>`).join("")}</div>
- <p class="foot">Tagesfarbe: nur Kalorien – bis +10 % über dem Ziel grün (darunter immer grün), bis 100 kcal mehr orange, sonst rot. Tage mit weniger als 50 % des Kalorienziels gelten als unvollständig eingetragen: ohne Ampel und nicht in den Durchschnitten.</p>`}
+ <p class="foot">Ampel im Verlauf: Kalorien ±10 % und Protein ab 90 % = grün, ±20 % bzw. ab 75 % = orange, sonst rot. Tage mit weniger als 50 % des Kalorienziels gelten als unvollständig eingetragen: ohne Ampel und nicht in den Durchschnitten.</p>`}
 
 /* ===== Meine Lebensmittel ===== */
 const foods=()=>(C.lm&&C.lm.items)||[];
@@ -2247,7 +2266,11 @@ function saveRecipe(){R.name=($("rname")||{}).value||R.name;R.anleitung=($("ranl
  const days=R.spread?[...Array(N)].map((_,k)=>EK.add(cur,k)):[cur];
  days.forEach((d,k)=>change(pMonth(d),{t:"add",d,e:{id:EK.uid()+k,meal:R.meal,name:`${name} (1/${N})`,src:id,g:EK.r(tg/N,0),n:{...per},ts:Date.now()}},true));
  closeSheet();R=null;S.mode="log";render();toast(days.length>1?`${name}: ${days.length} Portionen eingetragen (${dm(days[0])}–${dm(days[days.length-1])})`:`${name}: 1 Portion eingetragen`,4000)}
-function closeSheet(){stopScan();DISL=false;const sh=$("sheet");sh.classList.remove("on","quiet","backin","dragg","snapb");sh.style.transform="";sh.innerHTML="";A=null;W=null;DSH=null;
+function sheetGhost(sh){if(!sh.classList.contains("on")||sh.classList.contains("quiet")||sh.classList.contains("dragg")||MRET||sh.style.transform||!sh.firstElementChild||sh.querySelector("video,canvas"))return;
+ try{const g=sh.cloneNode(true);g.removeAttribute("id");g.querySelectorAll("[id]").forEach(e=>e.removeAttribute("id"));g.className="sheet on ghost";g.style.cssText="";g.setAttribute("aria-hidden","true");
+  document.body.appendChild(g);g.scrollTop=sh.scrollTop;
+  queueMicrotask(()=>{if(sh.classList.contains("on"))g.remove()});setTimeout(()=>g.remove(),320)}catch(e){}}
+function closeSheet(){sheetGhost($("sheet"));stopScan();DISL=false;const sh=$("sheet");sh.classList.remove("on","quiet","backin","dragg","snapb");sh.style.transform="";sh.innerHTML="";A=null;W=null;DSH=null;
  /* kam das Fenster aus einer geöffneten Mahlzeit (Eintragen, Ändern), dorthin zurück (ohne erneutes Einblenden) */
  if(MRET&&view==="tag"){sh.classList.add("quiet");setTimeout(()=>{if(MRET&&!sh.classList.contains("on"))renderMeal();else if(!sh.classList.contains("on"))sh.classList.remove("quiet")},0)}else MRET=null}
 
@@ -2255,9 +2278,10 @@ function closeSheet(){stopScan();DISL=false;const sh=$("sheet");sh.classList.rem
    bei Garmin-Werten älter als 30 Min. Cloud-Sync starten (mit der vorhandenen Sperre gegen Doppelstarts) ===== */
 const PTH=70;let PT=null,PTR=null,PTBUSY=false;
 const ptrEl=()=>{if(!PTR){PTR=document.createElement("div");PTR.id="ptr";PTR.innerHTML="<i>↻</i>";document.body.appendChild(PTR)}return PTR};
-function ptrMove(dy){const e=ptrEl(),d=Math.min(dy*.5,PTH+30);e.className=d>=PTH?"go":"";e.style.opacity=Math.min(1,d/PTH);
+let PTR_GO=false;
+function ptrMove(dy){const e=ptrEl(),d=Math.min(dy*.5,PTH+30);if((d>=PTH)!==PTR_GO){PTR_GO=d>=PTH;haptic()}e.className=d>=PTH?"go":"";e.style.opacity=Math.min(1,d/PTH);
  e.style.transform=`translateY(${d-30}px)`;e.firstChild.style.transform=`rotate(${d*4}deg)`}
-function ptrReset(){if(!PTR)return;PTR.className="";PTR.style.opacity="";PTR.style.transform="";PTR.firstChild.style.transform=""}
+function ptrReset(){PTR_GO=false;if(!PTR)return;PTR.className="";PTR.style.opacity="";PTR.style.transform="";PTR.firstChild.style.transform=""}
 async function ptrRefresh(){if(PTBUSY)return;PTBUSY=true;const e=ptrEl();e.className="run";e.style.opacity="";e.style.transform="";e.firstChild.style.transform="";
  const head=C.head;let msg;
  try{await refreshIfChanged();await flush();const sy=C.store&&C.store.synced,old=true;
@@ -2279,29 +2303,34 @@ let SW=null;const OPEN=-92;
 function resetSwipes(except){document.querySelectorAll(".swc").forEach(x=>{if(x!==except){x.style.transform="";x.dataset.swopen=""}})}
 let SD=null;
 document.addEventListener("touchstart",ev=>{SD=null;const c=ev.target.closest(".swc");
- if(!c){resetSwipes();if(view==="tag"&&!$("sheet").classList.contains("on")&&!$("drawer").classList.contains("on")&&!ev.target.closest("input,select,textarea,.bar,details"))
+ if(!c){resetSwipes();if(view==="tag"&&!$("sheet").classList.contains("on")&&!$("drawer").classList.contains("on")&&!ev.target.closest("input,select,textarea,.bar")&&!(ev.target.closest("details")&&!ev.target.closest("summary")))
    SD={x:ev.touches[0].clientX,y:ev.touches[0].clientY,t:Date.now(),lock:null,dx:0};return}resetSwipes(c);
  SW={c,x:ev.touches[0].clientX,y:ev.touches[0].clientY,base:c.dataset.swopen?OPEN:0,dx:0,lock:null}},{passive:true});
 /* Tageswechsel mit Widerstand: Seite folgt dem Finger gebremst, erst ab DTH px wird gewechselt */
-const DTH=120;let DH=null;
+const DTH=120;let DH=null,DH_GO=false;
 function dHint(dir,p,go,lbl){if(!DH){DH=document.createElement("div");DH.id="dhint";document.body.appendChild(DH)}
  DH.className=(dir<0?"l":"r")+(p>.15?" on":"")+(go?" go":"");DH.textContent=dir<0?"‹ "+lbl:lbl+" ›"}
 function dDrag(dx){const m=document.querySelector("main");if(!m)return;const dir=dx<0?1:-1,a=Math.abs(dx),blocked=dir>0&&cur>=MAXD();
+ const dgo=!blocked&&a>=DTH;if(dgo!==!!DH_GO){DH_GO=dgo;haptic()}
  const vis=blocked?a*.08:Math.min(a,DTH)*.32+Math.max(0,a-DTH)*.08;
  m.classList.remove("snap");m.classList.add("dragx");m.style.transform=`translateX(${dx<0?-vis:vis}px)`;
  const t=EK.add(cur,dir);dHint(dx<0?1:-1,a/DTH,!blocked&&a>=DTH,blocked?"Zukunft gesperrt":(t===TODAY()?"Heute":ddm(t)))}
-function dEnd(go,v){const m=document.querySelector("main");if(DH)DH.className=DH.className.replace(/ on| go/g,"");if(!m)return;
- m.classList.remove("dragx");if(go){m.style.transform="";shiftDay(v);return}
+function dEnd(go,v){const m=document.querySelector("main");DH_GO=false;if(DH)DH.className=DH.className.replace(/ on| go/g,"");if(!m)return;
+ m.classList.remove("dragx");
+ if(go){haptic();m.classList.add("pgout");m.style.transform=`translateX(${v>0?-72:72}px)`;m.style.opacity="0";
+  setTimeout(()=>{m.classList.remove("pgout");m.style.transform="";m.style.opacity="";shiftDay(v)},110);return}
  m.classList.add("snap");m.style.transform="";setTimeout(()=>m.classList.remove("snap"),300)}
 document.addEventListener("touchmove",ev=>{if(SD){const dx=ev.touches[0].clientX-SD.x,dy=ev.touches[0].clientY-SD.y;
   if(SD.lock==null&&(Math.abs(dx)>10||Math.abs(dy)>10))SD.lock=Math.abs(dx)>Math.abs(dy)*1.3?"x":"y";
   if(SD.lock==="x"){SD.dx=dx;dDrag(dx)}}
  if(!SW)return;const dx=ev.touches[0].clientX-SW.x,dy=ev.touches[0].clientY-SW.y;
  if(SW.lock==null&&(Math.abs(dx)>12||Math.abs(dy)>8))SW.lock=Math.abs(dx)>Math.abs(dy)*1.6?"x":"y";
- if(SW.lock!=="x")return;SW.dx=dx;SW.c.classList.add("drag");SW.c.style.transform=`translateX(${Math.min(0,SW.base+dx)}px)`},{passive:true});
-document.addEventListener("touchend",ev=>{if(SD){if(SD.lock==="x"){const dx=SD.dx,v=dx<0?1:-1;dEnd(Math.abs(dx)>=DTH&&!(v>0&&cur>=MAXD()),v)}SD=null}
+ if(SW.lock!=="x")return;SW.dx=dx;SW.c.classList.add("drag");let sx=Math.min(0,SW.base+dx);const sw=SW.c.offsetWidth;if(-sx>sw)sx=-(sw+(-sx-sw)*.15);SW.c.style.transform=`translateX(${sx}px)`;
+ const sg=-sx>sw*.55;if(sg!==!!SW.go){SW.go=sg;SW.c.parentNode.classList.toggle("sw-go",sg);haptic()}},{passive:true});
+document.addEventListener("touchend",ev=>{if(SD){if(SD.lock==="x"){const dx=SD.dx,v=dx<0?1:-1;const fl=Math.abs(dx)>=48&&Math.abs(dx)/Math.max(1,Date.now()-SD.t)>.55;dEnd((Math.abs(dx)>=DTH||fl)&&!(v>0&&cur>=MAXD()),v)}SD=null}
  if(!SW)return;const c=SW.c,pos=Math.min(0,SW.base+SW.dx);c.classList.remove("drag");
- if(SW.lock==="x"){SW.moved=true;if(pos<-c.offsetWidth*.55){c.style.transform=`translateX(-100%)`;const b=c.parentNode.querySelector(".bg button");setTimeout(()=>b&&b.click(),180)}
+ if(SW.lock==="x"){SW.moved=true;if(pos<-c.offsetWidth*.55){c.style.transform=`translateX(-100%)`;const wr=c.parentNode,b=wr.querySelector(".bg button");
+   setTimeout(()=>{wr.style.height=wr.offsetHeight+"px";void wr.offsetHeight;wr.classList.add("sw-col")},150);setTimeout(()=>b&&b.click(),400)}
   else if(pos<OPEN/2){c.style.transform=`translateX(${OPEN}px)`;c.dataset.swopen="1"}else{c.style.transform="";c.dataset.swopen=""}
   c.dataset.swiped=Date.now()}
  SW=null});
@@ -2509,7 +2538,7 @@ addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="2af1fda";
+const APPV="b23c11a";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;

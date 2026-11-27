@@ -140,4 +140,4 @@ function haptic(){try{if(localStorage.getItem("ern_haptik")==="0")return;
  if(!l){l=document.createElement("label");l.id="hpt";l.setAttribute("aria-hidden","true");l.style.cssText="position:fixed;left:-99px;top:-99px;opacity:0;pointer-events:none";l.innerHTML='<input type="checkbox" switch tabindex="-1">';document.body.appendChild(l)}
  l.click()}catch(e){}}
 /* Wo es sinnvoll ist: Abhaken, untere Leiste, Haupt-Knöpfe, Umschalter, Kategorien, Mahlzeit „+“ */
-document.addEventListener("click",ev=>{if(ev.target.closest&&ev.target.closest(".tabs button,.tdc,[data-gym],.tdfold>.tdh,.btn.p,.seg button,[data-ds-ok],[data-planorig],.mplus,[data-day]"))haptic()},true);
+document.addEventListener("click",ev=>{if(ev.target.closest&&ev.target.closest(".tabs button,.tdc,[data-gym],.tdfold>.tdh,.btn.p,.seg button,[data-ds-ok],[data-planorig],.mplus,[data-day],.chip2,.drawer .it,[data-mopen] .mpl"))haptic()},true);

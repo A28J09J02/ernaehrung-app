@@ -17,7 +17,7 @@
                   bei Garmin-Basis alle Aktivkalorien der Uhr (Alltag + Training), sonst nur die Trainingskalorien –
                   so wird nichts doppelt gezählt. Künftige Tage: kein Bonus (kommt erst, wenn du dich bewegt hast).
    Makros: Protein g/kg Körpergewicht, Fett % der Kalorien, Kohlenhydrate = Rest – oder feste Grammwerte (z. B. aus Yazio).
-   Ampel: Kalorien bis +10 % über dem Ziel grün (darunter immer grün), bis 100 kcal mehr orange, sonst rot; Tagesfarbe nur nach Kalorien. Protein/Ballaststoffe ab 90 % grün, ab 75 % orange.
+   Ampel: Kalorien ±10 % grün, ±20 % orange, sonst rot. Protein/Ballaststoffe ab 90 % grün, ab 75 % orange.
    Kohlenhydrate/Fett ±15 % grün, ±30 % orange. Zucker/Salz bis zur Grenze grün, bis +20 % orange.
    Ausgleich (Cheat Day): siehe ausgleich() – Überschuss wird auf die Folgetage verteilt und senkt dort das Tagesziel;
    abschaltbar (Profil: ausgleich=false, je Tag: ausTage), mehrere Cheat Days hintereinander zählen als Block (cheat). */
@@ -89,12 +89,13 @@ const EK=(()=>{
  /* Ampel: "g" grün, "y" orange, "r" rot, null = nichts zu bewerten */
  function ampel(k,v,goal){
   if(v==null||!goal)return null;const q=v/goal;
-  if(k==="kcal"){const d=v-goal;return d<=goal*.1?"g":d<=goal*.1+100?"y":"r"}
+  if(k==="kcal")return Math.abs(q-1)<=.1?"g":Math.abs(q-1)<=.2?"y":"r";
   if(k==="p"||k==="fib")return q>=.9?"g":q>=.75?"y":"r";
   if(k==="c"||k==="f")return Math.abs(q-1)<=.15?"g":Math.abs(q-1)<=.3?"y":"r";
   if(k==="sug"||k==="salt")return q<=1?"g":q<=1.2?"y":"r";return null}
  /* Gesamtbewertung eines abgeschlossenen Tages */
- function dayGrade(s,t,m){return ampel("kcal",s.kcal,t.kcal)}
+ function dayGrade(s,t,m){const a=[ampel("kcal",s.kcal,t.kcal),ampel("p",s.p,m.p)].filter(Boolean);
+  return a.includes("r")?"r":a.includes("y")?"y":a.length?"g":null}
  /* Ausgleich (Cheat Day): Was an einem abgeschlossenen Tag über dem (angepassten) Ziel liegt, wird auf die
     folgenden 3 Tage verteilt und senkt dort das Ziel. Tage mit mehr Training (Plan: Lauf-km, Gym) tragen mehr.
     Pro Tag höchstens 20 % des Ziels bzw. 500 kcal; reicht das nicht, wird auf bis zu 7 Tage verlängert.
