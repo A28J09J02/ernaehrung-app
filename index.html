@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=49d461e"></script>
+<script src="design.js?v=c96553d"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -1095,13 +1095,13 @@ details.more summary,.btn:not(.p):not(.d),.lnk2,.tdsort,.gzadj,:root .tabs butto
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=49d461e"></script>
-<script src="todos.js?v=49d461e"></script>
-<script src="gesund.js?v=49d461e"></script>
-<script src="lauf.js?v=49d461e"></script>
-<script src="mitteilungen.js?v=49d461e"></script>
-<script src="suche.js?v=49d461e"></script>
-<script src="gefuehl.js?v=49d461e"></script>
+<script src="kern.js?v=c96553d"></script>
+<script src="todos.js?v=c96553d"></script>
+<script src="gesund.js?v=c96553d"></script>
+<script src="lauf.js?v=c96553d"></script>
+<script src="mitteilungen.js?v=c96553d"></script>
+<script src="suche.js?v=c96553d"></script>
+<script src="gefuehl.js?v=c96553d"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -1257,8 +1257,8 @@ function info(d){const e=entries(d),s=EK.sum(e),p=prof(),t0=EK.target(p,G(),d),g
  const aus=Math.round(AUSR.share[d]||0),t={...t0,kcal:t0.kcal-aus,aus,orig:t0.kcal,carry:AUSR.carry[d]||null,eased:AUSR.eased[d]||null},m=EK.macros(p,t.kcal),ch=AUSR.cheats[d]||null,cr=d<=TODAY()?AUSR.credits[d]||null:null;
  /* full: genug eingetragen (ab 50 % des Ziels, EK.voll) – nur volle Tage bekommen eine Ampel und zählen in Streak/Statistik */
  const full=e.length>0&&EK.voll(s.kcal,t0.kcal),part=e.length>0&&!full&&done;
- /* Tagesfarbe nur nach Kalorien (26.11.2026): bis zum Ziel grün (auch deutlich darunter – er will abnehmen), bis 100 kcal drüber gelb, sonst rot */
- let kg=full&&done?(s.kcal<=t.kcal?"g":s.kcal<=t.kcal+100?"y":"r"):null,grade=kg;
+ /* Tagesfarbe nur nach Kalorien (26.11.2026): bis 50 kcal über dem Ziel grün (auch deutlich darunter – er will abnehmen), bis 150 kcal drüber gelb, sonst rot */
+ let kg=full&&done?(s.kcal<=t.kcal+50?"g":s.kcal<=t.kcal+150?"y":"r"):null,grade=kg;
  if(ch&&ch.state==="full"&&full){kg="g";grade="g"}
  return{d,e,s,t,m,p,has:e.length>0,full,part,done,gk:gd?gd.kcal:null,ga:gd?gd.kcal_active:null,grade,kg,ch,cr}}
 const liveAmp=(k,v,goal,done)=>{const a=EK.ampel(k,v,goal);if(done||!a)return a;if(k==="p"||k==="fib")return a==="g"?"g":"acc";return v>goal?a:"acc"};
@@ -1502,7 +1502,7 @@ function vVerlauf(){
   <p class="s mute" style="margin:8px 0 0">Balken = gegessen · Strich = Ziel · <span style="color:var(--g)">${cnt.g} grün</span> · <span style="color:var(--y)">${cnt.y} orange</span> · <span style="color:var(--r)">${cnt.r} rot</span></p></div>
  <div class="card">${L.slice().reverse().map(x=>`<div class="drow" data-open="${x.d}"><span>${wd(x.d)} ${dm(x.d)}</span><span>${x.has?`<b>${n0(x.s.kcal)}</b> <span class="mute">/ ${n0(x.t.kcal)} kcal · P ${n0(x.s.p)} g${x.part?" · zu wenig eingetragen":""}</span>`:`<span class="mute">nicht erfasst</span>`}</span>
   <span>${x.done&&x.grade?`<span class="chip" style="--c0:${COL[x.grade]}">${x.grade==="g"?ic("check"):x.grade==="y"?ic("warn"):ic("x")}</span>`:""}</span></div>`).join("")}</div>
- <p class="foot">Ampel im Verlauf: nur Kalorien – bis zum Tagesziel grün (auch darunter), bis 100 kcal drüber orange, sonst rot. Tage mit weniger als 50 % des Kalorienziels gelten als unvollständig eingetragen: ohne Ampel und nicht in den Durchschnitten.</p>`}
+ <p class="foot">Ampel im Verlauf: nur Kalorien – bis 50 kcal über dem Tagesziel grün (auch darunter), bis 150 kcal drüber orange, sonst rot. Tage mit weniger als 50 % des Kalorienziels gelten als unvollständig eingetragen: ohne Ampel und nicht in den Durchschnitten.</p>`}
 
 /* ===== Meine Lebensmittel ===== */
 const foods=()=>(C.lm&&C.lm.items)||[];
@@ -2625,7 +2625,7 @@ addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="49d461e";
+const APPV="c96553d";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
