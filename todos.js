@@ -1,11 +1,12 @@
 /* ===== KingStats – Todos =====
    Gespeichert in data/ernaehrung/todos.json (gleicher Weg wie das Tagebuch: lokal sofort, dann Warteschlange → GitHub).
-   {items:[{id,t,cat,rep:{k,tage?,n?},start,zeit?,bis?,auto?,vor?,notiz?,ts}], done:{"JJJJ-MM-TT":[id]}, fertig:{id:"JJJJ-MM-TT"}}
+   {items:[{id,t,cat,rep:{k,tage?,n?},start,zeit?,bis?,auto?,vor?,notiz?,ts}], done:{"JJJJ-MM-TT":[id]}, fertig:{id:"JJJJ-MM-TT"}, skip:{"JJJJ-MM-TT":[id]}}
    Regeln (identisch in tools/todos.py, das die Erinnerung um 20:00 bzw. am Wochenende 21:30 verschickt):
    - rep.k: einmal · tag · werktag · wochenende · woche (tage 1=Mo … 7=So) · intervall (alle n Tage) · monat · jahr
    - einmal: am Startdatum fällig, nicht erledigt → bleibt als „überfällig“ stehen, bis abgehakt
    - bis: Die Reihe endet beim ersten Abhaken (z. B. Abo kündigen: jeden Monat wieder, bis erledigt). Verpasste Termine
      einer Reihe verfallen, der nächste kommt von selbst.
+   - skip: Termin einer Reihe nur an diesem Tag überspringen (Wisch nach rechts = „Morgen“: Reihe ohne diesen Tag, einmalige Kopie morgen)
    - auto: kcal = abgehakt, sobald an dem Tag etwas im Tagebuch steht · gewicht = sobald ein Gewicht für den Tag da ist
    Läuft vor dem Hauptskript; greift erst beim Aufruf auf dessen Variablen zu (C, change, render …). */
 "use strict";
@@ -52,6 +53,8 @@ function tdApply(obj,op){const o={items:[],done:{},fertig:{},...(obj||{})};
  if(op.t==="tdck"){const dn={},lim=EK.add(op.d,-90);for(const[d,L]of Object.entries(o.done||{}))if(d>=lim)dn[d]=L.slice();
   const L=new Set(dn[op.d]||[]);op.v?L.add(op.id):L.delete(op.id);if(L.size)dn[op.d]=[...L];else delete dn[op.d];o.done=dn;
   const f={...(o.fertig||{})};if(op.end){if(op.v)f[op.id]=op.d;else if(f[op.id]===op.d)delete f[op.id]}o.fertig=f;return o}
+ if(op.t==="tdskip"){const sk={},lim=EK.add(op.d,-90);for(const[d,L]of Object.entries(o.skip||{}))if(d>=lim)sk[d]=L.slice();
+  const L=new Set(sk[op.d]||[]);op.v?L.add(op.id):L.delete(op.id);if(L.size)sk[op.d]=[...L];else delete sk[op.d];o.skip=sk;return o}
  return o}
 function tdApplyW(obj,op){const o={tage:{},...(obj||{})},t={...o.tage};if(op.v==null)delete t[op.d];else t[op.d]=op.v;return{...o,tage:t}}
 
@@ -71,13 +74,14 @@ function tdAutoOk(it,d){if(it.auto==="kcal")return entries(d).length>0;
  if(it.auto==="gewicht")return!!(tdWaage()[d]||(C.store&&C.store.days[d]&&C.store.days[d].weight));return false}
 const tdManual=(it,d)=>((TD().done||{})[d]||[]).includes(it.id)||tdFertig(it)===d;
 const tdDone=(it,d)=>tdManual(it,d)||tdAutoOk(it,d);
+const tdSkipped=(it,d)=>(((TD().skip||{})[d])||[]).includes(it.id);
 /* Aufgaben eines Tages: [{it,done,over}] – heute inkl. überfälliger einmaliger Aufgaben */
 function tdDay(d){const T=TODAY(),out=[];
  for(const it of tdItems()){const f=tdFertig(it),k=(it.rep||{}).k||"einmal";
   if(f&&f<d)continue;
   if(k==="einmal"){const st=it.start||T;
    if(f===d||(!f&&st===d)||(!f&&d===T&&st<T))out.push({it,done:f===d,over:!f&&d===T&&st<T});continue}
-  if(tdOcc(it,d))out.push({it,done:tdDone(it,d),over:false})}
+  if(tdOcc(it,d)&&!tdSkipped(it,d))out.push({it,done:tdDone(it,d),over:false})}
  return out}
 const tdOpen=(d=TODAY())=>tdDay(d).filter(x=>!x.done).length;
 /* Beschreibung der Wiederholung */
@@ -96,6 +100,7 @@ function tdRow(x,d){const it=x.it,done=x.done,auto=it.auto&&tdAutoOk(it,d)&&!tdM
   it.auto?(auto?`<span class="tdauto">${ic("check")}automatisch erledigt</span>`:`${ic("bolt")}${it.auto==="kcal"?"hakt sich ab, sobald du etwas einträgst":"hakt sich ab, sobald du dich wiegst"}`):"",it.notiz?`${ic("note")}${h(it.notiz)}`:""].filter(Boolean).join("<span>·</span>");
  const ser=(it.rep||{}).k!=="einmal",fl=TDV.flash&&TDV.flash.id===it.id&&TDV.flash.until>Date.now();
  return`<div class="tdrw td-sw${fl?" tdflash":""}" style="--cc:${cat[3]}"${ser?' data-tdser="1"':""}>
+ <div class="tdbl" aria-hidden="true"><button type="button" data-tdswmv="${h(it.id)}" tabindex="-1">${ic("cal")}<span>Morgen</span></button></div>
  <div class="tdbg" aria-hidden="true"><button type="button" data-tdswdel="${h(it.id)}" tabindex="-1">${ic("trash")}<span>${ser?"Serie löschen":"Löschen"}</span></button></div>
  <div class="tdr td${done?" done":""}${x.over?" over":""}" data-tdrow="${h(it.id)}"><button class="tdc" data-tdck="${h(it.id)}|${d}" aria-label="${done?"Nicht erledigt":"Erledigt"}: ${h(it.t)}"><i>${done?ic("check"):""}</i></button>
  <div class="tdt" data-tdopen="${h(it.id)}|${d}"><b>${h(it.t)}</b>${sub?`<small>${sub}</small>`:""}</div>${TDV.sort==="zeit"?`<span class="tdcat" title="${cat[2]}">${ic(cat[1])}</span>`:""}<button class="tdmore" data-tdedit="${h(it.id)}" aria-label="Ändern">${ic("chev")}</button></div></div>`}
@@ -268,37 +273,65 @@ function tdWdSync(i){const f=i.form,c=[...f.querySelectorAll("[name=wd]")];if(c.
 function tdQdSync(){const i=document.querySelector("#tdf [name=start]");if(!i)return;
  document.querySelectorAll("#tdf [data-tdqd]").forEach(b=>b.classList.toggle("on",i.value===EK.add(TODAY(),+b.dataset.tdqd)))}
 document.addEventListener("change",ev=>{if(ev.target.name==="start"&&ev.target.form&&ev.target.form.id==="tdf"){tdWdSync(ev.target);tdQdSync()}});
-/* ---------- Wischen zum Löschen ----------
+/* ---------- Wischen: nach links löschen, nach rechts auf morgen verlegen ----------
    Zeile nach links ziehen: dahinter wird rot „Löschen“ sichtbar. Kurz ziehen und loslassen = Knopf bleibt offen (Antippen löscht),
    weit ziehen (über die halbe Breite) oder schnell wischen = Todo fliegt raus, Zeilen darunter rücken nach. „Rückgängig“ in der Meldung.
    Wiederkehrende Todos (täglich, wöchentlich …) löschen nie per Wisch-Schwung, nur über den offenen Knopf „Serie löschen“. */
-const TDSW={a:null,open:null,t:0},TD_SWO=92;
-function tdSwPos(rw,x,anim){const r=rw.querySelector(".tdr");if(!r)return;rw.classList.toggle("sw-anim",!!anim);clearTimeout(rw._swt);if(x<0)rw.classList.add("sw-on");else if(anim)rw._swt=setTimeout(()=>rw.classList.remove("sw-on"),330);else rw.classList.remove("sw-on");
- r.style.transform=x?`translateX(${x}px)`:"";rw.style.setProperty("--sw",Math.max(0,-x)+"px");if(!x||x>-TD_SWO*1.2)rw.classList.remove("sw-go")}
-function tdSwClose(anim=true){const o=TDSW.open;TDSW.open=null;if(o&&o.isConnected)tdSwPos(o,0,anim)}
+const TDSW={a:null,open:null,side:0,t:0},TD_SWO=92;
+function tdSwPos(rw,x,anim){const r=rw.querySelector(".tdr");if(!r)return;rw.classList.toggle("sw-anim",!!anim);clearTimeout(rw._swt);
+ if(x){const L=x>0;rw.classList.add(L?"sw-onl":"sw-on");rw.classList.remove(L?"sw-on":"sw-onl")}
+ else if(anim)rw._swt=setTimeout(()=>rw.classList.remove("sw-on","sw-onl"),330);else rw.classList.remove("sw-on","sw-onl");
+ r.style.transform=x?`translateX(${x}px)`:"";rw.style.setProperty("--sw",Math.max(0,-x)+"px");rw.style.setProperty("--swl",Math.max(0,x)+"px");
+ if(Math.abs(x)<TD_SWO*1.2)rw.classList.remove("sw-go","sw-gol")}
+function tdSwClose(anim=true){const o=TDSW.open;TDSW.open=null;TDSW.side=0;if(o&&o.isConnected)tdSwPos(o,0,anim)}
 function tdSwDelete(rw){const r=rw.querySelector("[data-tdrow]"),id=r&&r.dataset.tdrow;if(!id||rw.classList.contains("tdcol"))return;
- if(TDSW.open===rw)TDSW.open=null;haptic();
+ if(TDSW.open===rw){TDSW.open=null;TDSW.side=0}haptic();
  const W=rw.offsetWidth;tdSwPos(rw,-W,true);rw.classList.add("sw-go");
  setTimeout(()=>{rw.style.height=rw.offsetHeight+"px";void rw.offsetHeight;rw.classList.add("tdcol")},170);
  setTimeout(()=>tdDel(id),480)}
+/* Nach rechts wischen = auf den nächsten Tag verlegen. Einmalige Todos wandern mit ihrem Datum auf morgen;
+   bei Reihen (wöchentlich, monatlich …) fällt nur dieser Termin weg und es entsteht eine einmalige Kopie für morgen.
+   Kommt eine Reihe morgen ohnehin vor (täglich, werktags …), wird nur der heutige Termin übersprungen. */
+function tdSwMove(rw){const r=rw.querySelector("[data-tdrow]"),ck=rw.querySelector("[data-tdck]"),id=r&&r.dataset.tdrow,d=ck&&ck.dataset.tdck.split("|")[1];
+ if(!id||!d||rw.classList.contains("tdcol"))return;const it=tdItems().find(x=>x.id===id);if(!it)return tdSwClose();
+ if(TDSW.open===rw){TDSW.open=null;TDSW.side=0}
+ if(tdDone(it,d)){tdSwPos(rw,0,true);return toast("Erledigte Todos bleiben, wo sie sind",2400)}
+ haptic();const W=rw.offsetWidth;tdSwPos(rw,W,true);rw.classList.add("sw-gol");
+ setTimeout(()=>{rw.style.height=rw.offsetHeight+"px";void rw.offsetHeight;rw.classList.add("tdcol")},170);
+ setTimeout(()=>tdPostpone(it,d),480)}
+function tdPostpone(it,d){const nd=EK.add(d,1),k=(it.rep||{}).k||"einmal",wo=tdLong(d);
+ if(k==="einmal"){const old={...it};TDV.flash={id:it.id,until:Date.now()+2400};
+  change(TD_P,{t:"tdset",it:{...it,start:nd,ts:Date.now()}});
+  return toast(`„${it.t}“ → ${tdLong(nd)}`,5000,"Rückgängig",()=>{TDV.flash=null;change(TD_P,{t:"tdset",it:old})})}
+ const copy=tdOcc(it,nd)?null:{id:"td"+EK.uid(),t:it.t,cat:it.cat,rep:{k:"einmal"},start:nd,ts:Date.now(),...(it.zeit?{zeit:it.zeit}:{}),...(it.notiz?{notiz:it.notiz}:{})};
+ change(TD_P,{t:"tdskip",d,id:it.id,v:true},!!copy);if(copy){TDV.flash={id:copy.id,until:Date.now()+2400};change(TD_P,{t:"tdset",it:copy})}
+ toast(copy?`„${it.t}“ (${wo}) → ${tdLong(nd)}`:`„${it.t}“ ${wo} übersprungen – morgen wieder da`,5000,"Rückgängig",()=>{TDV.flash=null;
+  change(TD_P,{t:"tdskip",d,id:it.id,v:false},!!copy);if(copy)change(TD_P,{t:"tddel",id:copy.id})})}
 document.addEventListener("touchstart",ev=>{const t=ev.target,rw=t.closest&&t.closest(".tdrw"),T=ev.touches[0];
  if(TDSW.open&&rw!==TDSW.open)tdSwClose();
- TDSW.a=null;if(!rw||ev.touches.length>1||t.closest(".tdbg")||rw.classList.contains("tdcol"))return;
- TDSW.a={rw,x:T.clientX,y:T.clientY,t:Date.now(),base:rw===TDSW.open?-TD_SWO:0,dx:0,fx:0,lock:null,go:false,W:rw.offsetWidth,ser:rw.hasAttribute("data-tdser")}},{passive:true});
+ TDSW.a=null;if(!rw||ev.touches.length>1||t.closest(".tdbg,.tdbl")||rw.classList.contains("tdcol"))return;
+ TDSW.a={rw,x:T.clientX,y:T.clientY,t:Date.now(),base:rw===TDSW.open?TDSW.side*TD_SWO:0,dx:0,fx:0,lock:null,go:false,gol:false,W:rw.offsetWidth,ser:rw.hasAttribute("data-tdser")}},{passive:true});
 document.addEventListener("touchmove",ev=>{const a=TDSW.a;if(!a)return;const T=ev.touches[0],dx=T.clientX-a.x,dy=T.clientY-a.y;
  if(a.lock==null){if(Math.abs(dx)<8&&Math.abs(dy)<8)return;a.lock=Math.abs(dx)>Math.abs(dy)*1.4?"x":"y";if(a.lock==="x"){a.rw.classList.add("sw-drag");a.rw.classList.remove("sw-anim")}}
  if(a.lock!=="x")return;
- let x=a.base+dx;if(x>0)x*=.12;const W=a.W;if(-x>W)x=-(W+(-x-W)*.15);if(a.ser&&-x>TD_SWO*1.35)x=-(TD_SWO*1.35+(-x-TD_SWO*1.35)*.25);
+ const W=a.W;let x=a.base+dx;
+ if(x>0){if(x>W)x=W+(x-W)*.15}
+ else{if(-x>W)x=-(W+(-x-W)*.15);if(a.ser&&-x>TD_SWO*1.35)x=-(TD_SWO*1.35+(-x-TD_SWO*1.35)*.25)}
  a.fx=dx;a.dx=x;tdSwPos(a.rw,x,false);
- const go=!a.ser&&-x>W*.5;if(go!==a.go){a.go=go;a.rw.classList.toggle("sw-go",go);if(go)haptic()}},{passive:true});
+ const go=!a.ser&&-x>W*.5,gol=x>W*.5;
+ if(go!==a.go){a.go=go;a.rw.classList.toggle("sw-go",go);if(go)haptic()}
+ if(gol!==a.gol){a.gol=gol;a.rw.classList.toggle("sw-gol",gol);if(gol)haptic()}},{passive:true});
 document.addEventListener("touchend",()=>{const a=TDSW.a;TDSW.a=null;if(!a||a.lock!=="x")return;const rw=a.rw,x=a.dx,dt=Math.max(1,Date.now()-a.t);
  rw.classList.remove("sw-drag");TDSW.t=Date.now();
- const flick=!a.ser&&a.base===0&&a.fx<-70&&-a.fx/dt>.55;
+ const flick=!a.ser&&a.base===0&&a.fx<-70&&-a.fx/dt>.55,flickR=a.base===0&&a.fx>70&&a.fx/dt>.55;
  if(!a.ser&&(-x>a.W*.5||flick))return tdSwDelete(rw);
- if(-x>TD_SWO*.5){tdSwPos(rw,-TD_SWO,true);TDSW.open=rw}else{tdSwPos(rw,0,true);if(TDSW.open===rw)TDSW.open=null}});
+ if(x>a.W*.5||flickR)return tdSwMove(rw);
+ if(-x>TD_SWO*.5){tdSwPos(rw,-TD_SWO,true);TDSW.open=rw;TDSW.side=-1}
+ else if(x>TD_SWO*.5){tdSwPos(rw,TD_SWO,true);TDSW.open=rw;TDSW.side=1}
+ else{tdSwPos(rw,0,true);if(TDSW.open===rw){TDSW.open=null;TDSW.side=0}}});
 document.addEventListener("touchcancel",()=>{const a=TDSW.a;TDSW.a=null;if(a&&a.lock==="x"){a.rw.classList.remove("sw-drag");tdSwPos(a.rw,a.base,true)}});
 /* Nach einem Wisch kein versehentliches Öffnen; offene Zeile: Antippen schließt nur */
-document.addEventListener("click",ev=>{const t=ev.target,rw=t.closest&&t.closest(".tdrw"),bg=t.closest&&t.closest(".tdbg");
+document.addEventListener("click",ev=>{const t=ev.target,rw=t.closest&&t.closest(".tdrw"),bg=t.closest&&t.closest(".tdbg,.tdbl");
  if(rw&&!bg&&Date.now()-TDSW.t<450){ev.stopPropagation();ev.preventDefault();return}
  if(TDSW.open&&!bg){const same=rw===TDSW.open;tdSwClose();if(same){ev.stopPropagation();ev.preventDefault()}}},true);
 
@@ -317,6 +350,7 @@ document.addEventListener("click",ev=>{const t=ev.target,b=s=>t.closest(s);let x
  else if(x=b("[data-tdtab]")){TDV.tab=x.dataset.tdtab;render();scrollTo(0,0)}
  else if(x=b("[data-planorig]")){const[d,v]=x.dataset.planorig.split("|"),o={...POV()};if(v==="1")o[d]=1;else delete o[d];LS.set("plan_orig",o);const y=scrollY;render();scrollTo(0,y);toast(v==="1"?"Ursprünglicher Plan für diesen Tag":"Anpassung wieder aktiv",2200)}
  else if(x=b("[data-tdfoldall]")){const E=[...document.querySelectorAll("[data-tdfold]")],zu=E.some(e=>!e.classList.contains("fo"));E.forEach(e=>{e.classList.toggle("fo",zu);e.setAttribute("aria-expanded",!zu);TDV.fold[e.dataset.tdfold]=zu});LS.set("td_fold",TDV.fold);x.innerHTML=ic(zu?"down":"up")+(zu?"Alle auf":"Alle zu")}
+ else if(x=b("[data-tdswmv]")){const rw=x.closest(".tdrw");if(rw)tdSwMove(rw)}
  else if(x=b("[data-tdswdel]")){const rw=x.closest(".tdrw");rw?tdSwDelete(rw):tdDel(x.dataset.tdswdel)}
  else if((x=b("[data-tdfold]"))&&b(".tdfold>.tdh")){const k=x.dataset.tdfold,fo=!x.classList.contains("fo");x.classList.toggle("fo",fo);x.setAttribute("aria-expanded",!fo);TDV.fold[k]=fo;LS.set("td_fold",TDV.fold)}
  else if(b("[data-tdsort]")){TDV.sort=TDV.sort==="cat"?"zeit":"cat";LS.set("td_sort",TDV.sort);render()}
