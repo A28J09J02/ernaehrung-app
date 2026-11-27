@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=227335c"></script>
+<script src="design.js?v=3dd3cd0"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -1063,19 +1063,31 @@ button:active{opacity:.7}
 .sheet.ghost{pointer-events:none;animation:ghout .28s cubic-bezier(.4,0,.9,.5) forwards!important}
 @keyframes ghout{from{transform:none}to{transform:translateY(100%)}}:root[data-ah] .sheet.ghost{animation-name:ghoutx!important}@keyframes ghoutx{from{transform:none}to{transform:translateX(100%)}}
 @media(prefers-reduced-motion:reduce){#app>main.anim>*,main.pgout,.sheet.ghost{animation-duration:.01s!important;transition-duration:.01s!important}}
+
+/* ===== Lesbarkeit: Akzentfarbe als Textfarbe etwas heller (dunkle Akzente wie Tanne hatten nur ~3:1 Kontrast), Zähler kräftiger ===== */
+:root{--acct:color-mix(in srgb,var(--acc) 70%,#fff)}
+:root[data-bg="hell"],:root[data-bg="classichell"],:root[data-bg="applehell"]{--acct:color-mix(in srgb,var(--acc) 78%,#000)}
+details.more summary,.btn:not(.p):not(.d),.lnk2,.tdsort,.gzadj,:root .tabs button.on{color:var(--acct)}.tdd small{color:var(--acct)!important}
+[style*="color:var(--acc)"]:not([style*="background"]){color:var(--acct)!important}
+.bdg,.dbdg{background:color-mix(in srgb,var(--r) 62%,#5a0012)!important}
+.dnav .ib,.top .ib:not(.glassb){color:var(--acct)}
+/* größere unsichtbare Tippflächen für kleine Knöpfe (Optik bleibt gleich) */
+.hint .lnk,.res .pl,.tdsort,.btn.sm,.calttl{position:relative}
+.hint .lnk::after,.res .pl::after,.tdsort::after,.btn.sm::after,.calttl::after{content:"";position:absolute;inset:-7px}
+.calttl{border:0;background:none;padding:2px 6px;border-radius:10px}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><linearGradient id="gA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--a1)"/><stop offset="1" style="stop-color:var(--a2)"/></linearGradient></defs></svg>
 <div id="app"></div>
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=227335c"></script>
-<script src="todos.js?v=227335c"></script>
-<script src="gesund.js?v=227335c"></script>
-<script src="lauf.js?v=227335c"></script>
-<script src="mitteilungen.js?v=227335c"></script>
-<script src="suche.js?v=227335c"></script>
-<script src="gefuehl.js?v=227335c"></script>
+<script src="kern.js?v=3dd3cd0"></script>
+<script src="todos.js?v=3dd3cd0"></script>
+<script src="gesund.js?v=3dd3cd0"></script>
+<script src="lauf.js?v=3dd3cd0"></script>
+<script src="mitteilungen.js?v=3dd3cd0"></script>
+<script src="suche.js?v=3dd3cd0"></script>
+<script src="gefuehl.js?v=3dd3cd0"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -1282,9 +1294,13 @@ function render(){
   :`<h1 class="${BIGT.includes(view)?"sm":""}${TITLE[view].length>14?" long":""}">${TITLE[view]}</h1>`;
  const right=food?streakBtn:view==="todos"?`<span style="display:flex;gap:6px"><button class="ib glassb" data-tdvoice="1" aria-label="Todos per Sprache">${svg("mic")}</button><button class="ib glassb" data-tdnew="1" aria-label="Neues Todo">${svg("plus")}</button></span>`:`<span style="min-width:44px"></span>`;
  const open=tdOpen(),on=tabOf(view);
+ const oldNav=a.querySelector(".tabs");
  a.innerHTML=`<div class="top"><button class="ib" data-menu="1" aria-label="Menü">${svg("menu")}<span class="avt" aria-hidden="true">JK</span></button>${head}${right}</div>
  <div class="stat" id="st"></div><main class="v-${view}${render.lv!==view?" anim"+tabDir(render.lv,view):""}">${({tag:()=>vTag(sk),kal:vKal,verlauf:vVerlauf,rezepte:vRezepte,ideen:vIdeen,lm:vLm,profil:vProfil,meintag:vTraining,plan:vPlan,todos:vTodos,gesund:vGesund,stat:vStat})[view]()}</main>
  <nav class="tabs"><i class="lamp" aria-hidden="true"></i>${TABS.map(([k,i,l])=>`<button ${k==="mehr"?'data-menu="1"':`data-go="${k}"`} class="${on===k?"on":""}" aria-label="${l}">${svg(i)}<span>${l}</span>${k==="todos"&&open?`<i class="bdg">${open}</i>`:""}</button>`).join("")}</nav>`;
+ /* Die untere Leiste bleibt dasselbe Element (nur Markierung/Zähler werden angepasst) – so flackert sie nicht und die Lampe gleitet wirklich von Reiter zu Reiter */
+ if(oldNav){const nn=a.querySelector(".tabs");if(nn){const ob=oldNav.querySelectorAll("button"),nb=nn.querySelectorAll("button");
+  if(ob.length===nb.length&&nb.length){nb.forEach((b,i)=>{ob[i].classList.toggle("on",b.classList.contains("on"));if(ob[i].innerHTML!==b.innerHTML)ob[i].innerHTML=b.innerHTML});nn.replaceWith(oldNav)}}}
  setStatus();placeLamp();render.lv=view}
 function ringSvg(f,c,big,small){const r=50,C2=2*Math.PI*r,q=Math.max(0,Math.min(1,f||0));
  return`<svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--fill)" stroke-width="10"/><circle class="gring" cx="60" cy="60" r="${r}" fill="none" stroke="${q<=0?"transparent":c==="var(--acc)"?"url(#gA)":c}" stroke-width="10" stroke-linecap="round" stroke-dasharray="${q*C2} ${C2}" transform="rotate(-90 60 60)" style="filter:drop-shadow(0 0 5px ${c==="var(--acc)"?"var(--a1)":c==="transparent"?"transparent":c})"/>
@@ -2543,7 +2559,7 @@ addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="227335c";
+const APPV="3dd3cd0";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;

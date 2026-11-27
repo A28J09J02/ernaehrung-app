@@ -84,10 +84,13 @@ const tone=(a,txt)=>a&&TONE[a]?`<span class="tone t-${a}">${ic(TONE[a][0])}${txt
 let LAMP={x:null,w:null};
 function placeLamp(){const nav=document.querySelector(".tabs"),lamp=nav&&nav.querySelector(".lamp"),on=nav&&nav.querySelector("button.on");
  if(!lamp)return;if(!on){lamp.style.opacity="0";return}
- const x=on.offsetLeft,w=on.offsetWidth;
- if(LAMP.x!=null&&(LAMP.x!==x)){lamp.style.transition="none";lamp.style.setProperty("--lx",LAMP.x+"px");lamp.style.setProperty("--lw",LAMP.w+"px");
-  lamp.getBoundingClientRect();lamp.style.transition="";on.classList.add("pop")}
- requestAnimationFrame(()=>{lamp.style.setProperty("--lx",x+"px");lamp.style.setProperty("--lw",w+"px");lamp.style.opacity="1"});
+ const x=on.offsetLeft,w=on.offsetWidth,fresh=!lamp.dataset.p;
+ /* Neues Licht-Element (erstes Mal): ohne Übergang an die zuletzt bekannte Stelle setzen, damit nichts von links hereinrutscht oder neu einblendet */
+ if(fresh){lamp.dataset.p="1";const px=LAMP.x!=null?LAMP.x:x,pw=LAMP.x!=null?LAMP.w:w;
+  lamp.style.transition="none";lamp.style.setProperty("--lx",px+"px");lamp.style.setProperty("--lw",pw+"px");lamp.style.opacity=LAMP.x!=null?"1":"0";
+  lamp.getBoundingClientRect();lamp.style.transition=""}
+ if(LAMP.x!=null&&LAMP.x!==x){nav.querySelectorAll("button.pop").forEach(b=>b.classList.remove("pop"));void on.offsetWidth;on.classList.add("pop")}
+ lamp.style.setProperty("--lx",x+"px");lamp.style.setProperty("--lw",w+"px");lamp.style.opacity="1";
  LAMP={x,w}}
 /* selten kurz flackern – wie eine echte Lampe (nie bei „Bewegung reduzieren“) */
 (function flicker(){setTimeout(()=>{const n=document.querySelector(".tabs");
