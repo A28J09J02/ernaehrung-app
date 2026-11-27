@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.jsdelivr.net https://unpkg.com; worker-src 'self' blob: https://cdn.jsdelivr.net; connect-src 'self' https://api.github.com https://world.openfoodfacts.org https://search.openfoodfacts.org https://cdn.jsdelivr.net https://tessdata.projectnaptha.com blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; media-src 'self' blob: mediastream:; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <meta name="referrer" content="no-referrer">
-<script src="design.js?v=b23c11a"></script>
+<script src="design.js?v=227335c"></script>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-180.png">
 <style>
 :root{--bg:#eef2f4;--card:#fff;--ink:#122028;--mute:#5b6c75;--line:#dbe3e7;--grid:#e6ecef;--acc:#0b6e8e;--acc-bg:#dcecf2;
@@ -1069,13 +1069,13 @@ button:active{opacity:.7}
 <div class="scrim" id="scrim"></div><nav class="drawer" id="drawer"></nav>
 <div class="sheet" id="sheet"></div>
 <div class="toast" id="toast"><span></span><button hidden></button></div>
-<script src="kern.js?v=b23c11a"></script>
-<script src="todos.js?v=b23c11a"></script>
-<script src="gesund.js?v=b23c11a"></script>
-<script src="lauf.js?v=b23c11a"></script>
-<script src="mitteilungen.js?v=b23c11a"></script>
-<script src="suche.js?v=b23c11a"></script>
-<script src="gefuehl.js?v=b23c11a"></script>
+<script src="kern.js?v=227335c"></script>
+<script src="todos.js?v=227335c"></script>
+<script src="gesund.js?v=227335c"></script>
+<script src="lauf.js?v=227335c"></script>
+<script src="mitteilungen.js?v=227335c"></script>
+<script src="suche.js?v=227335c"></script>
+<script src="gefuehl.js?v=227335c"></script>
 <script>
 "use strict";
 /* ===== Speicher ===== */
@@ -2534,11 +2534,16 @@ noZoom(document);
  vv.addEventListener("resize",fix);vv.addEventListener("scroll",fix)})();
 /* Kopfzeile: beim Rollen Titel einblenden (große Titel im Inhalt wie in iOS) */
 addEventListener("scroll",()=>{const v=scrollY>40;if(v!==document.body.classList.contains("scrolled"))document.body.classList.toggle("scrolled",v)},{passive:true});
+/* iOS-Fehler: Nach dem Schließen der Tastatur bleibt der sichtbare Bereich manchmal um die Tastaturhöhe verkürzt – die untere Leiste hängt dann mitten im Bild. Layout nach dem Schließen neu anstoßen. */
+(function(){const ed=()=>{const a=document.activeElement;return a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)};
+ const fix=()=>{if(ed())return;const y=scrollY;scrollTo(0,y+1);scrollTo(0,y);const t=document.querySelector(".tabs");if(t){t.style.display="none";void t.offsetHeight;t.style.display=""}};
+ addEventListener("focusout",()=>{setTimeout(fix,120);setTimeout(fix,500)});
+ const vv=window.visualViewport;if(vv)vv.addEventListener("resize",()=>{if(!ed()&&vv.scale<=1.01&&vv.height<innerHeight-80)setTimeout(fix,150)})})();
 /* Tipp-Zeile im Tagebuch nur bei den ersten 5 Starts */
 const TIPS=LS.get("tipps",0);LS.set("tipps",TIPS+1);
 /* Neue App-Version automatisch laden: der Workflow „App veröffentlichen“ stempelt APPV und version.txt.
    Geprüft beim Start und bei jeder Rückkehr in die App; nie während ein Eingabefenster offen ist. */
-const APPV="b23c11a";
+const APPV="227335c";
 async function checkUpdate(){if(APPV.startsWith("__"))return;
  try{const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"});if(!r.ok)return;const v=(await r.text()).trim();
   if(!v||v===APPV||$("sheet").classList.contains("on"))return;
